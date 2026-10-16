@@ -1,5 +1,3 @@
-# Shikshi, merged both scripts into a single clean app.py without the duplicate blocks or capital "Import" syntax error.
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -14,9 +12,6 @@ import wave
 import struct
 
 st.set_page_config(page_title="ExoMapper", layout="wide", initial_sidebar_state="collapsed")
-
-
-# --- CSS & UI Styling ---
 def load_css():
     st.markdown("""
     <style>
@@ -105,9 +100,6 @@ def load_css():
     #MainMenu {visibility: hidden;} footer {visibility: hidden;}
     </style>
     """, unsafe_allow_html=True)
-
-
-# --- Session State Setup ---
 def setup_session():
     defaults = {
         'page': 'login',
@@ -129,7 +121,6 @@ def setup_session():
         if k not in st.session_state:
             st.session_state[k] = v
 
-
 def show_header():
     st.markdown("""
     <div class="top-bar">
@@ -142,9 +133,6 @@ def show_header():
 def get_time_str():
     ist = datetime.utcnow() + timedelta(hours=5, minutes=30)
     return ist.strftime("%d %b %Y | %I:%M %p IST")
-
-
-# --- Science & Image Functions ---
 def make_sky_frames(mode, px, py, seed_val):
     rng = np.random.default_rng(seed_val)
     N = 400
@@ -173,11 +161,11 @@ def make_sky_frames(mode, px, py, seed_val):
         star_spot = bright * np.exp(-((xx - sx)**2 + (yy - sy)**2) / (2 * width**2))
         sky[y0:y1, x0:x1] += star_spot
 
-    # two epochs with slight sensor noise difference
+
     epoch1 = np.copy(sky) + rng.normal(0, 1.2, (N, N))
     epoch2 = np.copy(sky) + rng.normal(0, 1.2, (N, N))
 
-    # add moving Planet X in Epoch 1 and shifted in Epoch 2
+
     p_bright = 165.0
     p_width = 2.4
     
@@ -209,8 +197,6 @@ def scale_image_ds9(img, method, contrast):
     if high_v <= low_v:
         high_v = low_v + 1e-5
     return np.clip(out, low_v, high_v)
-
-
 def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
     h, w = f1.shape
     xa, xb = max(0, int(min(x0, x1))), min(w, int(max(x0, x1)))
@@ -221,8 +207,7 @@ def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
 
     box1 = f1[ya:yb, xa:xb]
     box2 = f2[ya:yb, xa:xb]
-    
-    # find brightest pixel inside the user's box
+
     loc_y, loc_x = np.unravel_index(np.argmax(box1), box1.shape)
     found_x = xa + loc_x
     found_y = ya + loc_y
@@ -234,7 +219,6 @@ def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
     snr = max(0.0, peak_val / noise_std)
     motion_diff = float(np.max(np.abs(box1 - box2)))
 
-    # check if user actually caught the moving anomaly
     if not is_uploaded:
         d1 = math.hypot(found_x - true_x, found_y - true_y)
         d2 = math.hypot(found_x - (true_x + 14), found_y - (true_y + 9))
@@ -258,7 +242,7 @@ def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
             }
         }
 
-    # calculate planet properties from pixel brightness and position
+
     rad = np.clip(1.6 + 0.19 * math.sqrt(max(10.0, peak_val)), 2.1, 8.9)
     dist_center = math.hypot(found_x - 200, found_y - 200)
     alb = np.clip(0.015 + (peak_val / 3200.0) + (dist_center / 8000.0), 0.020, 0.145)
@@ -462,7 +446,7 @@ elif st.session_state.page == "home":
                 """, unsafe_allow_html=True)
 
 
-# ================= PAGE 3: RADAR & DS9 VIEWER =================
+# ================= PAGE 3: RADAR & VIEWER =================
 elif st.session_state.page == "radar":
     show_header()
     
@@ -507,7 +491,7 @@ elif st.session_state.page == "radar":
         chosen_mode = st.radio("Select Mode", modes, index=modes.index(saved_mode) if saved_mode in modes else 0, horizontal=True, label_visibility="collapsed")
         st.session_state.profiles[user]["last_mode"] = chosen_mode
 
-    # DS9 Controls Box
+    # Control Box
     with st.container(border=True):
         st.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🎛️ SAOImage DS9 Image Controls</h4>", unsafe_allow_html=True)
         d1, d2, d3, d4 = st.columns([1.2, 1.2, 1.2, 0.8])
@@ -639,7 +623,7 @@ elif st.session_state.page == "radar":
                 st.session_state.frame_step += 1
                 st.rerun()
 
-        # Target Lock Section
+
         with st.container(border=True):
             st.markdown("<h4 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>🎯 LOCK TARGET COORDINATES</h4>", unsafe_allow_html=True)
             if st.session_state.user_box is not None:
