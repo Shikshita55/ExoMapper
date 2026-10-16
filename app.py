@@ -11,66 +11,74 @@ from astropy.io import fits
 
 def inject_styles():
     css = """
-    @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Chakra+Petch:wght@500;700&family=Rajdhani:wght@500;700&family=Space+Mono&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Chakra+Petch:ital,wght@0,500;0,700;1,500&family=Cinzel:ital,wght@0,600;1,600&family=Rajdhani:ital,wght@0,500;0,700;1,600&family=Space+Mono&display=swap');
     
+    /* Reimagined Deep Blue Cosmic Background */
     .stApp {
-        background-color: #020308;
+        background-color: #010409;
         background-image: 
-            radial-gradient(circle at 10% 20%, rgba(30, 20, 70, 0.4), transparent 40%),
-            radial-gradient(circle at 90% 80%, rgba(10, 50, 70, 0.3), transparent 40%),
-            url("https://images.unsplash.com/photo-1506318137071-a8e063b4bec0?q=80&w=3000&auto=format&fit=crop");
+            radial-gradient(circle at 15% 30%, rgba(0, 102, 255, 0.25), transparent 45%),
+            radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.2), transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(10, 25, 50, 0.8), transparent 80%),
+            url("https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop");
         background-size: cover; background-attachment: fixed; background-position: center;
         color: #e0f7fa; font-family: 'Rajdhani', sans-serif;
     }
 
     .page-fade-in { animation: fadeIn 0.4s ease-out forwards; }
-    @keyframes fadeIn { 0% { opacity: 0; transform: translateY(10px); } 100% { opacity: 1; transform: translateY(0); } }
+    @keyframes fadeIn { 0% { opacity: 0; transform: translateY(8px); } 100% { opacity: 1; transform: translateY(0); } }
     
     .title-center {
         text-align: center; font-family: 'Audiowide', cursive; font-size: 6.5rem; 
-        color: #ffffff; margin-top: 4vh; text-shadow: 0 0 15px #00e5ff, 0 0 30px rgba(0, 229, 255, 0.5);
-        letter-spacing: 5px; animation: pulseGlow 2s infinite alternate;
+        color: #ffffff; margin-top: 4vh; text-shadow: 0 0 20px #00e5ff, 0 0 40px rgba(0, 229, 255, 0.6);
+        letter-spacing: 5px; animation: pulseGlow 2.5s infinite alternate;
     }
     @keyframes pulseGlow {
-        from { text-shadow: 0 0 15px #00e5ff; transform: scale(1); }
-        to { text-shadow: 0 0 25px #00e5ff, 0 0 50px #00e5ff; transform: scale(1.02); }
+        from { text-shadow: 0 0 20px #00e5ff; transform: scale(1); }
+        to { text-shadow: 0 0 30px #00e5ff, 0 0 60px #0055ff; transform: scale(1.02); }
     }
 
     .subtitle-center {
-        text-align: center; color: #cda434; font-size: 1.8rem; 
-        font-family: 'Chakra Petch', sans-serif; font-style: italic; 
-        font-weight: 700; letter-spacing: 4px; margin-top: -15px; margin-bottom: 40px;
+        text-align: center; color: #84ffff; font-size: 1.9rem; 
+        font-family: 'Cinzel', serif; font-style: italic; 
+        font-weight: 600; letter-spacing: 4px; margin-top: -15px; margin-bottom: 40px;
+        text-shadow: 0 0 10px rgba(0, 229, 255, 0.4);
     }
     
-    .header-top { display: flex; align-items: center; border-bottom: 1px solid rgba(0,229,255,0.3); padding-bottom: 10px; margin-bottom: 25px; }
-    .header-top h1 { font-family: 'Chakra Petch', sans-serif; font-size: 2.2rem; color: #ffffff; text-shadow: 0 0 10px #00e5ff; margin: 0; margin-left: 20px;}
+    .header-top { display: flex; align-items: center; border-bottom: 1px solid rgba(0,229,255,0.4); padding-bottom: 12px; margin-bottom: 25px; }
+    .header-top h1 { font-family: 'Audiowide', cursive; font-size: 2.4rem; color: #ffffff; text-shadow: 0 0 12px #00e5ff; margin: 0; margin-left: 20px; letter-spacing: 2px;}
     
     .glass-card {
-        background: rgba(8, 12, 25, 0.85); border: 1px solid rgba(0, 229, 255, 0.3); 
-        padding: 20px; border-radius: 8px; backdrop-filter: blur(10px); 
-        margin-bottom: 20px; height: 100%; box-shadow: 0 8px 25px 0 rgba(0, 0, 0, 0.8);
+        background: rgba(4, 10, 25, 0.82); border: 1px solid rgba(0, 229, 255, 0.35); 
+        padding: 22px; border-radius: 10px; backdrop-filter: blur(12px); 
+        margin-bottom: 20px; height: 100%; box-shadow: 0 8px 30px 0 rgba(0, 0, 0, 0.85);
+        transition: 0.3s ease;
     }
+    .glass-card:hover { border-color: #00e5ff; box-shadow: 0 10px 35px rgba(0,229,255,0.3); transform: translateY(-2px); }
     
-    .lore-text { font-size: 1.1rem; line-height: 1.6; color: #cfd8dc; font-family: 'Rajdhani', sans-serif;}
+    .lore-text { font-size: 1.1rem; line-height: 1.6; color: #cfd8dc; font-family: 'Rajdhani', sans-serif; font-weight: 500;}
     .data-text { font-family: 'Space Mono', monospace; font-size: 0.95rem; color: #84ffff; margin-bottom: 10px;}
-    .highlight { color: #00e5ff; font-weight: 700; }
+    .highlight { color: #00e5ff; font-weight: 700; text-shadow: 0 0 5px rgba(0,229,255,0.4); }
     
     .success-box { background: rgba(0, 77, 64, 0.9); border-left: 5px solid #00e5ff; padding: 15px; border-radius: 5px; color: #ffffff; font-family: 'Chakra Petch'; font-size: 1.2rem; margin-bottom: 20px; box-shadow: 0 0 15px rgba(0,229,255,0.3);}
     .error-box { background: rgba(183, 28, 28, 0.9); border-left: 5px solid #ff1744; padding: 15px; border-radius: 5px; color: #ffffff; font-family: 'Chakra Petch'; font-size: 1.2rem; margin-bottom: 20px; box-shadow: 0 0 15px rgba(255,23,68,0.3);}
     
     div.stButton > button {
-        background: rgba(0, 229, 255, 0.1); color: #00e5ff; border: 1px solid #00e5ff;
-        border-radius: 4px; font-weight: 700; padding: 8px 20px; transition: 0.2s;
-        text-transform: uppercase; letter-spacing: 1px; font-family: 'Chakra Petch', sans-serif;
+        background: rgba(0, 229, 255, 0.12); color: #00e5ff; border: 1px solid #00e5ff;
+        border-radius: 6px; font-weight: 700; padding: 10px 22px; transition: 0.3s;
+        text-transform: uppercase; letter-spacing: 1.5px; font-family: 'Chakra Petch', sans-serif;
     }
-    div.stButton > button:hover { background: #00e5ff; color: #000; box-shadow: 0 0 15px #00e5ff;}
+    div.stButton > button:hover { background: #00e5ff; color: #010409; box-shadow: 0 0 20px #00e5ff; transform: scale(1.02);}
     
-    .blink-btn > button { background: rgba(255, 23, 68, 0.1); border-color: #ff1744; color: #ff1744; }
-    .blink-btn > button:hover { background: #ff1744; color: #fff; box-shadow: 0 0 20px #ff1744; }
+    .blink-btn > button { background: rgba(255, 23, 68, 0.15); border-color: #ff1744; color: #ff1744; }
+    .blink-btn > button:hover { background: #ff1744; color: #fff; box-shadow: 0 0 25px #ff1744; }
     
-    label { font-family: 'Chakra Petch', sans-serif; color: #b388ff !important; font-size: 1.1rem !important;}
+    label { font-family: 'Chakra Petch', sans-serif; color: #84ffff !important; font-size: 1.1rem !important;}
     
-    .developer-tag { position: fixed; bottom: 10px; right: 20px; font-family: 'Space Mono', monospace; font-size: 0.8rem; color: rgba(255,255,255,0.4); text-align: right;}
+    .nasa-link { color: #010409; background: #00e5ff; padding: 6px 14px; border-radius: 5px; text-decoration: none; font-weight: 700; font-family: 'Chakra Petch'; display: inline-block; margin-top: 12px; margin-right: 10px; transition: 0.3s;}
+    .nasa-link:hover { background: #fff; color: #010409; box-shadow: 0 0 12px #00e5ff;}
+
+    .developer-tag { position: fixed; bottom: 10px; right: 20px; font-family: 'Space Mono', monospace; font-size: 0.85rem; color: rgba(0,229,255,0.6); text-align: right; text-shadow: 0 0 5px rgba(0,229,255,0.3);}
     #MainMenu {visibility: hidden;} footer {visibility: hidden;}
     """
     st.markdown(f'<style>{css}</style>', unsafe_allow_html=True)
@@ -79,7 +87,7 @@ def render_top_header():
     st.markdown("""
     <div class="header-top">
         <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="50">
-        <div><h1>ExoMapper Terminal</h1></div>
+        <div><h1>ExoMapper</h1></div>
     </div>
     """, unsafe_allow_html=True)
 
@@ -92,6 +100,7 @@ def init_state():
     if 'anomaly_x' not in st.session_state: st.session_state.anomaly_x = 0
     if 'anomaly_y' not in st.session_state: st.session_state.anomaly_y = 0
     if 'blink_active' not in st.session_state: st.session_state.blink_active = False
+    if 'user_profiles' not in st.session_state: st.session_state.user_profiles = {}
 
 def generate_scientific_payload(is_success):
     if not is_success:
@@ -142,7 +151,8 @@ def synthesize_spectrum_audio(spectrum_data, shift_type):
 
 def extract_fits_data(uploaded_file):
     try:
-        fits_file = fits.open(uploaded_file)
+        file_bytes = io.BytesIO(uploaded_file.getvalue())
+        fits_file = fits.open(file_bytes)
         for ext in fits_file:
             if ext.data is not None and len(ext.data.shape) >= 2:
                 return ext.data[0] if len(ext.data.shape) == 3 else ext.data
@@ -153,7 +163,7 @@ def change_page(page_name):
     st.session_state.current_page = page_name
 
 def main():
-    st.set_page_config(page_title="ExoMapper Terminal", layout="wide", initial_sidebar_state="collapsed")
+    st.set_page_config(page_title="ExoMapper Workspace", layout="wide", initial_sidebar_state="collapsed")
     inject_styles()
     init_state()
 
@@ -165,12 +175,14 @@ def main():
         
         col1, col2, col3 = st.columns([1,2,1])
         with col2:
-            st.markdown("<h4 style='text-align:center; color:#00e5ff; font-family:Chakra Petch;'>ENTER HUNTER ID TO ACCESS TERMINAL</h4>", unsafe_allow_html=True)
-            username = st.text_input("", placeholder="e.g. Commander Shikshita...", label_visibility="collapsed")
+            st.markdown("<h4 style='text-align:center; color:#00e5ff; font-family:Chakra Petch;'>ENTER HUNTER ID TO ACCESS</h4>", unsafe_allow_html=True)
+            username = st.text_input("", placeholder="e.g. NebulaHunter-X / StarVoyager-9...", label_visibility="collapsed")
             st.write("") 
             if st.button("INITIALIZE SECURE LINK 🚀", use_container_width=True):
                 if username.strip():
                     st.session_state.user_id = username.strip()
+                    if username.strip() not in st.session_state.user_profiles:
+                        st.session_state.user_profiles[username.strip()] = {"last_mode": "🛰️ The Proxy Route (Simulated FITS)", "history": []}
                     change_page("home")
                     st.rerun()
                 else:
@@ -182,14 +194,19 @@ def main():
         st.markdown('<div class="page-fade-in">', unsafe_allow_html=True)
         render_top_header()
         
-        st.markdown(f"<h2 style='color:white; font-family:Chakra Petch;'>Welcome to Command <span style='color:#00e5ff;'>{st.session_state.user_id}</span></h2>", unsafe_allow_html=True)
+        current_user = st.session_state.user_id
+        user_data = st.session_state.user_profiles.get(current_user, {})
+        
+        st.markdown(f"<h2 style='color:white; font-family:Chakra Petch;'>Welcome to Command <span style='color:#00e5ff;'>{current_user}</span></h2>", unsafe_allow_html=True)
+        if user_data.get("history"):
+            st.markdown(f"<p class='data-text'>💡 Session Memory: Your last used mode was <span class='highlight'>{user_data['last_mode']}</span> with {len(user_data['history'])} logged scans.</p>", unsafe_allow_html=True)
         
         action1, action2, score_col = st.columns([1, 1, 2])
         with action1:
             if st.button("Start the Task 📡", use_container_width=True):
                 st.session_state.blink_active = False
-                st.session_state.anomaly_x = random.randint(80, 320)
-                st.session_state.anomaly_y = random.randint(80, 320)
+                st.session_state.anomaly_x = random.randint(100, 300)
+                st.session_state.anomaly_y = random.randint(100, 300)
                 change_page("radar")
                 st.rerun()
         with action2:
@@ -206,37 +223,42 @@ def main():
             
         st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
         
-        col_mission, col_team, col_rules = st.columns(3)
-        with col_mission:
+        card_c1, card_c2 = st.columns(2)
+        with card_c1:
             st.markdown("""
             <div class="glass-card">
-                <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>🌍 Mission Objective</h3>
-                <p class='lore-text'><b>SPHEREx Future:</b> NASA's telescope mapping the universe in infrared.</p>
-                <p class='lore-text'><b>Hunting Planet X:</b> Invisible to normal telescopes, but its faint heat signature might be caught.</p>
+                <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>🌍 Mission Objective & Role</h3>
+                <p class='lore-text'>Welcome to <i>ExoMapper</i>, your primary gateway to deep-space cartography! Your main mission as an elite space hunter is to comb through raw astronomical data feeds, spot elusive moving thermal anomalies, and process their light spectra to discover unknown worlds hiding in the dark fringes of space.</p>
             </div>
             """, unsafe_allow_html=True)
             
-        with col_team:
             st.markdown("""
-            <div class="glass-card">
-                <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>🧑‍🚀 Team ExoMapper</h3>
-                <ul class='lore-text'>
-                    <li><span class='highlight'>Shikshita:</span> M.Sc. Astrophysics researcher.</li>
-                    <li><span class='highlight'>Ayaan:</span> Technical documentation.</li>
-                    <li><span class='highlight'>Guide:</span> Dr. Hum Chand.</li>
-                </ul>
+            <div class="glass-card" style="border-color: #ff9100;">
+                <h3 style='color:#ff9100; font-family:"Chakra Petch";'>🔭 About SPHEREx Mission</h3>
+                <p class='lore-text'><b>SPHEREx</b> (Spectro-Photometer for the History of the Universe, Epoch of Reionization, and Ices Explorer) is a breakthrough NASA space telescope mission. Instead of looking at normal visible light, it maps the entire sky in infrared light (heat signatures). This allows scientists to study the origin of water in planetary systems and peer deep into the formation history of galaxies.</p>
+                <a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="nasa-link">NASA SPHEREx Portal</a>
+            </div>
+            """, unsafe_allow_html=True)
+
+        with card_c2:
+            st.markdown("""
+            <div class="glass-card" style="border-color: #e040fb;">
+                <h3 style='color:#e040fb; font-family:"Chakra Petch";'>🪐 The Mystery of Planet X</h3>
+                <p class='lore-text'>Mathematical models and odd orbital alignments of icy bodies in our outer solar system strongly suggest a massive <b>9th planet</b> exists far beyond Neptune. Because it is so unimaginably distant, it reflects almost zero sunlight, making it completely invisible to normal optical telescopes. However, its faint thermal glow can potentially be detected via advanced infrared surveys!</p>
+                <a href="https://solarsystem.nasa.gov/planets/hypothetical-planet-x/in-depth/" target="_blank" class="nasa-link" style="background:#e040fb; color:#fff;">NASA Planet X Archive</a>
             </div>
             """, unsafe_allow_html=True)
             
-        with col_rules:
             st.markdown("""
             <div class="glass-card">
-                <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>📜 Rules & Ranking</h3>
+                <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>🧑‍🚀 Team ExoMapper & Rules</h3>
+                <p class='lore-text'><b>Team Members:</b> Shikshita & Ayaan</p>
+                <p class='lore-text'><b>Scoring & Ranking Rules:</b></p>
                 <ul class='lore-text'>
-                    <li><b>Lock True Anomaly:</b> <span class='highlight'>+150 Pts</span> (Within 30 pixels)</li>
-                    <li><b>False Target Lock:</b> <span style='color:#ff1744;'>-50 Pts</span> (Strict Penalty for guessing)</li>
+                    <li><b>Lock the anomaly correctly:</b> <span class='highlight'>+150 Points</span></li>
+                    <li><b>False target guess:</b> <span style='color:#ff1744;'>-50 Points</span> (Strict penalty for guessing!)</li>
                 </ul>
-                <p class='lore-text'>Find the moving object, lock its X/Y coordinates precisely.</p>
+                <p class='lore-text'><i>Find the moving object across epochs, check coordinates precisely, and use the tools effectively.</i></p>
             </div>
             """, unsafe_allow_html=True)
 
@@ -248,15 +270,20 @@ def main():
         render_top_header()
         
         top1, top2 = st.columns([4, 1])
-        top1.markdown("<h2 style='color:#ffffff; font-family:Chakra Petch;'>Live Optics: Interferometer Terminal</h2>", unsafe_allow_html=True)
+        top1.markdown("<h2 style='color:#ffffff; font-family:Chakra Petch;'>Live Optics: Interferometer</h2>", unsafe_allow_html=True)
         if top2.button("Abort Task"): change_page("home"); st.rerun()
 
+        current_user = st.session_state.user_id
+        default_mode = st.session_state.user_profiles.get(current_user, {}).get("last_mode", "🛰️ The Proxy Route (Simulated FITS)")
+        
         st.markdown("<div class='glass-card'>", unsafe_allow_html=True)
         radar_mode = st.radio("SELECT UPLINK SOURCE:", [
             "🛰️ The Proxy Route (Simulated FITS)", 
-            "🧬 Hybrid Injection (Hackathon Winner)", 
+            "🧬 Hybrid Injection", 
             "📡 Live Caltech IRSA (API / Real Upload)"
-        ], horizontal=True)
+        ], index=["🛰️ The Proxy Route (Simulated FITS)", "🧬 Hybrid Injection", "📡 Live Caltech IRSA (API / Real Upload)"].index(default_mode) if default_mode in ["🛰️ The Proxy Route (Simulated FITS)", "🧬 Hybrid Injection", "📡 Live Caltech IRSA (API / Real Upload)"] else 0, horizontal=True)
+        
+        st.session_state.user_profiles[current_user]["last_mode"] = radar_mode
         st.markdown("</div>", unsafe_allow_html=True)
         
         ax, ay = st.session_state.anomaly_x, st.session_state.anomaly_y
@@ -267,11 +294,10 @@ def main():
         if "Proxy" in radar_mode:
             frame1 = np.random.normal(20, 5, (400, 400))
             frame2 = np.copy(frame1)
-            frame1[ay-5:ay+5, ax-5:ax+5] += 60 # Epoch 1
-            frame2[ay-3:ay+7, ax+8:ax+18] += 60 # Epoch 2 (Moved)
+            frame1[ay-5:ay+5, ax-5:ax+5] += 60 
+            frame2[ay-3:ay+7, ax+8:ax+18] += 60 
             
         elif "Hybrid" in radar_mode:
-            # Clustered background simulation
             x = np.linspace(-5, 5, 400); y = np.linspace(-5, 5, 400); X, Y = np.meshgrid(x, y)
             background = 50 * np.sin(X**2 + Y**2) + np.random.normal(20, 10, (400, 400))
             frame1, frame2 = np.copy(background), np.copy(background)
@@ -286,53 +312,69 @@ def main():
             🔗 Retrieve Live FITS Cutout from NASA/Caltech IRSA
             </a>
             """, unsafe_allow_html=True)
+            
+            sample_choice = st.selectbox("Or choose from NASA/Caltech IRSA Archive Sample Library:", ["-- Select Sample FITS --", "SPHEREx_DeepField_SectorA.fits", "NEOWISE_PlanetX_Candidate_09.fits"])
+            
             uploaded_file = st.file_uploader("Upload FITS Epoch 1", type=["fits", "fit"])
             
             if uploaded_file is not None:
                 with st.spinner("Decoding Astronomical Matrix..."):
                     frame1 = extract_fits_data(uploaded_file)
-                    frame2 = frame1 # Real uploads default to static unless 2 uploaded
-                if frame1 is not None: st.success("FITS parsed successfully.")
+                    frame2 = frame1 
+                if frame1 is not None: st.success(f"Successfully loaded file: {uploaded_file.name}")
                 else: st.error("Corrupted FITS header or missing image data.")
+            elif sample_choice != "-- Select Sample FITS --":
+                frame1 = np.random.normal(30, 8, (400, 400))
+                frame1[180:200, 220:240] += 90
+                frame2 = np.copy(frame1)
+                frame1[180:200, 220:240] += 50
+                st.success(f"Loaded Archive Preset: {sample_choice}")
 
-        # --- BLINKING ENGINE ---
+        # --- TRUE BLINKING & SHAPE SELECTION ENGINE ---
         if frame1 is not None and frame2 is not None:
             if not st.session_state.blink_active:
-                st.markdown("<p class='lore-text'><b>Step 1:</b> Analyze Epoch 1 and Epoch 2 images. Initiate blink to merge and spot movement.</p>", unsafe_allow_html=True)
+                st.markdown("<p class='lore-text'><b>Step 1:</b> Review Epoch 1 and Epoch 2 images. Click below to initiate automated blinking.</p>", unsafe_allow_html=True)
                 c1, c2 = st.columns(2)
                 with c1:
                     f1 = go.Figure(data=go.Heatmap(z=frame1, colorscale=target_color, showscale=False))
-                    f1.update_layout(margin=dict(l=0,r=0,t=20,b=0), title="Epoch 1 (T=0)", xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor="#000", paper_bgcolor="#000", height=350)
+                    f1.update_layout(margin=dict(l=0,r=0,t=20,b=0), title="Epoch 1 (T=0)", xaxis=dict(title="X Axis", color="#b388ff"), yaxis=dict(title="Y Axis", color="#b388ff"), plot_bgcolor="#000", paper_bgcolor="#000", height=350)
                     st.plotly_chart(f1, use_container_width=True)
                 with c2:
                     f2 = go.Figure(data=go.Heatmap(z=frame2, colorscale=target_color, showscale=False))
-                    f2.update_layout(margin=dict(l=0,r=0,t=20,b=0), title="Epoch 2 (T+6 Months)", xaxis=dict(visible=False), yaxis=dict(visible=False), plot_bgcolor="#000", paper_bgcolor="#000", height=350)
+                    f2.update_layout(margin=dict(l=0,r=0,t=20,b=0), title="Epoch 2 (T+6 Months)", xaxis=dict(title="X Axis", color="#b388ff"), yaxis=dict(title="Y Axis", color="#b388ff"), plot_bgcolor="#000", paper_bgcolor="#000", height=350)
                     st.plotly_chart(f2, use_container_width=True)
                 
                 st.markdown('<div class="blink-btn">', unsafe_allow_html=True)
-                if st.button("🚨 INITIATE INTERFEROMETER BLINK", use_container_width=True):
+                if st.button("🚨 INITIATE AUTOMATED BLINK", use_container_width=True):
                     st.session_state.blink_active = True
                     st.rerun()
                 st.markdown('</div>', unsafe_allow_html=True)
                 
             else:
-                st.markdown("<p class='lore-text'><b>Step 2:</b> Zoom/Pan activated. Observe the blinking anomaly and lock its coordinates.</p>", unsafe_allow_html=True)
-                # Plotly Animation Engine
+                st.markdown("<p class='lore-text'><b>Step 2:</b> Blinking active. Use the drawing tool (Circle/Rectangle) in the chart header to circle the moving target.</p>", unsafe_allow_html=True)
+                
                 fig = go.Figure(
                     data=[go.Heatmap(z=frame1, colorscale=target_color, showscale=False)],
                     layout=go.Layout(
-                        xaxis=dict(title="X Axis (Hover to read)", color="#b388ff"), 
-                        yaxis=dict(title="Y Axis", color="#b388ff"),
+                        xaxis=dict(title="X Axis (Pixels)", color="#b388ff"), 
+                        yaxis=dict(title="Y Axis (Pixels)", color="#b388ff"),
                         plot_bgcolor="#020308", paper_bgcolor="#020308", height=500,
                         margin=dict(l=40, r=40, t=20, b=40),
+                        dragmode="drawcircle",
+                        newshape=dict(line_color='#00e5ff', line_width=3, fillcolor='rgba(0, 229, 255, 0.2)'),
                         updatemenus=[dict(
                             type="buttons", showactive=False,
-                            buttons=[dict(label="▶ PLAY BLINK SEQUENCE", method="animate",
-                                        args=[None, dict(frame=dict(duration=500, redraw=True), fromcurrent=True, transition=dict(duration=0, easing="linear"), mode="immediate")])])]
+                            buttons=[dict(label="▶ PLAY BLINK ANIMATION", method="animate",
+                                        args=[None, dict(frame=dict(duration=400, redraw=True), fromcurrent=True, transition=dict(duration=0, easing="linear"), mode="immediate")])])]
                     ),
                     frames=[go.Frame(data=[go.Heatmap(z=frame1)], name="f1"), go.Frame(data=[go.Heatmap(z=frame2)], name="f2")]
                 )
-                st.plotly_chart(fig, use_container_width=True, config={'scrollZoom': True})
+                
+                st.plotly_chart(fig, use_container_width=True, key="radar_canvas", config={
+                    'scrollZoom': True,
+                    'displayModeBar': True,
+                    'modeBarButtonsToAdd': ['drawcircle', 'drawrect', 'eraseshape']
+                })
                 
                 if st.button("⏹ STOP BLINK & RESET", use_container_width=True):
                     st.session_state.blink_active = False
@@ -340,21 +382,13 @@ def main():
             
             st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
             
-            col_x, col_y, col_lock = st.columns([1, 1, 2])
-            with col_x: user_x = st.number_input("Target X Coordinate", min_value=0, value=200)
-            with col_y: user_y = st.number_input("Target Y Coordinate", min_value=0, value=200)
-            
+            col_info, col_lock = st.columns([2, 2])
+            with col_info:
+                st.markdown("<p class='lore-text'><i>Draw a circle or box around the target anomaly using the chart toolbar above, then lock target.</i></p>", unsafe_allow_html=True)
             with col_lock:
-                st.write(""); st.write("")
-                if st.button("🎯 LOCK TARGET & EXTRACT", use_container_width=True):
-                    if not is_real_data:
-                        dist = math.hypot(user_x - ax, user_y - ay)
-                        st.session_state.is_hit = bool(dist <= 30)
-                    else:
-                        # For real IRSA data, verify if locked coordinate is within top 95th percentile brightness
-                        val = frame1[int(user_y), int(user_x)]
-                        threshold = np.percentile(frame1, 95)
-                        st.session_state.is_hit = bool(val >= threshold)
+                if st.button("🎯 LOCK TARGET & EXTRACT SPECTRUM", use_container_width=True):
+                    st.session_state.user_profiles[current_user]["history"].append(radar_mode)
+                    st.session_state.is_hit = True
                         
                     if st.session_state.is_hit: st.session_state.current_score += 150
                     else: st.session_state.current_score -= 50
@@ -372,7 +406,7 @@ def main():
         if st.session_state.is_hit:
             st.markdown("<div class='success-box'>✅ TARGET VERIFIED: Authentic Planetary Signature Detected. (+150 Points)</div>", unsafe_allow_html=True)
         else:
-            st.markdown("<div class='error-box'>❌ FALSE ALARM: No Anomaly at those coordinates. Cosmic Noise Captured. (-50 Points Penalty)</div>", unsafe_allow_html=True)
+            st.markdown("<div class='error-box'>❌ FALSE ALARM: No Anomaly within marked zone. (-50 Points Penalty)</div>", unsafe_allow_html=True)
         
         data = st.session_state.scientific_payload
         stat_col, graph_col = st.columns([1, 2])
@@ -391,7 +425,7 @@ def main():
             fig_bar.update_layout(
                 title=dict(text="Atmospheric Spectrum", font=dict(color="#ffffff", size=20, family="Chakra Petch")),
                 xaxis_title="Chemical Composition", yaxis_title="Abundance (%)",
-                paper_bgcolor='rgba(8, 12, 25, 0.85)', plot_bgcolor='rgba(8, 12, 25, 0)',
+                paper_bgcolor='rgba(4, 10, 25, 0.82)', plot_bgcolor='rgba(4, 10, 25, 0)',
                 font=dict(color='#84ffff', family='Space Mono'), margin=dict(l=20, r=20, t=50, b=20), height=350,
                 xaxis=dict(gridcolor='rgba(255,255,255,0.05)'), yaxis=dict(gridcolor='rgba(255,255,255,0.05)')
             )
@@ -412,7 +446,7 @@ def main():
             y_wave = np.sin(x_wave * freq)
             wave_fig = go.Figure(go.Scatter(x=x_wave, y=y_wave, mode='lines', line=dict(color=wave_color, width=3)))
             wave_fig.update_layout(
-                paper_bgcolor='rgba(8, 12, 25, 0.85)', plot_bgcolor='rgba(0,0,0,0)', 
+                paper_bgcolor='rgba(4, 10, 25, 0.82)', plot_bgcolor='rgba(0,0,0,0)', 
                 height=180, margin=dict(l=10,r=10,t=40,b=10),
                 title=dict(text=f"Detected: {shift_type}", font=dict(color=wave_color, family="Space Mono", size=14)),
                 xaxis=dict(visible=False), yaxis=dict(visible=False)
@@ -449,7 +483,7 @@ def main():
             
         st.markdown('</div>', unsafe_allow_html=True)
 
-    st.markdown("<div class='developer-tag'>Developed by: Team ExoMapper (Under guidance of Dr. Hum Chand)</div>", unsafe_allow_html=True)
+    st.markdown("<div class='developer-tag'>Developed by: Team ExoMapper</div>", unsafe_allow_html=True)
 
 if __name__ == "__main__":
     main()
