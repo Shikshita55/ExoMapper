@@ -366,7 +366,6 @@ def read_fits_upload(file_obj):
 load_css()
 setup_session()
 
-# ================= PAGE 1: LOGIN =================
 if st.session_state.page == "login":
     st.markdown('<div class="startup-banner">🚀 NASA Space Apps Challenge 2026 — Official Entry</div>', unsafe_allow_html=True)
     st.markdown("<div class='main-title'>ExoMapper</div>", unsafe_allow_html=True)
@@ -393,7 +392,6 @@ if st.session_state.page == "login":
             else:
                 st.markdown("<div class='miss-banner'>Access Denied. Please enter a Hunter ID first.</div>", unsafe_allow_html=True)
 
-# ================= PAGE 2: DASHBOARD =================
 elif st.session_state.page == "home":
     show_header()
     user = st.session_state.user
@@ -541,7 +539,6 @@ elif st.session_state.page == "home":
                 </div>
                 """, unsafe_allow_html=True)
 
-# ================= PAGE 3: RADAR & VIEWER =================
 elif st.session_state.page == "radar":
     show_header()
     
@@ -881,7 +878,6 @@ elif st.session_state.page == "radar":
                     st.session_state.page = "analysis"
                     st.rerun()
 
-# ================= PAGE 4: SCIENTIFIC RESULTS =================
 elif st.session_state.page == "analysis":
     show_header()
     user = st.session_state.user
