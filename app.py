@@ -1,4 +1,3 @@
-#V9
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -26,7 +25,7 @@ def load_css():
         background-image: 
             radial-gradient(circle at 15% 30%, rgba(0, 102, 255, 0.32), transparent 45%),
             radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.25), transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(8, 24, 56, 0.9), transparent 85%),
+            radial-gradient(circle at 50% 50%, rgba(6, 18, 42, 0.92), transparent 85%),
             url("https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop");
         background-size: cover;
         background-attachment: fixed;
@@ -37,15 +36,15 @@ def load_css():
 
     @keyframes slideUpBanner {
         0% { transform: translateY(0px); opacity: 1; }
-        75% { transform: translateY(0px); opacity: 1; }
-        100% { transform: translateY(-75px); opacity: 0; display: none; }
+        80% { transform: translateY(0px); opacity: 1; }
+        100% { transform: translateY(-70px); opacity: 0; display: none; }
     }
 
     .startup-banner {
-        text-align: center; font-family: 'Chakra Petch', sans-serif; font-size: 1.4rem;
+        text-align: center; font-family: 'Chakra Petch', sans-serif; font-size: 1.35rem;
         color: #00ffcc; background: rgba(0, 229, 255, 0.12); border: 1.5px solid #00e5ff;
-        padding: 16px; border-radius: 8px; margin-bottom: 25px; letter-spacing: 3px;
-        animation: slideUpBanner 2.5s ease-in-out forwards;
+        padding: 15px; border-radius: 8px; margin-bottom: 25px; letter-spacing: 3px;
+        animation: slideUpBanner 2.2s ease-in-out forwards;
     }
 
     .global-challenge-tag {
@@ -83,14 +82,14 @@ def load_css():
     }
     
     .info-card {
-        background: rgba(4, 12, 30, 0.85); border: 1px solid rgba(0, 229, 255, 0.35); 
+        background: rgba(4, 12, 30, 0.88); border: 1px solid rgba(0, 229, 255, 0.35); 
         padding: 22px; border-radius: 12px; margin-bottom: 20px;
         backdrop-filter: blur(10px);
         box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
     }
     
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(4, 12, 30, 0.88) !important;
+        background: rgba(4, 12, 30, 0.9) !important;
         border: 1px solid rgba(0, 229, 255, 0.45) !important;
         border-radius: 12px !important;
         padding: 20px !important;
@@ -112,14 +111,18 @@ def load_css():
         box-shadow: 0 0 20px rgba(255,23,68,0.3);
     }
     
+    /* Professional Dark Blue / Cyan Button Theme (No harsh white flash) */
     div.stButton > button {
-        background: rgba(0, 229, 255, 0.12); color: #00e5ff; border: 1.5px solid #00e5ff;
+        background: linear-gradient(135deg, rgba(0, 102, 255, 0.2), rgba(0, 229, 255, 0.2)); 
+        color: #00e5ff; border: 1.5px solid #00e5ff;
         border-radius: 8px; font-weight: 700; padding: 10px 22px;
         text-transform: uppercase; font-family: 'Chakra Petch', sans-serif;
         transition: all 0.3s ease;
     }
     div.stButton > button:hover {
-        background: #00e5ff; color: #010409; box-shadow: 0 0 20px #00e5ff; transform: scale(1.02);
+        background: linear-gradient(135deg, #0066ff, #00e5ff); color: #010409; 
+        box-shadow: 0 0 20px rgba(0,229,255,0.7); transform: scale(1.02);
+        border-color: #ffffff;
     }
     
     label { font-family: 'Chakra Petch', sans-serif; color: #84ffff !important; }
@@ -180,7 +183,8 @@ def get_time_str():
     return ist.strftime("%d %b %Y | %I:%M %p IST")
 
 
-# --- Science & Astronomical Image Functions ---
+# --- Cached Science & Image Functions for Zero Lag ---
+@st.cache_data
 def make_sky_frames(mode, px, py, seed_val):
     rng = np.random.default_rng(seed_val)
     N = 400
@@ -477,7 +481,6 @@ elif st.session_state.page == "home":
         st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>📖 Rules & Guide Menu (FAQ Hub)</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Everything you need to know about navigating the ExoMapper workbench and maximizing your hunter score:</p>", unsafe_allow_html=True)
         
-        # Keyword Search Option for FAQs
         faq_search = st.text_input("🔍 Search Rules & Guide FAQs:", placeholder="Type keywords like 'blink', 'score', 'WCS', 'noise'...", key="faq_keyword_search")
         
         faq_list = [
@@ -565,11 +568,13 @@ elif st.session_state.page == "radar":
     t1, t2, t3 = st.columns([3, 1, 1])
     t1.markdown("<h2 style='color:white; font-family:Chakra Petch;'>Live Optics: Interferometer</h2>", unsafe_allow_html=True)
     if t2.button("🔄 New Sky Sector", use_container_width=True):
+        # NEW SKY SECTOR EXPLANATION: Generates fresh random spatial sector with new coordinates & target seed
         st.session_state.planet_x = random.randint(85, 315)
         st.session_state.planet_y = random.randint(85, 315)
         st.session_state.seed = random.randint(1, 99999)
         st.session_state.user_box = None
         st.session_state.is_retry = True
+        st.toast("✨ New Sky Sector loaded! New coordinate grid and starseed generated.", icon="🚀")
         st.rerun()
     if t3.button("Abort Task", use_container_width=True):
         st.session_state.page = "home"
@@ -602,9 +607,28 @@ elif st.session_state.page == "radar":
         chosen_mode = st.radio("Select Mode", modes, index=modes.index(saved_mode) if saved_mode in modes else 0, horizontal=True, label_visibility="collapsed")
         st.session_state.profiles[user]["last_mode"] = chosen_mode
 
-    # Advanced Astronomical Controls & Frame Management Box
+    # Advanced Astronomical Controls & Frame Management Box with Info Guide Button
     with st.container(border=True):
-        st.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
+        ctrl_col_h1, ctrl_col_h2 = st.columns([4, 1])
+        ctrl_col_h1.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
+        
+        # Guide / Info Button on Right Side
+        with ctrl_col_h2:
+            show_control_guide = st.toggle("📖 Guide & Tooltips", value=False)
+
+        if show_control_guide:
+            st.markdown("""
+            <div style='background:rgba(0,229,255,0.08); padding:14px; border-radius:8px; border:1px solid #00e5ff; margin-bottom:15px; font-size:0.92rem; color:#e0f7fa;'>
+                <b style='color:#00e5ff;'>📚 Observatory Controls Guide & Documentation:</b><br>
+                &bull; <b>Image Scale Algorithm (Linear, Log, Sqrt, HistEq):</b> Controls how pixel brightness maps to visual shades. Log and Square Root stretch faint infrared signals so hidden planets become visible.<br>
+                &bull; <b>Color Palette (LUT - Inferno, Viridis, Gray, etc.):</b> Color Lookup Tables highlight thermal gradients and optical density.<br>
+                &bull; <b>Bias / Contrast Stretch:</b> Adjusts black and white clipping points to isolate sources from background noise.<br>
+                &bull; <b>Region Select Shapes (Box, Circle, Star, Hexagon):</b> Astrometric tools for bounding and measuring target apertures.<br>
+                &bull; <b>View Frame Modes (Single, Tile, Fade Blend):</b> Lets you inspect epochs side-by-side or blended.<br>
+                &bull; <b>WCS Coordinate Grid:</b> Overlays celestial Right Ascension (RA) and Declination (Dec) coordinate lines.<br>
+                &bull; <b>Clear / Reset Frames:</b> Flushes active selections and temporary canvas memory.
+            </div>
+            """, unsafe_allow_html=True)
         
         ctrl_c1, ctrl_c2, ctrl_c3, ctrl_c4 = st.columns([1.2, 1.2, 1.2, 1.2])
         with ctrl_c1:
@@ -715,23 +739,35 @@ elif st.session_state.page == "radar":
                     fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
                 st.plotly_chart(fig_single, use_container_width=True)
                 
+            # Launch with a sleek loading spinner and positive cosmic encouragement as requested!
             if st.button("🚨 LAUNCH BLINK FRAMES", use_container_width=True):
+                with st.spinner("✨ Initializing interferometry matrix... Aligning SPHEREx infrared channels... Just a moment, cosmic hunter! 🔭"):
+                    time.sleep(0.6) # Instant smooth transition
                 st.session_state.blinking = True
                 st.rerun()
         else:
             st.markdown("<p class='card-text'><b>Step 2:</b> BLINK FRAMES active! Use the selection tool matching your chosen shape to mark the moving anomaly.</p>", unsafe_allow_html=True)
             
-            # --- Professional Data Reduction & Noise Removal Tool ---
-            with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction)"):
+            # --- Professional Data Reduction & Noise Removal Suite with Educational Breakdown ---
+            with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction) — Learn More"):
+                st.markdown("""
+                <div style='background:rgba(0,229,255,0.05); padding:10px; border-radius:6px; margin-bottom:10px; font-size:0.9rem; color:#cfd8dc;'>
+                    <b>🔭 What is Data Reduction & Background Subtraction?</b><br>
+                    Telescope detectors capture unwanted background glow (starlight scatter, thermal instrument emissions). Background subtraction measures median sky levels and subtracts them to isolate true astronomical point sources.<br>
+                    &bull; <b>Wavelet / Median Smoothing Filters:</b> Mathematical algorithms that smooth out high-frequency sensor noise while preserving sharp point-spread functions (PSF) of stars.<br>
+                    &bull; <b>Background ADU Cutoff:</b> Threshold limit (in Analog-to-Digital Units) below which all pixel values are treated as sky noise and zeroed out.<br>
+                    &bull; <b>Sensor Readout Noises & Cosmic Ray Artifacts:</b> Electronic static and high-energy particle streaks on the CCD. Checking this filter cleans them instantly.
+                </div>
+                """, unsafe_allow_html=True)
+                
                 dr_col1, dr_col2 = st.columns(2)
                 with dr_col1:
                     enable_denoise = st.checkbox("Apply Wavelet / Median Smoothing Filter", value=False)
                     noise_threshold = st.slider("Background ADU Cutoff:", 1.0, 30.0, 12.5, 0.5)
                 with dr_col2:
                     if enable_denoise:
-                        # Calculate before and after noise ADU stats
                         before_noise = float(np.std(f1_raw))
-                        f1_raw = np.where(f1_raw < noise_threshold, bg_val := float(np.median(f1_raw)), f1_raw)
+                        f1_raw = np.where(f1_raw < noise_threshold, float(np.median(f1_raw)), f1_raw)
                         after_noise = float(np.std(f1_raw))
                         st.markdown(f"""
                         <div style='background:rgba(0,229,255,0.1); padding:8px; border-radius:5px; font-family:Space Mono; font-size:0.85rem;'>
@@ -748,7 +784,7 @@ elif st.session_state.page == "radar":
             with c_loop:
                 keep_looping = st.toggle("🔄 AUTO-LOOP BLINK (NON-STOP)", value=False)
             with c_spd:
-                # FIXED: Added both slider and a precise number_input box for fractional/decimal milliseconds control as requested in pic 4!
+                # FIXED: Dual control - Slider plus exact number input box for decimal millisecond speeds!
                 speed_ms = st.number_input("Blink Speed (ms) [Exact Control]:", min_value=10.0, max_value=5000.0, value=450.0, step=5.0)
                 st.markdown("<span style='font-size:0.8rem; color:#84ffff;'>ℹ️ <b>Blink Speed (ms):</b> Sets the interval duration in milliseconds between frame switches during BLINK FRAMES.</span>", unsafe_allow_html=True)
             with c_stop:
