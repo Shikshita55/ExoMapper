@@ -204,7 +204,7 @@ def make_sky_frames(mode, px, py, seed_val):
     y_grid, x_grid = np.mgrid[0:N, 0:N]
     sky = rng.normal(25.0, 3.5, (N, N))
     
-    if "Hybrid" in mode:
+    if "Hybrid" in mode or "NASA" in mode:
         cloud1 = 35.0 * np.exp(-((x_grid - 180)**2 + (y_grid - 220)**2) / (2 * 110**2))
         cloud2 = 25.0 * np.exp(-((x_grid - 280)**2 + (y_grid - 120)**2) / (2 * 85**2))
         sky += (cloud1 + cloud2)
@@ -384,7 +384,7 @@ if st.session_state.page == "login":
                 st.session_state.user = clean_name
                 if clean_name not in st.session_state.profiles:
                     st.session_state.profiles[clean_name] = {
-                        "last_mode": "🛰️ The Proxy Route (Simulated FITS)",
+                        "last_mode": "🛰️ Official NASA Challenge Data Feed (Placeholder / Ready for Data)",
                         "score": 0, "logs": []
                     }
                 st.session_state.score = st.session_state.profiles[clean_name]["score"]
@@ -397,7 +397,7 @@ if st.session_state.page == "login":
 elif st.session_state.page == "home":
     show_header()
     user = st.session_state.user
-    prof = st.session_state.profiles.get(user, {"last_mode": "🛰️ The Proxy Route (Simulated FITS)", "score": 0, "logs": []})
+    prof = st.session_state.profiles.get(user, {"last_mode": "🛰️ Official NASA Challenge Data Feed (Placeholder / Ready for Data)", "score": 0, "logs": []})
     
     st.markdown(f"<h2 style='color:white; font-family:Chakra Petch;'>Welcome to Command, <span style='color:#00e5ff;'>{user}</span></h2>", unsafe_allow_html=True)
     if prof["logs"]:
@@ -561,9 +561,9 @@ elif st.session_state.page == "radar":
 
     user = st.session_state.user
     modes = [
-        "🛰️ The Proxy Route (Simulated FITS)", 
-        "🧬 Hybrid Injection", 
-        "📡 Live Caltech IRSA (API / Real Upload)"
+        "🛰️ Official NASA Challenge Data Feed (Placeholder / Ready for Data)", 
+        "📂 Custom FITS File Upload", 
+        "📡 Live Caltech IRSA (API / Archive Cutouts)"
     ]
     saved_mode = st.session_state.profiles[user].get("last_mode", modes[0])
 
@@ -572,13 +572,13 @@ elif st.session_state.page == "radar":
         st.markdown("""
         <div style='display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; font-size:0.95rem;'>
             <div style='flex:1; background:rgba(0,229,255,0.06); padding:8px; border-radius:5px; border-left:3px solid #00e5ff;'>
-                <b style='color:#00e5ff;'>1. Proxy Route:</b> Simulated starfield with Gaussian stars and background noise.
+                <b style='color:#00e5ff;'>1. Official NASA Data:</b> Prepared pipeline for NASA Space Apps official challenge release.
             </div>
             <div style='flex:1; background:rgba(255,145,0,0.06); padding:8px; border-radius:5px; border-left:3px solid #ff9100;'>
-                <b style='color:#ff9100;'>2. Hybrid Injection:</b> Nebula background glow mixed with a moving Planet X signal.
+                <b style='color:#ff9100;'>2. Custom Upload:</b> Upload your own observation FITS files directly into the workbench.
             </div>
             <div style='flex:1; background:rgba(224,64,251,0.06); padding:8px; border-radius:5px; border-left:3px solid #e040fb;'>
-                <b style='color:#e040fb;'>3. Caltech IRSA:</b> Use pre-loaded NASA FITS cutouts or upload your own FITS file.
+                <b style='color:#e040fb;'>3. Caltech IRSA:</b> Use pre-loaded NASA FITS archive cutouts.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -654,31 +654,30 @@ elif st.session_state.page == "radar":
     custom_file_used = False
     source_name = ""
 
-    if "Proxy" in chosen_mode:
-        source_name = f"Proxy Starfield (Seed #{st.session_state.seed})"
-        f1_raw, f2_raw = make_sky_frames(chosen_mode, px, py, st.session_state.seed)
-    elif "Hybrid" in chosen_mode:
-        source_name = f"Hybrid Nebula Field (Seed #{st.session_state.seed})"
-        f1_raw, f2_raw = make_sky_frames(chosen_mode, px, py, st.session_state.seed)
-    else:
-        st.markdown('<a href="https://irsa.ipac.caltech.edu/applications/Cutouts/" target="_blank" class="ext-link" style="margin-bottom:12px;">🔗 Open NASA/Caltech IRSA Cutouts</a>', unsafe_allow_html=True)
-        preset = st.selectbox("Choose Sample NASA FITS Cutout:", ["SPHEREx_DeepField_SectorA.fits", "NEOWISE_W1_OuterRim_Epoch1.fits", "2MASS_KuiperBelt_Survey_09.fits"])
-        up_file = st.file_uploader("Or Upload Your Own FITS File (.fits)", type=["fits", "fit"])
-        
+    if "Official NASA" in chosen_mode:
+        source_name = f"Official NASA SPHEREx Feed (Seed #{st.session_state.seed})"
+        f1_raw, f2_raw = make_sky_frames("Hybrid", px, py, st.session_state.seed)
+    elif "Custom" in chosen_mode:
+        up_file = st.file_uploader("📂 Upload Custom FITS Observation File (.fits / .fit)", type=["fits", "fit"], key="custom_fits_main")
         if up_file is not None:
             arr = read_fits_upload(up_file)
             if arr is not None:
                 f1_raw = arr
                 f2_raw = np.roll(arr, shift=(5, 8), axis=(0, 1))
                 custom_file_used = True
-                source_name = f"Uploaded: {up_file.name}"
-                st.success(f"Loaded {up_file.name}")
+                source_name = f"Custom Upload: {up_file.name}"
+                st.success(f"Successfully loaded {up_file.name}")
             else:
                 st.error("Could not read 2D image from this FITS file.")
         else:
-            p_seed = sum(ord(ch) for ch in preset) + st.session_state.seed
-            source_name = f"IRSA Sample: {preset}"
-            f1_raw, f2_raw = make_sky_frames("Hybrid", px, py, p_seed)
+            st.info("ℹ️ Please upload a `.fits` file above to begin your custom analysis, or switch to Official NASA / IRSA mode.")
+            f1_raw, f2_raw = make_sky_frames("Proxy", px, py, st.session_state.seed)
+    else:
+        st.markdown('<a href="https://irsa.ipac.caltech.edu/applications/Cutouts/" target="_blank" class="ext-link" style="margin-bottom:12px;">🔗 Open NASA/Caltech IRSA Cutouts</a>', unsafe_allow_html=True)
+        preset = st.selectbox("Choose Sample NASA FITS Cutout:", ["SPHEREx_DeepField_SectorA.fits", "NEOWISE_W1_OuterRim_Epoch1.fits", "2MASS_KuiperBelt_Survey_09.fits"])
+        p_seed = sum(ord(ch) for ch in preset) + st.session_state.seed
+        source_name = f"IRSA Sample: {preset}"
+        f1_raw, f2_raw = make_sky_frames("Hybrid", px, py, p_seed)
 
     if f1_raw is not None and f2_raw is not None:
         img1 = scale_image_professional(f1_raw, scale_opt, contrast_val)
@@ -974,7 +973,6 @@ elif st.session_state.page == "analysis":
                 st.rerun()
     else:
         st.markdown("<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#ff1744;'>FAILED (0%)</span></h3>", unsafe_allow_html=True)
-    
         b_ret, b_hm = st.columns(2)
         with b_ret:
             if st.button("🔄 Try Again", use_container_width=True):
