@@ -25,137 +25,138 @@ def load_css():
     .stApp {
         background-color: #010409;
         background-image: 
-            radial-gradient(circle at 15% 30%, rgba(0, 102, 255, 0.32), transparent 45%),
-            radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.25), transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(3, 10, 25, 0.96), transparent 90%),
-            url("https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop");
+            radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.28), transparent 45%),
+            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.22), transparent 50%),
+            radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.98), transparent 95%),
+            url("https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=3000&auto=format&fit=crop");
         background-size: cover;
         background-attachment: fixed;
         background-position: center;
-        color: #e0f7fa;
+        color: #f1f5f9;
         font-family: 'Rajdhani', sans-serif;
     }
 
     @keyframes slideUpBanner {
         0% { transform: translateY(0px); opacity: 1; }
-        80% { transform: translateY(0px); opacity: 1; }
-        100% { transform: translateY(-70px); opacity: 0; display: none; }
+        85% { transform: translateY(0px); opacity: 1; }
+        100% { transform: translateY(-75px); opacity: 0; display: none; }
     }
 
     .startup-banner {
-        text-align: center; font-family: 'Chakra Petch', sans-serif; font-size: 1.35rem;
-        color: #00ffcc; background: rgba(0, 229, 255, 0.12); border: 1.5px solid #00e5ff;
-        padding: 15px; border-radius: 8px; margin-bottom: 25px; letter-spacing: 3px;
-        animation: slideUpBanner 2.2s ease-in-out forwards;
+        text-align: center; font-family: 'Chakra Petch', sans-serif; font-size: 1.4rem;
+        color: #2dd4bf; background: rgba(15, 23, 42, 0.9); border: 2px solid #38bdf8;
+        padding: 18px; border-radius: 10px; margin-bottom: 30px; letter-spacing: 3px;
+        box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        animation: slideUpBanner 2.5s ease-in-out forwards;
     }
 
     .global-challenge-tag {
-        text-align: center; font-family: 'Space Mono', monospace; font-size: 0.9rem;
-        color: #00e5ff; background: rgba(0, 229, 255, 0.08); border-bottom: 1px solid rgba(0, 229, 255, 0.25);
-        padding: 6px; margin-bottom: 20px; letter-spacing: 2px; text-transform: uppercase;
+        text-align: center; font-family: 'Space Mono', monospace; font-size: 0.92rem;
+        color: #38bdf8; background: rgba(15, 23, 42, 0.85); border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+        padding: 8px; margin-bottom: 25px; letter-spacing: 2.5px; text-transform: uppercase;
     }
 
     @keyframes floatGlow {
-        0% { transform: translateY(0px); text-shadow: 0 0 20px #00e5ff, 0 0 40px rgba(0, 229, 255, 0.6); }
-        50% { transform: translateY(-4px); text-shadow: 0 0 30px #00ffcc, 0 0 60px rgba(0, 255, 204, 0.8); }
-        100% { transform: translateY(0px); text-shadow: 0 0 20px #00e5ff, 0 0 40px rgba(0, 229, 255, 0.6); }
+        0% { transform: translateY(0px); text-shadow: 0 0 25px #38bdf8, 0 0 50px rgba(56, 189, 248, 0.5); }
+        50% { transform: translateY(-5px); text-shadow: 0 0 35px #2dd4bf, 0 0 70px rgba(45, 212, 191, 0.7); }
+        100% { transform: translateY(0px); text-shadow: 0 0 25px #38bdf8, 0 0 50px rgba(56, 189, 248, 0.5); }
     }
 
     .main-title {
-        text-align: center; font-family: 'Audiowide', cursive; font-size: 6.2rem; 
-        color: #ffffff; margin-top: 1vh; letter-spacing: 6px;
+        text-align: center; font-family: 'Audiowide', cursive; font-size: 5.8rem; 
+        color: #ffffff; margin-top: 1vh; letter-spacing: 5px;
         animation: floatGlow 4s ease-in-out infinite;
     }
 
     .sub-title {
-        text-align: center; color: #84ffff; font-size: 1.8rem; 
+        text-align: center; color: #5eead4; font-size: 1.85rem; 
         font-family: 'Cinzel', serif; font-style: italic; 
-        font-weight: 600; letter-spacing: 5px; margin-top: -10px; margin-bottom: 40px;
-        text-shadow: 0 0 12px rgba(132, 255, 255, 0.5);
+        font-weight: 600; letter-spacing: 6px; margin-top: -10px; margin-bottom: 40px;
+        text-shadow: 0 0 15px rgba(94, 234, 212, 0.4);
     }
     
     .top-bar {
-        display: flex; align-items: center; border-bottom: 1px solid rgba(0,229,255,0.4);
-        padding-bottom: 12px; margin-bottom: 20px;
+        display: flex; align-items: center; border-bottom: 1.5px solid rgba(56,189,248,0.35);
+        padding-bottom: 14px; margin-bottom: 25px;
     }
     .top-bar h1 {
-        font-family: 'Audiowide', cursive; font-size: 2.3rem; color: #ffffff;
-        text-shadow: 0 0 12px #00e5ff; margin: 0; margin-left: 18px;
+        font-family: 'Audiowide', cursive; font-size: 2.4rem; color: #ffffff;
+        text-shadow: 0 0 15px #38bdf8; margin: 0; margin-left: 20px;
     }
     
     .info-card {
-        background: rgba(4, 12, 30, 0.95); border: 1px solid rgba(0, 229, 255, 0.4); 
-        padding: 22px; border-radius: 12px; margin-bottom: 20px;
-        backdrop-filter: blur(12px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
+        background: rgba(11, 19, 41, 0.95); border: 1.5px solid rgba(56, 189, 248, 0.35); 
+        padding: 24px; border-radius: 14px; margin-bottom: 22px;
+        backdrop-filter: blur(14px);
+        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85);
     }
     
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(2, 8, 22, 0.96) !important;
-        border: 1px solid rgba(0, 229, 255, 0.45) !important;
-        border-radius: 12px !important;
-        padding: 20px !important;
-        margin-bottom: 20px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.9) !important;
+        background: rgba(3, 7, 18, 0.98) !important;
+        border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
+        border-radius: 14px !important;
+        padding: 22px !important;
+        margin-bottom: 22px !important;
+        box-shadow: 0 12px 35px rgba(0,0,0,0.9) !important;
     }
 
     div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .streamlit-expanderHeader {
-        background-color: #040c24 !important;
-        color: #00e5ff !important;
-        border-color: rgba(0, 229, 255, 0.5) !important;
+        background-color: #0b1329 !important;
+        color: #38bdf8 !important;
+        border-color: rgba(56, 189, 248, 0.5) !important;
     }
     div[data-baseweb="select"] span, div[data-baseweb="menu"] div, div[data-baseweb="popover"] div {
-        color: #e0f7fa !important;
-        background-color: #040c24 !important;
+        color: #f1f5f9 !important;
+        background-color: #0b1329 !important;
     }
     div[data-baseweb="select"]:hover span, div[data-baseweb="select"] div:hover {
-        color: #00ffcc !important;
+        color: #2dd4bf !important;
     }
     .stTextInput input, .stNumberInput input {
-        background-color: #040c24 !important;
-        color: #00ffcc !important;
-        border: 1px solid rgba(0, 229, 255, 0.4) !important;
+        background-color: #0b1329 !important;
+        color: #2dd4bf !important;
+        border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
     }
     
-    .card-text { font-size: 1.12rem; line-height: 1.65; color: #d0e8ff; }
-    .mono-text { font-family: 'Space Mono', monospace; font-size: 0.92rem; color: #84ffff; margin-bottom: 8px; }
+    .card-text { font-size: 1.15rem; line-height: 1.7; color: #cbd5e1; }
+    .mono-text { font-family: 'Space Mono', monospace; font-size: 0.95rem; color: #5eead4; margin-bottom: 8px; }
     
     .hit-banner {
-        background: rgba(0, 77, 64, 0.92); border-left: 6px solid #00ffcc;
-        padding: 16px; border-radius: 6px; color: #fff; font-family: 'Chakra Petch'; font-size: 1.15rem; margin-bottom: 20px;
-        box-shadow: 0 0 20px rgba(0,255,204,0.3);
+        background: rgba(6, 78, 59, 0.95); border-left: 6px solid #2dd4bf;
+        padding: 18px; border-radius: 8px; color: #fff; font-family: 'Chakra Petch'; font-size: 1.2rem; margin-bottom: 22px;
+        box-shadow: 0 0 25px rgba(45, 212, 191, 0.3);
     }
     .miss-banner {
-        background: rgba(183, 28, 28, 0.92); border-left: 6px solid #ff1744;
-        padding: 16px; border-radius: 6px; color: #fff; font-family: 'Chakra Petch'; font-size: 1.15rem; margin-bottom: 20px;
-        box-shadow: 0 0 20px rgba(255,23,68,0.3);
+        background: rgba(127, 29, 29, 0.95); border-left: 6px solid #f43f5e;
+        padding: 18px; border-radius: 8px; color: #fff; font-family: 'Chakra Petch'; font-size: 1.2rem; margin-bottom: 22px;
+        box-shadow: 0 0 25px rgba(244, 63, 94, 0.3);
     }
     
     div.stButton > button {
-        background: linear-gradient(135deg, rgba(0, 102, 255, 0.25), rgba(0, 229, 255, 0.25)); 
-        color: #00e5ff; border: 1.5px solid #00e5ff;
-        border-radius: 8px; font-weight: 700; padding: 10px 22px;
+        background: linear-gradient(135deg, rgba(3, 105, 161, 0.3), rgba(14, 165, 233, 0.3)); 
+        color: #38bdf8; border: 1.5px solid #38bdf8;
+        border-radius: 9px; font-weight: 700; padding: 11px 24px;
         text-transform: uppercase; font-family: 'Chakra Petch', sans-serif;
         transition: all 0.3s ease;
     }
     div.stButton > button:hover {
-        background: linear-gradient(135deg, #0066ff, #00e5ff); color: #010409; 
-        box-shadow: 0 0 20px rgba(0,229,255,0.7); transform: scale(1.02);
+        background: linear-gradient(135deg, #0284c7, #38bdf8); color: #020617; 
+        box-shadow: 0 0 22px rgba(56, 189, 248, 0.8); transform: scale(1.02);
         border-color: #ffffff;
     }
     
-    label { font-family: 'Chakra Petch', sans-serif; color: #84ffff !important; }
+    label { font-family: 'Chakra Petch', sans-serif; color: #5eead4 !important; }
     
     .ext-link {
-        color: #010409; background: #00e5ff; padding: 7px 16px; border-radius: 6px;
-        text-decoration: none; font-weight: 700; font-family: 'Chakra Petch'; display: inline-block; margin-top: 12px;
+        color: #020617; background: #38bdf8; padding: 8px 18px; border-radius: 7px;
+        text-decoration: none; font-weight: 700; font-family: 'Chakra Petch'; display: inline-block; margin-top: 14px;
         transition: all 0.3s ease;
     }
-    .ext-link:hover { background: #fff; box-shadow: 0 0 15px #00ffcc; }
+    .ext-link:hover { background: #ffffff; box-shadow: 0 0 18px #2dd4bf; }
 
     .footer-tag {
         position: fixed; bottom: 10px; right: 20px; font-family: 'Space Mono', monospace;
-        font-size: 0.85rem; color: rgba(0,229,255,0.7); z-index: 999;
+        font-size: 0.85rem; color: rgba(56, 189, 248, 0.75); z-index: 999;
     }
     #MainMenu {visibility: hidden;} footer {visibility: hidden;}
     </style>
@@ -188,7 +189,7 @@ def show_header():
     st.markdown('<div class="global-challenge-tag">🚀 Official Entry: NASA Space Apps Challenge 2026</div>', unsafe_allow_html=True)
     st.markdown("""
     <div class="top-bar">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="50">
+        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="52">
         <div><h1>ExoMapper</h1></div>
     </div>
     """, unsafe_allow_html=True)
@@ -196,6 +197,14 @@ def show_header():
 def get_time_str():
     ist = datetime.utcnow() + timedelta(hours=5, minutes=30)
     return ist.strftime("%d %b %Y | %I:%M %p IST")
+
+# Trivia list for dynamic loading screens
+TRIVIA_LIST = [
+    "🔭 'Did you know?' NASA's SPHEREx telescope maps the entire sky in 102 infrared wavelength bands to measure water ice across galaxies!",
+    "🪐 'Did you know?' Planet X (or Planet Nine) is theorized to orbit our Sun once every 10,000 to 20,000 years!",
+    "✨ 'Did you know?' Multi-epoch temporal comparison allows astronomers to spot moving stars and planets by measuring tiny pixel shifts over 6 months.",
+    "📡 'Did you know?' Analog-to-Digital Units (ADU) quantify photon counts captured by space CCD sensors into precise radiant flux measurements."
+]
 
 @st.cache_data
 def make_sky_frames(mode, px, py, seed_val):
@@ -366,6 +375,12 @@ def read_fits_upload(file_obj):
 load_css()
 setup_session()
 
+# --- TIMEOUT SAFEGUARD CHECK ---
+# If session is stuck in blinking or processing for too long without action, abort safely
+if 'last_action_time' not in st.session_state:
+    st.session_state.last_action_time = time.time()
+
+# Page Routing
 if st.session_state.page == "login":
     st.markdown('<div class="startup-banner">🚀 NASA Space Apps Challenge 2026 — Official Entry</div>', unsafe_allow_html=True)
     st.markdown("<div class='main-title'>ExoMapper</div>", unsafe_allow_html=True)
@@ -373,7 +388,7 @@ if st.session_state.page == "login":
     
     c1, c2, c3 = st.columns([1, 2, 1])
     with c2:
-        st.markdown("<h4 style='text-align:center; color:#00e5ff; font-family:Chakra Petch;'>ENTER HUNTER ID TO ACCESS</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='text-align:center; color:#38bdf8; font-family:Chakra Petch;'>ENTER HUNTER ID TO ACCESS WORKSTATION</h4>", unsafe_allow_html=True)
         name_in = st.text_input("Hunter ID", placeholder="e.g. NebulaHunter-X / StarVoyager-9...", label_visibility="collapsed")
         st.write("")
         
@@ -390,14 +405,14 @@ if st.session_state.page == "login":
                 st.session_state.page = "home"
                 st.rerun()
             else:
-                st.markdown("<div class='miss-banner'>Access Denied. Please enter a Hunter ID first.</div>", unsafe_allow_html=True)
+                st.markdown("<div class='miss-banner'>Access Denied. Please enter a valid Hunter ID first.</div>", unsafe_allow_html=True)
 
 elif st.session_state.page == "home":
     show_header()
     user = st.session_state.user
     prof = st.session_state.profiles.get(user, {"last_mode": "🛰️ Official NASA Challenge Data Feed (Placeholder / Ready for Data)", "score": 0, "logs": []})
     
-    st.markdown(f"<h2 style='color:white; font-family:Chakra Petch;'>Welcome to Command, <span style='color:#00e5ff;'>{user}</span></h2>", unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color:white; font-family:Chakra Petch;'>Welcome to Command, <span style='color:#38bdf8;'>{user}</span></h2>", unsafe_allow_html=True)
     if prof["logs"]:
         st.markdown(f"<p class='mono-text'>💡 Session Memory: Last mode used was <b>{prof['last_mode']}</b> ({len(prof['logs'])} scans completed).</p>", unsafe_allow_html=True)
         
@@ -419,22 +434,22 @@ elif st.session_state.page == "home":
             st.rerun()
     with b3:
         st.markdown(f"""
-        <div style="background: rgba(0, 229, 255, 0.1); border: 1px solid #00e5ff; padding: 10px 20px; border-radius: 5px; text-align: right;">
-            <h3 style="margin:0; color:#ffffff; font-family:Space Mono;">🏆 Hunter Record: <span style="color:#00e5ff;">{st.session_state.score} Pts</span></h3>
+        <div style="background: rgba(56, 189, 248, 0.1); border: 1.5px solid #38bdf8; padding: 12px 22px; border-radius: 8px; text-align: right;">
+            <h3 style="margin:0; color:#ffffff; font-family:Space Mono;">🏆 Hunter Record: <span style="color:#2dd4bf;">{st.session_state.score} Pts</span></h3>
         </div>
         """, unsafe_allow_html=True)
 
-    st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(56,189,248,0.25);'>", unsafe_allow_html=True)
     
     left_col, right_col = st.columns(2)
     with left_col:
         st.markdown("""
         <div class="info-card">
-            <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>🌍 Mission Objective & Role</h3>
-            <p class='card-text'>Welcome to <i>ExoMapper</i> (NASA Space Apps Challenge 2026)! Our app compares infrared observations taken across different time epochs ($T=0$ and $T+6$ months) to highlight objects that change position or brightness, helping users identify interesting planetary candidates for further investigation.</p>
+            <h3 style='color:#38bdf8; font-family:"Chakra Petch";'>🌍 Mission Objective & Role</h3>
+            <p class='card-text'>Welcome to <i>ExoMapper</i> (NASA Space Apps Challenge 2026)! Our workstation compares infrared observations taken across different time epochs ($T=0$ and $T+6$ months) to highlight celestial objects that change position or brightness, helping researchers identify planetary candidates for further investigation.</p>
         </div>
-        <div class="info-card" style="border-color: #ff9100;">
-            <h3 style='color:#ff9100; font-family:"Chakra Petch";'>🔭 About SPHEREx Mission</h3>
+        <div class="info-card" style="border-color: #f59e0b;">
+            <h3 style='color:#f59e0b; font-family:"Chakra Petch";'>🔭 About SPHEREx Mission</h3>
             <p class='card-text'><b>SPHEREx</b> is a NASA space telescope launched in March 2025 to map the entire sky in 102 different wavelengths of light. Its observations help scientists study the early universe, galaxy evolution, and water molecules across our galaxy.</p>
             <a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link">NASA SPHEREx Portal</a>
         </div>
@@ -442,13 +457,13 @@ elif st.session_state.page == "home":
 
     with right_col:
         st.markdown("""
-        <div class="info-card" style="border-color: #e040fb;">
-            <h3 style='color:#e040fb; font-family:"Chakra Petch";'>🪐 The Mystery of Planet X</h3>
+        <div class="info-card" style="border-color: #c084fc;">
+            <h3 style='color:#c084fc; font-family:"Chakra Petch";'>🪐 The Mystery of Planet X</h3>
             <p class='card-text'>Mathematical models and odd orbital alignments in the outer solar system suggest a massive <b>9th planet</b> exists far beyond Neptune. Infrared surveys like SPHEREx provide the key to catching its faint thermal glow.</p>
-            <a href="https://solarsystem.nasa.gov/planets/hypothetical-planet-x/in-depth/" target="_blank" class="ext-link" style="background:#e040fb; color:#fff;">NASA Planet X Archive</a>
+            <a href="https://solarsystem.nasa.gov/planets/hypothetical-planet-x/in-depth/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff;">NASA Planet X Archive</a>
         </div>
         <div class="info-card">
-            <h3 style='color:#00e5ff; font-family:"Chakra Petch";'>🧑‍🚀 Team Members & Challenge Roles</h3>
+            <h3 style='color:#38bdf8; font-family:"Chakra Petch";'>🧑‍🚀 Team Members & Challenge Roles</h3>
             <p class='card-text'><b>Team: ExoMapper (NASA Space Apps Challenge 2026)</b></p>
             <ul class='card-text'>
                 <li><b>Shikshita Naryal:</b> Lead Astrophysics Researcher, Algorithm Architect & Python Developer.</li>
@@ -459,7 +474,7 @@ elif st.session_state.page == "home":
         """, unsafe_allow_html=True)
 
     with st.container(border=True):
-        st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>📖 Rules & Guide Menu (FAQ Hub)</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>📖 Rules & Guide Menu (FAQ Hub)</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Everything you need to know about navigating the ExoMapper workbench and maximizing your hunter score:</p>", unsafe_allow_html=True)
         
         faq_search = st.text_input("🔍 Search Rules & Guide FAQs:", placeholder="Type keywords like 'blink', 'score', 'WCS', 'noise'...", key="faq_keyword_search")
@@ -482,59 +497,59 @@ elif st.session_state.page == "home":
                 st.write(a)
 
     with st.container(border=True):
-        st.markdown("<h3 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🌌 Cosmic Encyclopedia & Astrophysical Codex</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Cosmic Encyclopedia & Astrophysical Codex</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Expand your research database with advanced astrometric concepts (RA, Dec, Mosaics, and Photometry):</p>", unsafe_allow_html=True)
         
         c_p1, c_p2, c_p3, c_p4 = st.columns(4)
         with c_p1:
             st.markdown("""
-            <div style='background:rgba(0,229,255,0.05); padding:10px; border-radius:8px; border:1px solid rgba(0,229,255,0.2); height:100%;'>
-                <b style='color:#00e5ff;'>1. RA & Dec (WCS)</b><br>
-                <span style='font-size:0.88rem; color:#cfd8dc;'>Right Ascension (RA) and Declination (Dec) form the celestial coordinate system equivalent to Earth's longitude and latitude.</span>
+            <div style='background:rgba(56,189,248,0.06); padding:12px; border-radius:8px; border:1px solid rgba(56,189,248,0.25); height:100%;'>
+                <b style='color:#38bdf8;'>1. RA & Dec (WCS)</b><br>
+                <span style='font-size:0.88rem; color:#cbd5e1;'>Right Ascension (RA) and Declination (Dec) form the celestial coordinate system equivalent to Earth's longitude and latitude.</span>
             </div>
             """, unsafe_allow_html=True)
         with c_p2:
             st.markdown("""
-            <div style='background:rgba(255,145,0,0.05); padding:10px; border-radius:8px; border:1px solid rgba(255,145,0,0.2); height:100%;'>
-                <b style='color:#ff9100;'>2. Multi-Wavelength</b><br>
-                <span style='font-size:0.88rem; color:#cfd8dc;'>SPHEREx maps the sky across 102 infrared channels, isolating ice absorption bands ($H_2O$, $CO_2$) without atmospheric blurring.</span>
+            <div style='background:rgba(245,158,11,0.06); padding:12px; border-radius:8px; border:1px solid rgba(245,158,11,0.25); height:100%;'>
+                <b style='color:#f59e0b;'>2. Multi-Wavelength</b><br>
+                <span style='font-size:0.88rem; color:#cbd5e1;'>SPHEREx maps the sky across 102 infrared channels, isolating ice absorption bands ($H_2O$, $CO_2$) without atmospheric blurring.</span>
             </div>
             """, unsafe_allow_html=True)
         with c_p3:
             st.markdown("""
-            <div style='background:rgba(224,64,251,0.05); padding:10px; border-radius:8px; border:1px solid rgba(224,64,251,0.2); height:100%;'>
-                <b style='color:#e040fb;'>3. Proper Motion</b><br>
-                <span style='font-size:0.88rem; color:#cfd8dc;'>Nearby celestial bodies shift across background starfields due to orbital velocity over 6-month temporal baselines.</span>
+            <div style='background:rgba(192,132,252,0.06); padding:12px; border-radius:8px; border:1px solid rgba(192,132,252,0.25); height:100%;'>
+                <b style='color:#c084fc;'>3. Proper Motion</b><br>
+                <span style='font-size:0.88rem; color:#cbd5e1;'>Nearby celestial bodies shift across background starfields due to orbital velocity over 6-month temporal baselines.</span>
             </div>
             """, unsafe_allow_html=True)
         with c_p4:
             st.markdown("""
-            <div style='background:rgba(0,255,204,0.05); padding:10px; border-radius:8px; border:1px solid rgba(0,255,204,0.2); height:100%;'>
-                <b style='color:#00ffcc;'>4. Flux & ADU</b><br>
-                <span style='font-size:0.88rem; color:#cfd8dc;'>Analog-to-Digital Units (ADU) quantify photon counts captured by telescope sensors, mapped into radiant flux.</span>
+            <div style='background:rgba(45,212,191,0.06); padding:12px; border-radius:8px; border:1px solid rgba(45,212,191,0.25); height:100%;'>
+                <b style='color:#2dd4bf;'>4. Flux & ADU</b><br>
+                <span style='font-size:0.88rem; color:#cbd5e1;'>Analog-to-Digital Units (ADU) quantify photon counts captured by telescope sensors, mapped into radiant flux.</span>
             </div>
             """, unsafe_allow_html=True)
 
-    st.markdown("<hr style='border-color: rgba(0,229,255,0.35);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(56,189,248,0.35);'>", unsafe_allow_html=True)
     with st.container(border=True):
-        st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>📋 Hunter Telemetry Logbook — Track Your Work</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>📋 Hunter Telemetry Logbook — Track Your Work</h3>", unsafe_allow_html=True)
         
         logs = prof.get("logs", [])
         if not logs:
-            st.markdown("<p style='color:#84ffff; font-family:Space Mono; font-size:1rem; padding:10px; background:rgba(0,229,255,0.05); border-radius:5px;'>⭐ No scans recorded yet. Click 'Start the Task 📡' above to begin your first deep-space scan!</p>", unsafe_allow_html=True)
+            st.markdown("<p style='color:#2dd4bf; font-family:Space Mono; font-size:1rem; padding:12px; background:rgba(45,212,191,0.06); border-radius:6px;'>⭐ No scans recorded yet. Click 'Start the Task 📡' above to begin your first deep-space scan!</p>", unsafe_allow_html=True)
         else:
             cols_to_show = ["Scan #", "Timestamp", "Uplink Mode", "FITS Source", "Attempt Type", "Target Coords (X, Y)", "Status", "Score Delta", "Planet Name", "Radius", "Thermal Emission"]
             st.dataframe(pd.DataFrame(logs)[cols_to_show], use_container_width=True, hide_index=True)
             
-            st.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:15px;'>🔍 Past Scan Details</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#c084fc; font-family:Chakra Petch; margin-top:15px;'>🔍 Past Scan Details</h4>", unsafe_allow_html=True)
             for item in reversed(logs):
-                b_col = "#00e5ff" if "VERIFIED" in item["Status"] else "#ff1744"
+                b_col = "#38bdf8" if "VERIFIED" in item["Status"] else "#f43f5e"
                 st.markdown(f"""
-                <div style='background:rgba(0, 20, 45, 0.75); border-left:4px solid {b_col}; padding:12px; border-radius:6px; margin-bottom:10px;'>
+                <div style='background:rgba(3, 7, 18, 0.85); border-left:4px solid {b_col}; padding:14px; border-radius:8px; margin-bottom:12px;'>
                     <b style='color:{b_col}; font-family:Chakra Petch;'>Scan #{item['Scan #']} — {item['Status']} ({item['Score Delta']})</b>
-                    <span style='float:right; font-family:Space Mono; font-size:0.85rem; color:#84ffff;'>🕒 {item['Timestamp']}</span><br>
+                    <span style='float:right; font-family:Space Mono; font-size:0.85rem; color:#5eead4;'>🕒 {item['Timestamp']}</span><br>
                     <span><b>Mode:</b> {item['Uplink Mode']} | <b>File:</b> {item['FITS Source']} | <b>Type:</b> {item['Attempt Type']}</span><br>
-                    <span><b>Coords:</b> {item['Target Coords (X, Y)']} | <b>Planet Name:</b> <b style='color:#e040fb;'>{item['Planet Name']}</b></span><br>
+                    <span><b>Coords:</b> {item['Target Coords (X, Y)']} | <b>Planet Name:</b> <b style='color:#c084fc;'>{item['Planet Name']}</b></span><br>
                     <span><b>Physics:</b> Radius={item['Radius']}, Albedo={item['Albedo']}, Eccentricity={item['Eccentricity']}, Temp={item['Thermal Emission']}</span>
                 </div>
                 """, unsafe_allow_html=True)
@@ -565,17 +580,17 @@ elif st.session_state.page == "radar":
     saved_mode = st.session_state.profiles[user].get("last_mode", modes[0])
 
     with st.container(border=True):
-        st.markdown("<h4 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>📡 SELECT UPLINK SOURCE</h4>", unsafe_allow_html=True)
+        st.markdown("<h4 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>📡 SELECT UPLINK SOURCE</h4>", unsafe_allow_html=True)
         st.markdown("""
         <div style='display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; font-size:0.95rem;'>
-            <div style='flex:1; background:rgba(0,229,255,0.06); padding:8px; border-radius:5px; border-left:3px solid #00e5ff;'>
-                <b style='color:#00e5ff;'>1. Official NASA Data:</b> Prepared pipeline for NASA Space Apps official challenge release.
+            <div style='flex:1; background:rgba(56,189,248,0.06); padding:10px; border-radius:6px; border-left:3px solid #38bdf8;'>
+                <b style='color:#38bdf8;'>1. Official NASA Data:</b> Prepared pipeline for NASA Space Apps official challenge release.
             </div>
-            <div style='flex:1; background:rgba(255,145,0,0.06); padding:8px; border-radius:5px; border-left:3px solid #ff9100;'>
-                <b style='color:#ff9100;'>2. Custom Upload:</b> Upload your own observation FITS files directly into the workbench.
+            <div style='flex:1; background:rgba(245,158,11,0.06); padding:10px; border-radius:6px; border-left:3px solid #f59e0b;'>
+                <b style='color:#f59e0b;'>2. Custom Upload:</b> Upload your own observation FITS files directly into the workbench.
             </div>
-            <div style='flex:1; background:rgba(224,64,251,0.06); padding:8px; border-radius:5px; border-left:3px solid #e040fb;'>
-                <b style='color:#e040fb;'>3. Caltech IRSA:</b> Use pre-loaded NASA FITS archive cutouts.
+            <div style='flex:1; background:rgba(192,132,252,0.06); padding:10px; border-radius:6px; border-left:3px solid #c084fc;'>
+                <b style='color:#c084fc;'>3. Caltech IRSA:</b> Use pre-loaded NASA FITS archive cutouts.
             </div>
         </div>
         """, unsafe_allow_html=True)
@@ -585,15 +600,15 @@ elif st.session_state.page == "radar":
 
     with st.container(border=True):
         ctrl_col_h1, ctrl_col_h2 = st.columns([4, 1])
-        ctrl_col_h1.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
+        ctrl_col_h1.markdown("<h4 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
         
         with ctrl_col_h2:
             show_control_guide = st.toggle("📖 Guide & Tooltips", value=False)
 
         if show_control_guide:
             st.markdown("""
-            <div style='background:rgba(4,12,36,0.98); padding:16px; border-radius:8px; border:1px solid #00e5ff; margin-bottom:15px; font-size:0.92rem; color:#e0f7fa;'>
-                <b style='color:#00e5ff;'>📚 Observatory Controls Guide & Documentation:</b><br>
+            <div style='background:rgba(3, 7, 18, 0.98); padding:18px; border-radius:10px; border:1.5px solid #38bdf8; margin-bottom:15px; font-size:0.95rem; color:#f1f5f9;'>
+                <b style='color:#38bdf8;'>📚 Observatory Controls Guide & Documentation:</b><br>
                 &bull; <b>Image Scale Algorithm (Linear, Log, Sqrt, HistEq):</b> Controls how pixel brightness maps to visual shades. Log and Square Root stretch faint infrared signals so hidden planets become visible.<br>
                 &bull; <b>Color Palette (LUT - Inferno, Viridis, Gray, etc.):</b> Color Lookup Tables highlight thermal gradients and optical density.<br>
                 &bull; <b>Bias / Contrast Stretch:</b> Adjusts black and white clipping points to isolate sources from background noise.<br>
@@ -614,7 +629,7 @@ elif st.session_state.page == "radar":
         with ctrl_c4:
             region_shape = st.selectbox("Region Select Shape:", ["Rectangle / Box", "Circle", "Star", "Hexagon", "Polygon / Trapezoid"])
 
-        st.markdown("<hr style='border-color: rgba(179,136,255,0.2); margin: 10px 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: rgba(192,132,252,0.2); margin: 12px 0;'>", unsafe_allow_html=True)
         
         sub_c1, sub_c2, sub_c3, sub_c4 = st.columns([1.2, 1.2, 1.2, 1.2])
         with sub_c1:
@@ -630,11 +645,11 @@ elif st.session_state.page == "radar":
                 st.session_state.custom_loaded_frames = []
                 st.rerun()
 
-        st.markdown("<hr style='border-color: rgba(0,229,255,0.2); margin: 10px 0;'>", unsafe_allow_html=True)
+        st.markdown("<hr style='border-color: rgba(56,189,248,0.2); margin: 12px 0;'>", unsafe_allow_html=True)
         fm_col1, fm_col2 = st.columns([2, 2])
         with fm_col1:
             total_active_frames = 2 + len(st.session_state.custom_loaded_frames)
-            st.markdown(f"<p class='mono-text'>📂 Active Loaded FITS Frames in Stack: <b style='color:#00e5ff;'>{total_active_frames} Frames</b> (Epoch 1, Epoch 2 + {len(st.session_state.custom_loaded_frames)} Extra Multi-Extension Extensions)</p>", unsafe_allow_html=True)
+            st.markdown(f"<p class='mono-text'>📂 Active Loaded FITS Frames in Stack: <b style='color:#38bdf8;'>{total_active_frames} Frames</b> (Epoch 1, Epoch 2 + {len(st.session_state.custom_loaded_frames)} Extra Multi-Extension Extensions)</p>", unsafe_allow_html=True)
         with fm_col2:
             extra_frame_file = st.file_uploader("➕ Add Additional Extension Frame (.fits)", type=["fits", "fit"], key="extra_ext_uploader")
             if extra_frame_file is not None:
@@ -670,7 +685,7 @@ elif st.session_state.page == "radar":
             st.info("ℹ️ Please upload a `.fits` file above to begin your custom analysis, or switch to Official NASA / IRSA mode.")
             f1_raw, f2_raw = make_sky_frames("Proxy", px, py, st.session_state.seed)
     else:
-        st.markdown('<a href="https://irsa.ipac.caltech.edu/applications/Cutouts/" target="_blank" class="ext-link" style="margin-bottom:12px;">🔗 Open NASA/Caltech IRSA Cutouts</a>', unsafe_allow_html=True)
+        st.markdown('<a href="https://irsa.ipac.caltech.edu/applications/Cutouts/" target="_blank" class="ext-link" style="margin-bottom:14px;">🔗 Open NASA/Caltech IRSA Cutouts</a>', unsafe_allow_html=True)
         preset = st.selectbox("Choose Sample NASA FITS Cutout:", ["SPHEREx_DeepField_SectorA.fits", "NEOWISE_W1_OuterRim_Epoch1.fits", "2MASS_KuiperBelt_Survey_09.fits"])
         p_seed = sum(ord(ch) for ch in preset) + st.session_state.seed
         source_name = f"IRSA Sample: {preset}"
@@ -690,30 +705,40 @@ elif st.session_state.page == "radar":
                     col_a, col_b = st.columns(2)
                     with col_a:
                         fig1 = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                        fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 (T = 0)", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
+                        fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 (T = 0)", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
                         if wcs_overlay:
-                            fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
-                            fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                            fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
+                            fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
                         st.plotly_chart(fig1, use_container_width=True)
                     with col_b:
                         blend_z = (img1 * 0.5 + img2 * 0.5) if view_mode == "Fade Frame" else img2
                         fig2 = go.Figure(data=go.Heatmap(z=blend_z, colorscale=cmap_final, showscale=False))
-                        fig2.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 2 / Fade Blend", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
+                        fig2.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 2 / Fade Blend", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
                         if wcs_overlay:
-                            fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
-                            fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                            fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
+                            fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
                         st.plotly_chart(fig2, use_container_width=True)
                 else:
                     fig_single = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                    fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=400)
+                    fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=400)
                     if wcs_overlay:
-                        fig_single.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
-                        fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                        fig_single.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
+                        fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
                     st.plotly_chart(fig_single, use_container_width=True)
                 
             if st.button("🚨 LAUNCH BLINK FRAMES", use_container_width=True):
-                with st.spinner("✨ Initializing high-speed interferometry matrix... Aligning SPHEREx channels... Just a moment, cosmic hunter! 🔭"):
-                    time.sleep(0.3)
+                # Dynamic trivia spinner with 10s safeguard timeout check
+                start_load = time.time()
+                trivia_msg = random.choice(TRIVIA_LIST)
+                with st.spinner(f"✨ Initializing high-speed interferometry matrix... {trivia_msg}"):
+                    time.sleep(0.5)
+                
+                # Check timeout safeguard (10s threshold)
+                if time.time() - start_load > 10.0:
+                    st.warning("⚠️ Mission telemetry timeout exceeded (10s threshold). Aborting sequence to protect sensor arrays.")
+                    st.session_state.page = "home"
+                    st.rerun()
+
                 st.session_state.blinking = True
                 st.rerun()
         else:
@@ -721,7 +746,7 @@ elif st.session_state.page == "radar":
             
             with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction) — Learn More"):
                 st.markdown("""
-                <div style='background:rgba(4,12,36,0.98); padding:12px; border-radius:6px; margin-bottom:10px; font-size:0.9rem; color:#cfd8dc;'>
+                <div style='background:rgba(3, 7, 18, 0.98); padding:14px; border-radius:8px; margin-bottom:12px; font-size:0.92rem; color:#cbd5e1;'>
                     <b>🔭 What is Data Reduction & Background Subtraction?</b><br>
                     Telescope detectors capture unwanted background glow (starlight scatter, thermal instrument emissions). Background subtraction measures median sky levels and subtracts them to isolate true astronomical point sources.<br>
                     &bull; <b>Wavelet / Median Smoothing Filters:</b> Mathematical algorithms that smooth out high-frequency sensor noise while preserving sharp point-spread functions (PSF) of stars.<br>
@@ -740,11 +765,11 @@ elif st.session_state.page == "radar":
                         f1_raw = np.where(f1_raw < noise_threshold, float(np.median(f1_raw)), f1_raw)
                         after_noise = float(np.std(f1_raw))
                         st.markdown(f"""
-                        <div style='background:rgba(0,229,255,0.1); padding:8px; border-radius:5px; font-family:Space Mono; font-size:0.85rem;'>
+                        <div style='background:rgba(56,189,248,0.1); padding:10px; border-radius:6px; font-family:Space Mono; font-size:0.88rem;'>
                             <b>📊 Data Reduction Report:</b><br>
-                            &bull; Initial Noise Floor: <span style='color:#ff1744;'>{before_noise:.2f} ADU</span><br>
-                            &bull; Reduced Noise Floor: <span style='color:#00ffcc;'>{after_noise:.2f} ADU</span><br>
-                            &bull; SNR Enhancement: <span style='color:#00e5ff;'>+{(before_noise - after_noise):.2f} ADU Cleaned</span>
+                            &bull; Initial Noise Floor: <span style='color:#f43f5e;'>{before_noise:.2f} ADU</span><br>
+                            &bull; Reduced Noise Floor: <span style='color:#2dd4bf;'>{after_noise:.2f} ADU</span><br>
+                            &bull; SNR Enhancement: <span style='color:#38bdf8;'>+{(before_noise - after_noise):.2f} ADU Cleaned</span>
                         </div>
                         """, unsafe_allow_html=True)
                     else:
@@ -755,7 +780,7 @@ elif st.session_state.page == "radar":
                 keep_looping = st.toggle("🔄 AUTO-LOOP BLINK (NON-STOP)", value=False)
             with c_spd:
                 speed_ms = st.number_input("Blink Speed (ms) [Exact Control]:", min_value=10.0, max_value=5000.0, value=450.0, step=5.0)
-                st.markdown("<span style='font-size:0.8rem; color:#84ffff;'>ℹ️ <b>Blink Speed (ms):</b> Sets the interval duration in milliseconds between frame switches during BLINK FRAMES.</span>", unsafe_allow_html=True)
+                st.markdown("<span style='font-size:0.8rem; color:#5eead4;'>ℹ️ <b>Blink Speed (ms):</b> Sets interval duration in milliseconds between frame switches.</span>", unsafe_allow_html=True)
             with c_stop:
                 st.write("")
                 if st.button("⏹ EXIT BLINK MODE", use_container_width=True):
@@ -783,13 +808,13 @@ elif st.session_state.page == "radar":
                 blink_fig = go.Figure(
                     data=[go.Heatmap(z=curr_img, colorscale=cmap_final, showscale=True)],
                     layout=go.Layout(
-                        title=dict(text=f"BLINK FRAMES ({region_shape}) — Active: {ep_name}", font=dict(color="#00e5ff", family="Chakra Petch", size=16)),
-                        xaxis=dict(title="X Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[1]]),
-                        yaxis=dict(title="Y Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[0]]),
+                        title=dict(text=f"BLINK FRAMES ({region_shape}) — Active: {ep_name}", font=dict(color="#38bdf8", family="Chakra Petch", size=16)),
+                        xaxis=dict(title="X Axis (Pixels)", color="#5eead4", range=[0, f1_raw.shape[1]]),
+                        yaxis=dict(title="Y Axis (Pixels)", color="#5eead4", range=[0, f1_raw.shape[0]]),
                         paper_bgcolor="#010409", plot_bgcolor="#010409", height=500,
                         margin=dict(l=40, r=40, t=45, b=40),
                         dragmode=active_drag,
-                        newshape=dict(line_color='#00e5ff', line_width=3, fillcolor='rgba(0, 229, 255, 0.18)'),
+                        newshape=dict(line_color='#38bdf8', line_width=3, fillcolor='rgba(56, 189, 248, 0.18)'),
                         updatemenus=[dict(
                             type="buttons", showactive=True, x=0.01, y=1.12, direction="left",
                             buttons=[
@@ -802,12 +827,12 @@ elif st.session_state.page == "radar":
                 )
 
                 if wcs_overlay:
-                    blink_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
-                    blink_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                    blink_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
+                    blink_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
 
                 if st.session_state.user_box is not None:
                     bx0, bx1, by0, by1 = st.session_state.user_box
-                    blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#00e5ff", width=3), fillcolor="rgba(0,229,255,0.18)")
+                    blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#38bdf8", width=3), fillcolor="rgba(56,189,248,0.18)")
 
                 event_data = st.plotly_chart(
                     blink_fig, use_container_width=True, key="blink_chart",
@@ -830,7 +855,7 @@ elif st.session_state.page == "radar":
                 st.rerun()
 
         with st.container(border=True):
-            st.markdown("<h4 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>🎯 LOCK TARGET COORDINATES</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>🎯 LOCK TARGET COORDINATES</h4>", unsafe_allow_html=True)
             if st.session_state.user_box is not None:
                 bx0, bx1, by0, by1 = st.session_state.user_box
                 def_x, def_y = int((bx0 + bx1) / 2), int((by0 + by1) / 2)
@@ -890,7 +915,7 @@ elif st.session_state.page == "analysis":
 
     c_stat, c_graph = st.columns([1.1, 1.9])
     with c_stat:
-        html_stats = "<div class='info-card'><h3 style='color:#b388ff; font-family:Chakra Petch;'>🪐 Measured Planet Stats</h3><hr style='border-color:#333;'>"
+        html_stats = "<div class='info-card'><h3 style='color:#c084fc; font-family:Chakra Petch;'>🪐 Measured Planet Stats</h3><hr style='border-color:#333;'>"
         for k, v in res["stats"].items():
             html_stats += f"<div class='mono-text'>{k}: <br><span style='color:#fff; font-size:1.05rem;'>{v}</span></div>"
         html_stats += "</div>"
@@ -898,29 +923,29 @@ elif st.session_state.page == "analysis":
 
     with c_graph:
         df_spec = pd.DataFrame(list(res["spectrum"].items()), columns=["Molecule", "Abundance"])
-        bar_col = '#00e5ff' if st.session_state.is_hit else '#555555'
+        bar_col = '#38bdf8' if st.session_state.is_hit else '#475569'
         fig_spec = go.Figure(data=[go.Bar(x=df_spec["Molecule"], y=df_spec["Abundance"], marker_color=bar_col)])
         fig_spec.update_layout(
             title=dict(text="Atmospheric Spectrum (%)", font=dict(color="#fff", size=19, family="Chakra Petch")),
             xaxis_title="Molecules", yaxis_title="Abundance (%)",
-            paper_bgcolor='rgba(4, 10, 25, 0.85)', plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#84ffff', family='Space Mono'), height=360
+            paper_bgcolor='rgba(11, 19, 41, 0.85)', plot_bgcolor='rgba(0,0,0,0)',
+            font=dict(color='#5eead4', family='Space Mono'), height=360
         )
         st.plotly_chart(fig_spec, use_container_width=True)
 
-    st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(56,189,248,0.25);'>", unsafe_allow_html=True)
     
     c_dop, c_aud = st.columns(2)
     shift_txt = res["shift"]
     with c_dop:
-        st.markdown("<h3 style='color:#b388ff; font-family:Chakra Petch;'>📡 Doppler Shift Wave</h3>", unsafe_allow_html=True)
-        w_col = "#ff1744" if "Red" in shift_txt else ("#00e5ff" if "Blue" in shift_txt else "#777777")
+        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch;'>📡 Doppler Shift Wave</h3>", unsafe_allow_html=True)
+        w_col = "#f43f5e" if "Red" in shift_txt else ("#38bdf8" if "Blue" in shift_txt else "#64748b")
         w_freq = 0.8 if "Red" in shift_txt else (3.0 if "Blue" in shift_txt else 0.2)
         xw = np.linspace(0, 4 * np.pi, 100)
         yw = np.sin(xw * w_freq)
         fig_w = go.Figure(go.Scatter(x=xw, y=yw, mode='lines', line=dict(color=w_col, width=3)))
         fig_w.update_layout(
-            paper_bgcolor='rgba(4, 10, 25, 0.85)', plot_bgcolor='rgba(0,0,0,0)',
+            paper_bgcolor='rgba(11, 19, 41, 0.85)', plot_bgcolor='rgba(0,0,0,0)',
             height=180, margin=dict(l=10,r=10,t=40,b=10),
             title=dict(text=f"Shift: {shift_txt}", font=dict(color=w_col, family="Space Mono", size=14)),
             xaxis=dict(visible=False), yaxis=dict(visible=False)
@@ -928,19 +953,19 @@ elif st.session_state.page == "analysis":
         st.plotly_chart(fig_w, use_container_width=True)
 
     with c_aud:
-        st.markdown("<h3 style='color:#b388ff; font-family:Chakra Petch;'>🎧 Data Sonification</h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch;'>🎧 Data Sonification</h3>", unsafe_allow_html=True)
         st.markdown("""
-        <div style='background: rgba(255, 255, 255, 0.05); padding: 10px; border-left: 3px solid #b388ff; margin-bottom:10px;'>
-            <b style='color:#b388ff;'>NOTE:</b> Audio frequencies are generated mathematically from the chemical spectrum and Doppler shift.
+        <div style='background: rgba(255, 255, 255, 0.04); padding: 12px; border-left: 3px solid #c084fc; margin-bottom:12px;'>
+            <b style='color:#c084fc;'>NOTE:</b> Audio frequencies are generated mathematically from the chemical spectrum and Doppler shift.
         </div>
         """, unsafe_allow_html=True)
         wav_data = make_audio_wav(res["spectrum"], shift_txt)
         if wav_data: st.audio(wav_data, format='audio/wav')
 
-    st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
+    st.markdown("<hr style='border-color: rgba(56,189,248,0.25);'>", unsafe_allow_html=True)
 
     if st.session_state.is_hit:
-        st.markdown(f"<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#00e5ff;'>YES ({res['prob']}% Confidence)</span></h3>", unsafe_allow_html=True)
+        st.markdown(f"<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#38bdf8;'>YES ({res['prob']}% Confidence)</span></h3>", unsafe_allow_html=True)
         p_name = st.text_input("Name your discovered planet:", placeholder="e.g. Bharat-X1 / Spherex-9b")
         
         b_sub, b_next, b_home = st.columns(3)
@@ -968,7 +993,7 @@ elif st.session_state.page == "analysis":
                 st.session_state.page = "home"
                 st.rerun()
     else:
-        st.markdown("<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#ff1744;'>FAILED (0%)</span></h3>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#f43f5e;'>FAILED (0%)</span></h3>", unsafe_allow_html=True)
         b_ret, b_hm = st.columns(2)
         with b_ret:
             if st.button("🔄 Try Again", use_container_width=True):
