@@ -11,10 +11,12 @@ import io
 import wave
 import struct
 
-st.set_page_config(page_title="ExoMapper — NASA Space Apps Challenge 2026", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(
+    page_title="ExoMapper — NASA Space Apps Challenge 2026",
+    layout="wide",
+    initial_sidebar_state="collapsed"
+)
 
-
-# --- CSS & Ultra-Creative Animations (Fixed Chart Transparency) ---
 def load_css():
     st.markdown("""
     <style>
@@ -25,7 +27,7 @@ def load_css():
         background-image: 
             radial-gradient(circle at 15% 30%, rgba(0, 102, 255, 0.32), transparent 45%),
             radial-gradient(circle at 85% 75%, rgba(0, 229, 255, 0.25), transparent 50%),
-            radial-gradient(circle at 50% 50%, rgba(6, 18, 42, 0.92), transparent 85%),
+            radial-gradient(circle at 50% 50%, rgba(3, 10, 25, 0.96), transparent 90%),
             url("https://images.unsplash.com/photo-1534447677768-be436bb09401?q=80&w=3000&auto=format&fit=crop");
         background-size: cover;
         background-attachment: fixed;
@@ -82,14 +84,14 @@ def load_css():
     }
     
     .info-card {
-        background: rgba(4, 12, 30, 0.92); border: 1px solid rgba(0, 229, 255, 0.35); 
+        background: rgba(4, 12, 30, 0.95); border: 1px solid rgba(0, 229, 255, 0.4); 
         padding: 22px; border-radius: 12px; margin-bottom: 20px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.9);
     }
     
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(4, 12, 30, 0.95) !important;
+        background: rgba(2, 8, 22, 0.96) !important;
         border: 1px solid rgba(0, 229, 255, 0.45) !important;
         border-radius: 12px !important;
         padding: 20px !important;
@@ -97,12 +99,22 @@ def load_css():
         box-shadow: 0 10px 30px rgba(0,0,0,0.9) !important;
     }
 
-    /* Force Solid Opaque Background for Plotly Charts so wallpaper never bleeds through */
-    .stPlotlyChart {
-        background-color: #000000 !important;
-        border-radius: 8px;
-        padding: 4px;
-        border: 1px solid rgba(0, 229, 255, 0.3);
+    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .streamlit-expanderHeader {
+        background-color: #040c24 !important;
+        color: #00e5ff !important;
+        border-color: rgba(0, 229, 255, 0.5) !important;
+    }
+    div[data-baseweb="select"] span, div[data-baseweb="menu"] div, div[data-baseweb="popover"] div {
+        color: #e0f7fa !important;
+        background-color: #040c24 !important;
+    }
+    div[data-baseweb="select"]:hover span, div[data-baseweb="select"] div:hover {
+        color: #00ffcc !important;
+    }
+    .stTextInput input, .stNumberInput input {
+        background-color: #040c24 !important;
+        color: #00ffcc !important;
+        border: 1px solid rgba(0, 229, 255, 0.4) !important;
     }
     
     .card-text { font-size: 1.12rem; line-height: 1.65; color: #d0e8ff; }
@@ -120,7 +132,7 @@ def load_css():
     }
     
     div.stButton > button {
-        background: linear-gradient(135deg, rgba(0, 102, 255, 0.2), rgba(0, 229, 255, 0.2)); 
+        background: linear-gradient(135deg, rgba(0, 102, 255, 0.25), rgba(0, 229, 255, 0.25)); 
         color: #00e5ff; border: 1.5px solid #00e5ff;
         border-radius: 8px; font-weight: 700; padding: 10px 22px;
         text-transform: uppercase; font-family: 'Chakra Petch', sans-serif;
@@ -149,8 +161,6 @@ def load_css():
     </style>
     """, unsafe_allow_html=True)
 
-
-# --- Session State Setup ---
 def setup_session():
     defaults = {
         'page': 'login',
@@ -174,7 +184,6 @@ def setup_session():
         if k not in st.session_state:
             st.session_state[k] = v
 
-
 def show_header():
     st.markdown('<div class="global-challenge-tag">🚀 Official Entry: NASA Space Apps Challenge 2026</div>', unsafe_allow_html=True)
     st.markdown("""
@@ -184,19 +193,15 @@ def show_header():
     </div>
     """, unsafe_allow_html=True)
 
-
 def get_time_str():
     ist = datetime.utcnow() + timedelta(hours=5, minutes=30)
     return ist.strftime("%d %b %Y | %I:%M %p IST")
 
-
-# --- Cached Science & Astronomical Image Functions ---
 @st.cache_data
 def make_sky_frames(mode, px, py, seed_val):
     rng = np.random.default_rng(seed_val)
     N = 400
     y_grid, x_grid = np.mgrid[0:N, 0:N]
-    
     sky = rng.normal(25.0, 3.5, (N, N))
     
     if "Hybrid" in mode:
@@ -209,11 +214,9 @@ def make_sky_frames(mode, px, py, seed_val):
         sy = rng.integers(15, N - 15)
         bright = rng.uniform(35, 190)
         width = rng.uniform(1.1, 2.3)
-        
         y0, y1 = max(0, sy - 10), min(N, sy + 11)
         x0, x1 = max(0, sx - 10), min(N, sx + 11)
         yy, xx = y_grid[y0:y1, x0:x1], x_grid[y0:y1, x0:x1]
-        
         star_spot = bright * np.exp(-((xx - sx)**2 + (yy - sy)**2) / (2 * width**2))
         sky[y0:y1, x0:x1] += star_spot
 
@@ -222,7 +225,6 @@ def make_sky_frames(mode, px, py, seed_val):
 
     p_bright = 165.0
     p_width = 2.4
-    
     epoch1 += p_bright * np.exp(-((x_grid - px)**2 + (y_grid - py)**2) / (2 * p_width**2))
     
     px2, py2 = min(N - 20, px + 14), min(N - 20, py + 9)
@@ -230,10 +232,8 @@ def make_sky_frames(mode, px, py, seed_val):
 
     return np.clip(epoch1, 1, None), np.clip(epoch2, 1, None)
 
-
 def scale_image_professional(img, method, contrast):
     clean = np.clip(np.nan_to_num(img, nan=1.0), 1e-3, None)
-    
     if method == "Logarithmic (Log)":
         out = np.log10(clean)
     elif method == "Square Root (Sqrt)":
@@ -251,7 +251,6 @@ def scale_image_professional(img, method, contrast):
     if high_v <= low_v:
         high_v = low_v + 1e-5
     return np.clip(out, low_v, high_v)
-
 
 def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
     h, w = f1.shape
@@ -292,9 +291,7 @@ def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
                 "Measured Center": f"X={found_x} px, Y={found_y} px",
                 "Aperture Flux": f"{max(0.0, total_flux):.1f} ADU (Noise)",
                 "Signal-to-Noise": f"{snr:.2f} (Below Threshold)",
-                "Radius": "N/A",
-                "Albedo": "N/A",
-                "Eccentricity": "N/A",
+                "Radius": "N/A", "Albedo": "N/A", "Eccentricity": "N/A",
                 "Thermal Emission": "2.7 K (Background)"
             }
         }
@@ -304,7 +301,6 @@ def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
     alb = np.clip(0.015 + (peak_val / 3200.0) + (dist_center / 8000.0), 0.020, 0.145)
     ecc = np.clip(0.11 + (dist_center / 650.0) + (motion_diff / 1200.0), 0.12, 0.58)
     temp_k = np.clip(24.0 + 0.18 * peak_val + 0.04 * snr, 28.0, 68.0)
-
     shift_str = "Blueshift (-14.2 km/s)" if (found_x + found_y) % 2 == 0 else "Redshift (+18.6 km/s)"
 
     h2o = round(float(np.clip(35.0 + (peak_val % 28.0), 35.0, 64.0)), 1)
@@ -322,42 +318,30 @@ def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
         "prob": prob,
         "score_delta_val": total_delta_pts,
         "score_breakdown": score_breakdown_str,
-        "spectrum": {
-            "Water Ice (H2O)": h2o,
-            "Ammonia (NH3)": nh3,
-            "Methane (CH4)": ch4,
-            "Silicate Dust": dust
-        },
+        "spectrum": {"Water Ice (H2O)": h2o, "Ammonia (NH3)": nh3, "Methane (CH4)": ch4, "Silicate Dust": dust},
         "stats": {
             "Measured Center": f"X={found_x} px, Y={found_y} px",
             "Aperture Flux": f"{total_flux:.1f} ADU (Peak: {peak_val:.1f})",
             "Signal-to-Noise": f"{snr:.2f} σ (High-Confidence)",
-            "Radius": f"{rad:.2f} Earth Radii",
-            "Albedo": f"{alb:.3f} (Dark Ice)",
-            "Eccentricity": f"{ecc:.3f}",
-            "Thermal Emission": f"{temp_k:.1f} Kelvin"
+            "Radius": f"{rad:.2f} Earth Radii", "Albedo": f"{alb:.3f} (Dark Ice)",
+            "Eccentricity": f"{ecc:.3f}", "Thermal Emission": f"{temp_k:.1f} Kelvin"
         }
     }
-
 
 def make_audio_wav(spec_dict, shift_label):
     try:
         rate = 44100
         frames = []
         mult = 0.65 if "Redshift" in shift_label else (1.35 if "Blueshift" in shift_label else 0.15)
-        
         for _, val in spec_dict.items():
             freq = (240.0 + (val * 8.5)) * mult
             n_samples = int(rate * 0.5)
             for i in range(n_samples):
                 t = float(i) / rate
                 amp = int(32767.0 * np.sin(freq * t * 2.0 * np.pi))
-                if i < 2000:
-                    amp = int(amp * (i / 2000))
-                elif i > n_samples - 2000:
-                    amp = int(amp * ((n_samples - i) / 2000))
+                if i < 2000: amp = int(amp * (i / 2000))
+                elif i > n_samples - 2000: amp = int(amp * ((n_samples - i) / 2000))
                 frames.append(struct.pack('<h', amp))
-                
         buf = io.BytesIO()
         with wave.open(buf, 'wb') as wf:
             wf.setnchannels(1)
@@ -367,7 +351,6 @@ def make_audio_wav(spec_dict, shift_label):
         return buf.getvalue()
     except Exception:
         return None
-
 
 def read_fits_upload(file_obj):
     try:
@@ -380,11 +363,8 @@ def read_fits_upload(file_obj):
     except Exception:
         return None
 
-
-# --- Main App Workflow ---
 load_css()
 setup_session()
-
 
 # ================= PAGE 1: LOGIN =================
 if st.session_state.page == "login":
@@ -405,8 +385,7 @@ if st.session_state.page == "login":
                 if clean_name not in st.session_state.profiles:
                     st.session_state.profiles[clean_name] = {
                         "last_mode": "🛰️ The Proxy Route (Simulated FITS)",
-                        "score": 0,
-                        "logs": []
+                        "score": 0, "logs": []
                     }
                 st.session_state.score = st.session_state.profiles[clean_name]["score"]
                 st.session_state.page = "home"
@@ -414,11 +393,9 @@ if st.session_state.page == "login":
             else:
                 st.markdown("<div class='miss-banner'>Access Denied. Please enter a Hunter ID first.</div>", unsafe_allow_html=True)
 
-
 # ================= PAGE 2: DASHBOARD =================
 elif st.session_state.page == "home":
     show_header()
-    
     user = st.session_state.user
     prof = st.session_state.profiles.get(user, {"last_mode": "🛰️ The Proxy Route (Simulated FITS)", "score": 0, "logs": []})
     
@@ -483,7 +460,6 @@ elif st.session_state.page == "home":
         </div>
         """, unsafe_allow_html=True)
 
-    # --- Rules & Guide Menu (Interactive FAQ & Help Hub) ---
     with st.container(border=True):
         st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>📖 Rules & Guide Menu (FAQ Hub)</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Everything you need to know about navigating the ExoMapper workbench and maximizing your hunter score:</p>", unsafe_allow_html=True)
@@ -507,7 +483,6 @@ elif st.session_state.page == "home":
             with st.expander(f"📌 {q}"):
                 st.write(a)
 
-    # --- Cosmic Encyclopedia & Extra Knowledge Section ---
     with st.container(border=True):
         st.markdown("<h3 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🌌 Cosmic Encyclopedia & Astrophysical Codex</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Expand your research database with advanced astrometric concepts (RA, Dec, Mosaics, and Photometry):</p>", unsafe_allow_html=True)
@@ -542,7 +517,6 @@ elif st.session_state.page == "home":
             </div>
             """, unsafe_allow_html=True)
 
-    # --- Work History / Logbook Section ---
     st.markdown("<hr style='border-color: rgba(0,229,255,0.35);'>", unsafe_allow_html=True)
     with st.container(border=True):
         st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>📋 Hunter Telemetry Logbook — Track Your Work</h3>", unsafe_allow_html=True)
@@ -567,7 +541,6 @@ elif st.session_state.page == "home":
                 </div>
                 """, unsafe_allow_html=True)
 
-
 # ================= PAGE 3: RADAR & VIEWER =================
 elif st.session_state.page == "radar":
     show_header()
@@ -575,13 +548,12 @@ elif st.session_state.page == "radar":
     t1, t2, t3 = st.columns([3, 1, 1])
     t1.markdown("<h2 style='color:white; font-family:Chakra Petch;'>Live Optics: Interferometer</h2>", unsafe_allow_html=True)
     if t2.button("🔄 New Sky Sector", use_container_width=True):
-        # NEW SKY SECTOR EXPLANATION: Why, When, Where, How
         st.session_state.planet_x = random.randint(85, 315)
         st.session_state.planet_y = random.randint(85, 315)
         st.session_state.seed = random.randint(1, 99999)
         st.session_state.user_box = None
         st.session_state.is_retry = True
-        st.toast("✨ New Sky Sector generated! A fresh celestial coordinate grid and starseed have been loaded for secondary triage.", icon="🔭")
+        st.toast("✨ New Sky Sector loaded! New coordinate grid and starseed generated.", icon="🚀")
         st.rerun()
     if t3.button("Abort Task", use_container_width=True):
         st.session_state.page = "home"
@@ -614,26 +586,24 @@ elif st.session_state.page == "radar":
         chosen_mode = st.radio("Select Mode", modes, index=modes.index(saved_mode) if saved_mode in modes else 0, horizontal=True, label_visibility="collapsed")
         st.session_state.profiles[user]["last_mode"] = chosen_mode
 
-    # Advanced Astronomical Controls & Frame Management Box with Detailed Educational Guide
     with st.container(border=True):
         ctrl_col_h1, ctrl_col_h2 = st.columns([4, 1])
         ctrl_col_h1.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
         
         with ctrl_col_h2:
-            show_control_guide = st.toggle("📖 Tool Guide", value=False)
+            show_control_guide = st.toggle("📖 Guide & Tooltips", value=False)
 
         if show_control_guide:
             st.markdown("""
-            <div style='background:rgba(0,229,255,0.08); padding:16px; border-radius:8px; border:1px solid #00e5ff; margin-bottom:15px; font-size:0.92rem; color:#e0f7fa;'>
-                <b style='color:#00e5ff;'>🔭 Comprehensive Guide to Observatory Controls:</b><br><br>
-                &bull; <b>Image Scale Algorithm:</b> Controls how pixel photon counts translate to visual shading. 
-                  <i>Linear</i> shows raw proportional brightness. <i>Logarithmic (Log)</i> and <i>Square Root (Sqrt)</i> boost faint background stars so hidden distant planets become visible. <i>Histogram Equalization</i> enhances contrast dynamically.<br><br>
-                &bull; <b>Color Palette (LUT):</b> Color Lookup Tables map intensity values to spectral colors. <i>Inferno/Plasma</i> highlights thermal heat gradients; <i>Viridis/Cividis</i> provides colorblind-friendly contrast; <i>Gray</i> mimics classic astronomical plates.<br><br>
-                &bull; <b>Bias / Contrast Stretch:</b> Clips black and white thresholds to isolate true point sources from background nebular hazes.<br><br>
-                &bull; <b>Region Select Shapes (Box, Circle, Star, Hexagon):</b> Geometrical aperture tools used to bound candidate sources for precise flux integration.<br><br>
-                &bull; <b>View Frames Mode:</b> <i>Single Frame</i> shows one active epoch; <i>Tile Frames</i> displays side-by-side comparison; <i>Fade Blend</i> overlays both epochs simultaneously to spot static vs moving features.<br><br>
-                &bull; <b>WCS Coordinate Analysis Grid:</b> Overlays celestial Right Ascension (RA) and Declination (Dec) coordinate lines.<br><br>
-                &bull; <b>Clear / Reset Frames:</b> Clears canvas annotations and resets active user apertures.
+            <div style='background:rgba(4,12,36,0.98); padding:16px; border-radius:8px; border:1px solid #00e5ff; margin-bottom:15px; font-size:0.92rem; color:#e0f7fa;'>
+                <b style='color:#00e5ff;'>📚 Observatory Controls Guide & Documentation:</b><br>
+                &bull; <b>Image Scale Algorithm (Linear, Log, Sqrt, HistEq):</b> Controls how pixel brightness maps to visual shades. Log and Square Root stretch faint infrared signals so hidden planets become visible.<br>
+                &bull; <b>Color Palette (LUT - Inferno, Viridis, Gray, etc.):</b> Color Lookup Tables highlight thermal gradients and optical density.<br>
+                &bull; <b>Bias / Contrast Stretch:</b> Adjusts black and white clipping points to isolate sources from background noise.<br>
+                &bull; <b>Region Select Shapes (Box, Circle, Star, Hexagon):</b> Astrometric tools for bounding and measuring target apertures.<br>
+                &bull; <b>View Frame Modes (Single, Tile, Fade Blend):</b> Lets you inspect epochs side-by-side or blended.<br>
+                &bull; <b>WCS Coordinate Grid:</b> Overlays celestial Right Ascension (RA) and Declination (Dec) coordinate lines.<br>
+                &bull; <b>Clear / Reset Frames:</b> Flushes active selections and temporary canvas memory.
             </div>
             """, unsafe_allow_html=True)
         
@@ -663,7 +633,6 @@ elif st.session_state.page == "radar":
                 st.session_state.custom_loaded_frames = []
                 st.rerun()
 
-        # Frame Management Section
         st.markdown("<hr style='border-color: rgba(0,229,255,0.2); margin: 10px 0;'>", unsafe_allow_html=True)
         fm_col1, fm_col2 = st.columns([2, 2])
         with fm_col1:
@@ -711,7 +680,6 @@ elif st.session_state.page == "radar":
             source_name = f"IRSA Sample: {preset}"
             f1_raw, f2_raw = make_sky_frames("Hybrid", px, py, p_seed)
 
-    # Display Frames & BLINK FRAMES Comparator
     if f1_raw is not None and f2_raw is not None:
         img1 = scale_image_professional(f1_raw, scale_opt, contrast_val)
         img2 = scale_image_professional(f2_raw, scale_opt, contrast_val)
@@ -721,44 +689,43 @@ elif st.session_state.page == "radar":
         if not st.session_state.blinking:
             st.markdown(f"<p class='card-text'><b>Step 1:</b> Current View Mode: <b>{view_mode}</b>. Compare epochs below and launch blink analysis.</p>", unsafe_allow_html=True)
             
-            if view_mode == "Tile Frames" or view_mode == "Fade Frame":
-                col_a, col_b = st.columns(2)
-                with col_a:
-                    fig1 = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                    fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 (T = 0)", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#000", plot_bgcolor="#000", height=350)
+            with st.container(border=True):
+                if view_mode == "Tile Frames" or view_mode == "Fade Frame":
+                    col_a, col_b = st.columns(2)
+                    with col_a:
+                        fig1 = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
+                        fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 (T = 0)", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
+                        if wcs_overlay:
+                            fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                            fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                        st.plotly_chart(fig1, use_container_width=True)
+                    with col_b:
+                        blend_z = (img1 * 0.5 + img2 * 0.5) if view_mode == "Fade Frame" else img2
+                        fig2 = go.Figure(data=go.Heatmap(z=blend_z, colorscale=cmap_final, showscale=False))
+                        fig2.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 2 / Fade Blend", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
+                        if wcs_overlay:
+                            fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                            fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                        st.plotly_chart(fig2, use_container_width=True)
+                else:
+                    fig_single = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
+                    fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=400)
                     if wcs_overlay:
-                        fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                        fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                    st.plotly_chart(fig1, use_container_width=True)
-                with col_b:
-                    blend_z = (img1 * 0.5 + img2 * 0.5) if view_mode == "Fade Frame" else img2
-                    fig2 = go.Figure(data=go.Heatmap(z=blend_z, colorscale=cmap_final, showscale=False))
-                    fig2.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 2 / Fade Blend", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#000", plot_bgcolor="#000", height=350)
-                    if wcs_overlay:
-                        fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                        fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                    st.plotly_chart(fig2, use_container_width=True)
-            else:
-                fig_single = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1", xaxis=dict(title="X (px)", color="#84ffff"), yaxis=dict(title="Y (px)", color="#84ffff"), paper_bgcolor="#000", plot_bgcolor="#000", height=400)
-                if wcs_overlay:
-                    fig_single.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                    fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                st.plotly_chart(fig_single, use_container_width=True)
+                        fig_single.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                        fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                    st.plotly_chart(fig_single, use_container_width=True)
                 
-            # Launch with an engaging cosmic loading spinner and positive thought to eliminate waiting frustration!
             if st.button("🚨 LAUNCH BLINK FRAMES", use_container_width=True):
-                with st.spinner("✨ Loading your blinking files... Blinking in progress, just a moment! 🔭 \n\n 💡 *'In the Book of the Universe, every star is a word waiting to be read.'*"):
-                    time.sleep(0.4) # Snappy transition
+                with st.spinner("✨ Initializing high-speed interferometry matrix... Aligning SPHEREx channels... Just a moment, cosmic hunter! 🔭"):
+                    time.sleep(0.3)
                 st.session_state.blinking = True
                 st.rerun()
         else:
             st.markdown("<p class='card-text'><b>Step 2:</b> BLINK FRAMES active! Use the selection tool matching your chosen shape to mark the moving anomaly.</p>", unsafe_allow_html=True)
             
-            # --- Professional Data Reduction & Noise Removal Suite with Detailed Breakdown ---
             with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction) — Learn More"):
                 st.markdown("""
-                <div style='background:rgba(0,229,255,0.05); padding:10px; border-radius:6px; margin-bottom:10px; font-size:0.9rem; color:#cfd8dc;'>
+                <div style='background:rgba(4,12,36,0.98); padding:12px; border-radius:6px; margin-bottom:10px; font-size:0.9rem; color:#cfd8dc;'>
                     <b>🔭 What is Data Reduction & Background Subtraction?</b><br>
                     Telescope detectors capture unwanted background glow (starlight scatter, thermal instrument emissions). Background subtraction measures median sky levels and subtracts them to isolate true astronomical point sources.<br>
                     &bull; <b>Wavelet / Median Smoothing Filters:</b> Mathematical algorithms that smooth out high-frequency sensor noise while preserving sharp point-spread functions (PSF) of stars.<br>
@@ -791,9 +758,7 @@ elif st.session_state.page == "radar":
             with c_loop:
                 keep_looping = st.toggle("🔄 AUTO-LOOP BLINK (NON-STOP)", value=False)
             with c_spd:
-                # Dual Control: Range Slider + Exact Number Input Box for Decimal Milliseconds
-                speed_slider = st.slider("Blink Speed Slider (ms):", 10, 2000, 450, 10)
-                speed_ms = st.number_input("Blink Speed (ms) [Exact Control Box]:", min_value=10.0, max_value=5000.0, value=float(speed_slider), step=5.0)
+                speed_ms = st.number_input("Blink Speed (ms) [Exact Control]:", min_value=10.0, max_value=5000.0, value=450.0, step=5.0)
                 st.markdown("<span style='font-size:0.8rem; color:#84ffff;'>ℹ️ <b>Blink Speed (ms):</b> Sets the interval duration in milliseconds between frame switches during BLINK FRAMES.</span>", unsafe_allow_html=True)
             with c_stop:
                 st.write("")
@@ -818,40 +783,41 @@ elif st.session_state.page == "radar":
             }
             active_drag = drag_mode_map.get(region_shape, "select")
 
-            blink_fig = go.Figure(
-                data=[go.Heatmap(z=curr_img, colorscale=cmap_final, showscale=True)],
-                layout=go.Layout(
-                    title=dict(text=f"BLINK FRAMES ({region_shape}) — Active: {ep_name}", font=dict(color="#00e5ff", family="Chakra Petch", size=16)),
-                    xaxis=dict(title="X Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[1]]),
-                    yaxis=dict(title="Y Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[0]]),
-                    paper_bgcolor="#000000", plot_bgcolor="#000000", height=500,
-                    margin=dict(l=40, r=40, t=45, b=40),
-                    dragmode=active_drag,
-                    newshape=dict(line_color='#00e5ff', line_width=3, fillcolor='rgba(0, 229, 255, 0.18)'),
-                    updatemenus=[dict(
-                        type="buttons", showactive=True, x=0.01, y=1.12, direction="left",
-                        buttons=[
-                            dict(label="▶ PLAY BLINK", method="animate", args=[None, dict(frame=dict(duration=speed_ms, redraw=True), fromcurrent=True, mode="immediate")]),
-                            dict(label="⏸ PAUSE", method="animate", args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")])
-                        ]
-                    )]
-                ),
-                frames=frames_list
-            )
+            with st.container(border=True):
+                blink_fig = go.Figure(
+                    data=[go.Heatmap(z=curr_img, colorscale=cmap_final, showscale=True)],
+                    layout=go.Layout(
+                        title=dict(text=f"BLINK FRAMES ({region_shape}) — Active: {ep_name}", font=dict(color="#00e5ff", family="Chakra Petch", size=16)),
+                        xaxis=dict(title="X Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[1]]),
+                        yaxis=dict(title="Y Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[0]]),
+                        paper_bgcolor="#010409", plot_bgcolor="#010409", height=500,
+                        margin=dict(l=40, r=40, t=45, b=40),
+                        dragmode=active_drag,
+                        newshape=dict(line_color='#00e5ff', line_width=3, fillcolor='rgba(0, 229, 255, 0.18)'),
+                        updatemenus=[dict(
+                            type="buttons", showactive=True, x=0.01, y=1.12, direction="left",
+                            buttons=[
+                                dict(label="▶ PLAY BLINK", method="animate", args=[None, dict(frame=dict(duration=speed_ms, redraw=True), fromcurrent=True, mode="immediate")]),
+                                dict(label="⏸ PAUSE", method="animate", args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")])
+                            ]
+                        )]
+                    ),
+                    frames=frames_list
+                )
 
-            if wcs_overlay:
-                blink_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
-                blink_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
+                if wcs_overlay:
+                    blink_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
+                    blink_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.25)')
 
-            if st.session_state.user_box is not None:
-                bx0, bx1, by0, by1 = st.session_state.user_box
-                blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#00e5ff", width=3), fillcolor="rgba(0,229,255,0.18)")
+                if st.session_state.user_box is not None:
+                    bx0, bx1, by0, by1 = st.session_state.user_box
+                    blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#00e5ff", width=3), fillcolor="rgba(0,229,255,0.18)")
 
-            event_data = st.plotly_chart(
-                blink_fig, use_container_width=True, key="blink_chart",
-                on_select="rerun", selection_mode=("box", "lasso"),
-                config={'scrollZoom': True, 'displayModeBar': True, 'modeBarButtonsToAdd': ['select2d', 'lasso2d', 'drawcircle', 'drawrect', 'eraseshape']}
-            )
+                event_data = st.plotly_chart(
+                    blink_fig, use_container_width=True, key="blink_chart",
+                    on_select="rerun", selection_mode=("box", "lasso"),
+                    config={'scrollZoom': True, 'displayModeBar': True, 'modeBarButtonsToAdd': ['select2d', 'lasso2d', 'drawcircle', 'drawrect', 'eraseshape']}
+                )
 
             if event_data and "selection" in event_data:
                 sel = event_data["selection"]
@@ -867,7 +833,6 @@ elif st.session_state.page == "radar":
                 st.session_state.frame_step += 1
                 st.rerun()
 
-        # Target Lock Section
         with st.container(border=True):
             st.markdown("<h4 style='color:#00e5ff; font-family:Chakra Petch; margin-top:0;'>🎯 LOCK TARGET COORDINATES</h4>", unsafe_allow_html=True)
             if st.session_state.user_box is not None:
@@ -917,11 +882,9 @@ elif st.session_state.page == "radar":
                     st.session_state.page = "analysis"
                     st.rerun()
 
-
 # ================= PAGE 4: SCIENTIFIC RESULTS =================
 elif st.session_state.page == "analysis":
     show_header()
-    
     user = st.session_state.user
     res = st.session_state.result_data
     
@@ -958,7 +921,6 @@ elif st.session_state.page == "analysis":
         st.markdown("<h3 style='color:#b388ff; font-family:Chakra Petch;'>📡 Doppler Shift Wave</h3>", unsafe_allow_html=True)
         w_col = "#ff1744" if "Red" in shift_txt else ("#00e5ff" if "Blue" in shift_txt else "#777777")
         w_freq = 0.8 if "Red" in shift_txt else (3.0 if "Blue" in shift_txt else 0.2)
-        
         xw = np.linspace(0, 4 * np.pi, 100)
         yw = np.sin(xw * w_freq)
         fig_w = go.Figure(go.Scatter(x=xw, y=yw, mode='lines', line=dict(color=w_col, width=3)))
@@ -978,8 +940,7 @@ elif st.session_state.page == "analysis":
         </div>
         """, unsafe_allow_html=True)
         wav_data = make_audio_wav(res["spectrum"], shift_txt)
-        if wav_data:
-            st.audio(wav_data, format='audio/wav')
+        if wav_data: st.audio(wav_data, format='audio/wav')
 
     st.markdown("<hr style='border-color: rgba(0,229,255,0.2);'>", unsafe_allow_html=True)
 
@@ -1013,6 +974,7 @@ elif st.session_state.page == "analysis":
                 st.rerun()
     else:
         st.markdown("<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#ff1744;'>FAILED (0%)</span></h3>", unsafe_allow_html=True)
+    
         b_ret, b_hm = st.columns(2)
         with b_ret:
             if st.button("🔄 Try Again", use_container_width=True):
