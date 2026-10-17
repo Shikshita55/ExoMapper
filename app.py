@@ -14,7 +14,7 @@ import struct
 st.set_page_config(page_title="ExoMapper — NASA Space Apps Challenge 2026", layout="wide", initial_sidebar_state="collapsed")
 
 
-# --- CSS & Ultra-Creative Animations ---
+# --- CSS & Ultra-Creative Animations (Fixed Chart Transparency) ---
 def load_css():
     st.markdown("""
     <style>
@@ -82,19 +82,27 @@ def load_css():
     }
     
     .info-card {
-        background: rgba(4, 12, 30, 0.88); border: 1px solid rgba(0, 229, 255, 0.35); 
+        background: rgba(4, 12, 30, 0.92); border: 1px solid rgba(0, 229, 255, 0.35); 
         padding: 22px; border-radius: 12px; margin-bottom: 20px;
         backdrop-filter: blur(10px);
-        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.8);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85);
     }
     
     div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(4, 12, 30, 0.9) !important;
+        background: rgba(4, 12, 30, 0.95) !important;
         border: 1px solid rgba(0, 229, 255, 0.45) !important;
         border-radius: 12px !important;
         padding: 20px !important;
         margin-bottom: 20px !important;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.85) !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.9) !important;
+    }
+
+    /* Force Solid Opaque Background for Plotly Charts so wallpaper never bleeds through */
+    .stPlotlyChart {
+        background-color: #000000 !important;
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid rgba(0, 229, 255, 0.3);
     }
     
     .card-text { font-size: 1.12rem; line-height: 1.65; color: #d0e8ff; }
@@ -111,7 +119,6 @@ def load_css():
         box-shadow: 0 0 20px rgba(255,23,68,0.3);
     }
     
-    /* Professional Dark Blue / Cyan Button Theme (No harsh white flash) */
     div.stButton > button {
         background: linear-gradient(135deg, rgba(0, 102, 255, 0.2), rgba(0, 229, 255, 0.2)); 
         color: #00e5ff; border: 1.5px solid #00e5ff;
@@ -183,7 +190,7 @@ def get_time_str():
     return ist.strftime("%d %b %Y | %I:%M %p IST")
 
 
-# --- Cached Science & Image Functions for Zero Lag ---
+# --- Cached Science & Astronomical Image Functions ---
 @st.cache_data
 def make_sky_frames(mode, px, py, seed_val):
     rng = np.random.default_rng(seed_val)
@@ -568,13 +575,13 @@ elif st.session_state.page == "radar":
     t1, t2, t3 = st.columns([3, 1, 1])
     t1.markdown("<h2 style='color:white; font-family:Chakra Petch;'>Live Optics: Interferometer</h2>", unsafe_allow_html=True)
     if t2.button("🔄 New Sky Sector", use_container_width=True):
-        # NEW SKY SECTOR EXPLANATION: Generates fresh random spatial sector with new coordinates & target seed
+        # NEW SKY SECTOR EXPLANATION: Why, When, Where, How
         st.session_state.planet_x = random.randint(85, 315)
         st.session_state.planet_y = random.randint(85, 315)
         st.session_state.seed = random.randint(1, 99999)
         st.session_state.user_box = None
         st.session_state.is_retry = True
-        st.toast("✨ New Sky Sector loaded! New coordinate grid and starseed generated.", icon="🚀")
+        st.toast("✨ New Sky Sector generated! A fresh celestial coordinate grid and starseed have been loaded for secondary triage.", icon="🔭")
         st.rerun()
     if t3.button("Abort Task", use_container_width=True):
         st.session_state.page = "home"
@@ -607,26 +614,26 @@ elif st.session_state.page == "radar":
         chosen_mode = st.radio("Select Mode", modes, index=modes.index(saved_mode) if saved_mode in modes else 0, horizontal=True, label_visibility="collapsed")
         st.session_state.profiles[user]["last_mode"] = chosen_mode
 
-    # Advanced Astronomical Controls & Frame Management Box with Info Guide Button
+    # Advanced Astronomical Controls & Frame Management Box with Detailed Educational Guide
     with st.container(border=True):
         ctrl_col_h1, ctrl_col_h2 = st.columns([4, 1])
         ctrl_col_h1.markdown("<h4 style='color:#b388ff; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
         
-        # Guide / Info Button on Right Side
         with ctrl_col_h2:
-            show_control_guide = st.toggle("📖 Guide & Tooltips", value=False)
+            show_control_guide = st.toggle("📖 Tool Guide", value=False)
 
         if show_control_guide:
             st.markdown("""
-            <div style='background:rgba(0,229,255,0.08); padding:14px; border-radius:8px; border:1px solid #00e5ff; margin-bottom:15px; font-size:0.92rem; color:#e0f7fa;'>
-                <b style='color:#00e5ff;'>📚 Observatory Controls Guide & Documentation:</b><br>
-                &bull; <b>Image Scale Algorithm (Linear, Log, Sqrt, HistEq):</b> Controls how pixel brightness maps to visual shades. Log and Square Root stretch faint infrared signals so hidden planets become visible.<br>
-                &bull; <b>Color Palette (LUT - Inferno, Viridis, Gray, etc.):</b> Color Lookup Tables highlight thermal gradients and optical density.<br>
-                &bull; <b>Bias / Contrast Stretch:</b> Adjusts black and white clipping points to isolate sources from background noise.<br>
-                &bull; <b>Region Select Shapes (Box, Circle, Star, Hexagon):</b> Astrometric tools for bounding and measuring target apertures.<br>
-                &bull; <b>View Frame Modes (Single, Tile, Fade Blend):</b> Lets you inspect epochs side-by-side or blended.<br>
-                &bull; <b>WCS Coordinate Grid:</b> Overlays celestial Right Ascension (RA) and Declination (Dec) coordinate lines.<br>
-                &bull; <b>Clear / Reset Frames:</b> Flushes active selections and temporary canvas memory.
+            <div style='background:rgba(0,229,255,0.08); padding:16px; border-radius:8px; border:1px solid #00e5ff; margin-bottom:15px; font-size:0.92rem; color:#e0f7fa;'>
+                <b style='color:#00e5ff;'>🔭 Comprehensive Guide to Observatory Controls:</b><br><br>
+                &bull; <b>Image Scale Algorithm:</b> Controls how pixel photon counts translate to visual shading. 
+                  <i>Linear</i> shows raw proportional brightness. <i>Logarithmic (Log)</i> and <i>Square Root (Sqrt)</i> boost faint background stars so hidden distant planets become visible. <i>Histogram Equalization</i> enhances contrast dynamically.<br><br>
+                &bull; <b>Color Palette (LUT):</b> Color Lookup Tables map intensity values to spectral colors. <i>Inferno/Plasma</i> highlights thermal heat gradients; <i>Viridis/Cividis</i> provides colorblind-friendly contrast; <i>Gray</i> mimics classic astronomical plates.<br><br>
+                &bull; <b>Bias / Contrast Stretch:</b> Clips black and white thresholds to isolate true point sources from background nebular hazes.<br><br>
+                &bull; <b>Region Select Shapes (Box, Circle, Star, Hexagon):</b> Geometrical aperture tools used to bound candidate sources for precise flux integration.<br><br>
+                &bull; <b>View Frames Mode:</b> <i>Single Frame</i> shows one active epoch; <i>Tile Frames</i> displays side-by-side comparison; <i>Fade Blend</i> overlays both epochs simultaneously to spot static vs moving features.<br><br>
+                &bull; <b>WCS Coordinate Analysis Grid:</b> Overlays celestial Right Ascension (RA) and Declination (Dec) coordinate lines.<br><br>
+                &bull; <b>Clear / Reset Frames:</b> Clears canvas annotations and resets active user apertures.
             </div>
             """, unsafe_allow_html=True)
         
@@ -656,7 +663,7 @@ elif st.session_state.page == "radar":
                 st.session_state.custom_loaded_frames = []
                 st.rerun()
 
-        # Frame Management & Custom Frame Addition Section
+        # Frame Management Section
         st.markdown("<hr style='border-color: rgba(0,229,255,0.2); margin: 10px 0;'>", unsafe_allow_html=True)
         fm_col1, fm_col2 = st.columns([2, 2])
         with fm_col1:
@@ -739,16 +746,16 @@ elif st.session_state.page == "radar":
                     fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(0,229,255,0.2)')
                 st.plotly_chart(fig_single, use_container_width=True)
                 
-            # Launch with a sleek loading spinner and positive cosmic encouragement as requested!
+            # Launch with an engaging cosmic loading spinner and positive thought to eliminate waiting frustration!
             if st.button("🚨 LAUNCH BLINK FRAMES", use_container_width=True):
-                with st.spinner("✨ Initializing interferometry matrix... Aligning SPHEREx infrared channels... Just a moment, cosmic hunter! 🔭"):
-                    time.sleep(0.6) # Instant smooth transition
+                with st.spinner("✨ Loading your blinking files... Blinking in progress, just a moment! 🔭 \n\n 💡 *'In the Book of the Universe, every star is a word waiting to be read.'*"):
+                    time.sleep(0.4) # Snappy transition
                 st.session_state.blinking = True
                 st.rerun()
         else:
             st.markdown("<p class='card-text'><b>Step 2:</b> BLINK FRAMES active! Use the selection tool matching your chosen shape to mark the moving anomaly.</p>", unsafe_allow_html=True)
             
-            # --- Professional Data Reduction & Noise Removal Suite with Educational Breakdown ---
+            # --- Professional Data Reduction & Noise Removal Suite with Detailed Breakdown ---
             with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction) — Learn More"):
                 st.markdown("""
                 <div style='background:rgba(0,229,255,0.05); padding:10px; border-radius:6px; margin-bottom:10px; font-size:0.9rem; color:#cfd8dc;'>
@@ -784,8 +791,9 @@ elif st.session_state.page == "radar":
             with c_loop:
                 keep_looping = st.toggle("🔄 AUTO-LOOP BLINK (NON-STOP)", value=False)
             with c_spd:
-                # FIXED: Dual control - Slider plus exact number input box for decimal millisecond speeds!
-                speed_ms = st.number_input("Blink Speed (ms) [Exact Control]:", min_value=10.0, max_value=5000.0, value=450.0, step=5.0)
+                # Dual Control: Range Slider + Exact Number Input Box for Decimal Milliseconds
+                speed_slider = st.slider("Blink Speed Slider (ms):", 10, 2000, 450, 10)
+                speed_ms = st.number_input("Blink Speed (ms) [Exact Control Box]:", min_value=10.0, max_value=5000.0, value=float(speed_slider), step=5.0)
                 st.markdown("<span style='font-size:0.8rem; color:#84ffff;'>ℹ️ <b>Blink Speed (ms):</b> Sets the interval duration in milliseconds between frame switches during BLINK FRAMES.</span>", unsafe_allow_html=True)
             with c_stop:
                 st.write("")
@@ -816,7 +824,7 @@ elif st.session_state.page == "radar":
                     title=dict(text=f"BLINK FRAMES ({region_shape}) — Active: {ep_name}", font=dict(color="#00e5ff", family="Chakra Petch", size=16)),
                     xaxis=dict(title="X Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[1]]),
                     yaxis=dict(title="Y Axis (Pixels)", color="#84ffff", range=[0, f1_raw.shape[0]]),
-                    paper_bgcolor="#010409", plot_bgcolor="#010409", height=500,
+                    paper_bgcolor="#000000", plot_bgcolor="#000000", height=500,
                     margin=dict(l=40, r=40, t=45, b=40),
                     dragmode=active_drag,
                     newshape=dict(line_color='#00e5ff', line_width=3, fillcolor='rgba(0, 229, 255, 0.18)'),
