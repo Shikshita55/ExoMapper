@@ -26,7 +26,7 @@ def load_css():
         background-color: #010409;
         background-image: 
             radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.3), transparent 45%),
-            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.24), transparent 50%),
+            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.22), transparent 50%),
             radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.98), transparent 95%),
             url("https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=3000&auto=format&fit=crop");
         background-size: cover;
@@ -34,6 +34,15 @@ def load_css():
         background-position: center;
         color: #f1f5f9;
         font-family: 'Rajdhani', sans-serif;
+    }
+
+    @keyframes morphFadeIn {
+        0% { opacity: 0; transform: translateY(12px) scale(0.98); }
+        100% { opacity: 1; transform: translateY(0px) scale(1.0); }
+    }
+
+    .morph-container {
+        animation: morphFadeIn 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
     @keyframes slideUpBanner {
@@ -100,21 +109,21 @@ def load_css():
         box-shadow: 0 12px 35px rgba(0,0,0,0.9) !important;
     }
 
-    /* --- PRO-LEVEL DROPDOWN & INPUT CONTRAST FIX --- */
+    /* --- PRO-LEVEL DROPDOWN & INPUT CONTRAST FIX (NO BLINDING WHITE) --- */
     div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .streamlit-expanderHeader {
-        background-color: #0b1329 !important;
+        background-color: #040c24 !important;
         color: #38bdf8 !important;
         border-color: rgba(56, 189, 248, 0.5) !important;
     }
     div[data-baseweb="select"] span, div[data-baseweb="menu"] div, div[data-baseweb="popover"] div {
         color: #f1f5f9 !important;
-        background-color: #0b1329 !important;
+        background-color: #040c24 !important;
     }
     div[data-baseweb="select"]:hover span, div[data-baseweb="select"] div:hover {
         color: #2dd4bf !important;
     }
     .stTextInput input, .stNumberInput input {
-        background-color: #0b1329 !important;
+        background-color: #040c24 !important;
         color: #2dd4bf !important;
         border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
     }
@@ -197,17 +206,16 @@ def show_header():
     </div>
     """, unsafe_allow_html=True)
 
-def get_time_str():
-    # Active worldwide time format (IST / UTC localized)
+def get_active_time_str():
+    # Active worldwide time format (UTC localized with IST conversion for student team)
     utc_now = datetime.utcnow()
     ist_now = utc_now + timedelta(hours=5, minutes=30)
     return ist_now.strftime("%d %b %Y | %I:%M %p IST")
 
-# Dynamic Space Trivia List for Loading Screens
 TRIVIA_LIST = [
     "🔭 'Did you know?' NASA's SPHEREx telescope maps the entire sky in 102 infrared wavelength bands to measure water ice across galaxies!",
     "🪐 'Did you know?' Planet X (or Planet Nine) is theorized to orbit our Sun once every 10,000 to 20,000 years!",
-    "✨ 'Did you know?' Multi-epoch temporal comparison allows astronomers to spot moving stars and planets by measuring tiny pixel shifts over 6 months.",
+    "✨ 'Did you know?' Multi-epoch temporal comparison allows astronomers to spot moving stars and planets by measuring tiny pixel shifts over baseline intervals $(t_0, t_0 + \Delta t)$ where $\Delta t = 0.5\text{ yr}$.",
     "📡 'Did you know?' Analog-to-Digital Units (ADU) quantify photon counts captured by space CCD sensors into precise radiant flux measurements."
 ]
 
@@ -385,10 +393,9 @@ if time.time() - st.session_state.last_active_time > 1200:
     st.cache_data.clear()
     st.session_state.last_active_time = time.time()
 
-# Page Routing
 if st.session_state.page == "login":
-    st.markdown('<div class="startup-banner">🚀 Official Entry: NASA Space Apps Challenge 2026</div>', unsafe_allow_html=True)
-    st.markdown("<div class='main-title'>ExoMapper</div>", unsafe_allow_html=True)
+    st.markdown('<div class="startup-banner">🚀 NASA Space Apps Challenge 2026 — Official Entry</div>', unsafe_allow_html=True)
+    st.markdown("<div class='main-title morph-container'>ExoMapper</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>THE PLANET X HUNTER</div>", unsafe_allow_html=True)
     
     c1, c2, c3 = st.columns([1, 2, 1])
@@ -408,7 +415,6 @@ if st.session_state.page == "login":
                     }
                 st.session_state.score = st.session_state.profiles[clean_name]["score"]
                 
-                # Check if tour was seen
                 if not st.session_state.tour_seen:
                     st.session_state.page = "tour"
                 else:
@@ -425,21 +431,21 @@ elif st.session_state.page == "tour":
     t_c1, t_c2, t_c3 = st.columns(3)
     with t_c1:
         st.markdown("""
-        <div class="info-card">
+        <div class="info-card morph-container">
             <h4 style='color:#38bdf8;'>1. Uplink Source & FITS</h4>
             <p class='card-text'>Select your data feed—either official NASA challenge feeds, custom uploaded FITS files, or Caltech IRSA archival cutouts.</p>
         </div>
         """, unsafe_allow_html=True)
     with t_c2:
         st.markdown("""
-        <div class="info-card" style="border-color:#f59e0b;">
+        <div class="info-card morph-container" style="border-color:#f59e0b;">
             <h4 style='color:#f59e0b;'>2. BLINK FRAMES Comparator</h4>
-            <p class='card-text'>Compare two time-separated observation epochs ($T=0$ and $T+6$ months) to spot moving planetary anomalies.</p>
+            <p class='card-text'>Compare two time-separated observation epochs $(t_0, t_0 + \Delta t)$ where $\Delta t = 0.5\text{ yr}$ to spot moving planetary anomalies.</p>
         </div>
         """, unsafe_allow_html=True)
     with t_c3:
         st.markdown("""
-        <div class="info-card" style="border-color:#c084fc;">
+        <div class="info-card morph-container" style="border-color:#c084fc;">
             <h4 style='color:#c084fc;'>3. Target Photometry & Log</h4>
             <p class='card-text'>Draw selection boxes to lock coordinates, extract atmospheric spectra, calculate Doppler shifts, and log your discoveries.</p>
         </div>
@@ -492,7 +498,7 @@ elif st.session_state.page == "home":
         st.markdown("""
         <div class="info-card">
             <h3 style='color:#38bdf8; font-family:"Chakra Petch";'>🌍 Mission Objective & Role</h3>
-            <p class='card-text'>Welcome to <i>ExoMapper</i> (NASA Space Apps Challenge 2026)! Our workstation compares infrared observations taken across different time epochs ($T=0$ and $T+6$ months) to highlight celestial objects that change position or brightness, helping researchers identify planetary candidates for further investigation.</p>
+            <p class='card-text'>Welcome to <i>ExoMapper</i> (NASA Space Apps Challenge 2026)! Our workstation compares infrared observations taken across distinct orbital observation epochs $(t_0, t_0 + \Delta t)$ where $\Delta t = 0.5\text{ yr}$ to isolate celestial objects that change position or brightness, helping researchers identify planetary candidates for further investigation.</p>
         </div>
         <div class="info-card" style="border-color: #f59e0b;">
             <h3 style='color:#f59e0b; font-family:"Chakra Petch";'>🔭 About SPHEREx Mission</h3>
@@ -526,7 +532,7 @@ elif st.session_state.page == "home":
         
         faq_list = [
             ("What is the main goal of ExoMapper?", "To assist NASA's SPHEREx mission by comparing multi-epoch infrared FITS files to identify moving Planet X candidates."),
-            ("How does the BLINK FRAMES feature work?", "It merges two time-separated observation epochs ($T=0$ and $T+6$ months) and alternates between them to highlight proper motion."),
+            ("How does the BLINK FRAMES feature work?", "It aligns multi-epoch baseline frames taken at $t_0$ and $t_0 + \Delta t$ ($\Delta t = 0.5\text{ yr}$) and alternates between them to measure stellar proper motion vectors."),
             ("How do I score points & what are the penalties?", "Precision Target Lock earns +150 to +200 Pts (Base + SNR Bonus), while False Targets / Noise Apertures incur a strict -75 Pts penalty."),
             ("What are WCS Grids?", "World Coordinate System overlays that display celestial Right Ascension (RA) and Declination (Dec) coordinates across the sky sector."),
             ("How does Data Reduction (Noise Removal) work?", "It applies background subtraction algorithms to filter out cosmic ray hits and sensor read noise, raising the signal-to-noise ratio.")
@@ -545,29 +551,37 @@ elif st.session_state.page == "home":
         st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Must Know: Advanced Astrometric Concepts & Physics Principles</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Explore the physical definitions and mathematical principles powering professional space exploration:</p>", unsafe_allow_html=True)
         
-        m_c1, m_c2, m_c3 = st.columns(3)
+        m_c1, m_c2, m_c3, m_c4 = st.columns(4)
         with m_c1:
             st.markdown("""
-            <div style='background:rgba(56,189,248,0.06); padding:14px; border-radius:8px; border:1px solid rgba(56,189,248,0.25); height:100%;'>
-                <b style='color:#38bdf8; font-size:1.1rem;'>1. RA, Dec & Proper Motion</b><br><br>
-                <span style='font-size:0.95rem; color:#cbd5e1;'><b>RA (Right Ascension)</b> & <b>Dec (Declination)</b> are celestial longitude and latitude. <b>Proper Motion</b> is the apparent angular motion of a star across the sky over time due to true space velocity.</span><br><br>
-                <a href="https://science.nasa.gov/astrophysics/focus-areas/exoplanet-exploration" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.8rem;">NASA Astrometry Guide</a>
+            <div style='background:rgba(56,189,248,0.06); padding:12px; border-radius:8px; border:1px solid rgba(56,189,248,0.25); height:100%;'>
+                <b style='color:#38bdf8; font-size:1.05rem;'>1. RA & Dec (WCS)</b><br><br>
+                <span style='font-size:0.9rem; color:#cbd5e1;'><b>Right Ascension (RA)</b> & <b>Declination (Dec)</b> are celestial longitude and latitude. Think of them as the cosmic GPS coordinates that map every star in the sky!</span><br><br>
+                <a href="https://science.nasa.gov/astrophysics/focus-areas/exoplanet-exploration" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.78rem;">NASA Astrometry Guide</a>
             </div>
             """, unsafe_allow_html=True)
         with m_c2:
             st.markdown("""
-            <div style='background:rgba(245,158,11,0.06); padding:14px; border-radius:8px; border:1px solid rgba(245,158,11,0.25); height:100%;'>
-                <b style='color:#f59e0b; font-size:1.1rem;'>2. Flux, ADU & Photometry</b><br><br>
-                <span style='font-size:0.95rem; color:#cbd5e1;'><b>ADU (Analog-to-Digital Units)</b> measure raw sensor counts. <b>Aperture Photometry</b> sums these pixel counts inside a boundary to calculate radiant radiant flux (brightness).</span><br><br>
-                <a href="https://irsa.ipac.caltech.edu/" target="_blank" class="ext-link" style="background:#f59e0b; padding:4px 10px; font-size:0.8rem;">Caltech IRSA Portal</a>
+            <div style='background:rgba(245,158,11,0.06); padding:12px; border-radius:8px; border:1px solid rgba(245,158,11,0.25); height:100%;'>
+                <b style='color:#f59e0b; font-size:1.05rem;'>2. Proper & Absolute Motion</b><br><br>
+                <span style='font-size:0.9rem; color:#cbd5e1;'><b>Proper Motion</b> is the apparent angular shift of nearby stars across the sky over 6 months. <b>Absolute Motion</b> measures their true space velocity in 3D.</span><br><br>
+                <a href="https://imagine.gsfc.nasa.gov/" target="_blank" class="ext-link" style="background:#f59e0b; padding:4px 10px; font-size:0.78rem;">NASA Universe Portal</a>
             </div>
             """, unsafe_allow_html=True)
         with m_c3:
             st.markdown("""
-            <div style='background:rgba(192,132,252,0.06); padding:14px; border-radius:8px; border:1px solid rgba(192,132,252,0.25); height:100%;'>
-                <b style='color:#c084fc; font-size:1.1rem;'>3. Doppler & Sonification</b><br><br>
-                <span style='font-size:0.95rem; color:#cbd5e1;'><b>Doppler Effect</b> shifts light wavelengths when bodies move. <b>Sonification</b> converts spectral emission data into audible frequencies for human analysis.</span><br><br>
-                <a href="https://imagine.gsfc.nasa.gov/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff; padding:4px 10px; font-size:0.8rem;">NASA Universe Portal</a>
+            <div style='background:rgba(192,132,252,0.06); padding:12px; border-radius:8px; border:1px solid rgba(192,132,252,0.25); height:100%;'>
+                <b style='color:#c084fc; font-size:1.05rem;'>3. Flux & ADU</b><br><br>
+                <span style='font-size:0.9rem; color:#cbd5e1;'><b>ADU (Analog-to-Digital Units)</b> count raw photons captured by telescope sensors. <b>Flux</b> is the total radiant energy flowing through an aperture area.</span><br><br>
+                <a href="https://irsa.ipac.caltech.edu/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff; padding:4px 10px; font-size:0.78rem;">Caltech IRSA Portal</a>
+            </div>
+            """, unsafe_allow_html=True)
+        with m_c4:
+            st.markdown("""
+            <div style='background:rgba(45,212,191,0.06); padding:12px; border-radius:8px; border:1px solid rgba(45,212,191,0.25); height:100%;'>
+                <b style='color:#2dd4bf; font-size:1.05rem;'>4. Doppler & Sonification</b><br><br>
+                <span style='font-size:0.9rem; color:#cbd5e1;'><b>Doppler Effect</b> shifts light wavelengths when bodies move. <b>Sonification</b> converts spectral emission data into audible sound frequencies for human analysis.</span><br><br>
+                <a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="background:#0d9488; color:#fff; padding:4px 10px; font-size:0.78rem;">SPHEREx Sound Portal</a>
             </div>
             """, unsafe_allow_html=True)
 
@@ -607,7 +621,6 @@ elif st.session_state.page == "radar":
     t1, t2, t3 = st.columns([3, 1, 1])
     t1.markdown("<h2 style='color:white; font-family:Chakra Petch;'>Live Optics: Interferometer</h2>", unsafe_allow_html=True)
     if t2.button("🔄 New Sky Sector", use_container_width=True):
-        # NEW SKY SECTOR: Generates a real deterministic spatial sector with new coordinates & target seed
         st.session_state.planet_x = random.randint(85, 315)
         st.session_state.planet_y = random.randint(85, 315)
         st.session_state.seed = random.randint(1, 99999)
@@ -753,7 +766,7 @@ elif st.session_state.page == "radar":
                     col_a, col_b = st.columns(2)
                     with col_a:
                         fig1 = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                        fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 (T = 0)", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
+                        fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 (t_0)", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
                         if wcs_overlay:
                             fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
                             fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
@@ -768,7 +781,7 @@ elif st.session_state.page == "radar":
                         st.plotly_chart(fig2, use_container_width=True)
                 else:
                     fig_single = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                    fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=400)
+                    fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1 (t_0)", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=400)
                     if wcs_overlay:
                         fig_single.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
                         fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
@@ -839,7 +852,7 @@ elif st.session_state.page == "radar":
             ]
             
             curr_img = img1 if st.session_state.frame_step % 2 == 0 else img2
-            ep_name = "EPOCH 1" if st.session_state.frame_step % 2 == 0 else "EPOCH 2"
+            ep_name = "Epoch 1 (t_0)" if st.session_state.frame_step % 2 == 0 else "Epoch 2 (t_0 + \u0394t)"
 
             drag_mode_map = {
                 "Rectangle / Box": "select",
@@ -878,7 +891,7 @@ elif st.session_state.page == "radar":
 
                 if st.session_state.user_box is not None:
                     bx0, bx1, by0, by1 = st.session_state.user_box
-                    blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#38bdf8", width=3), fillcolor="rgba(56,189,248,0.18)")
+                    blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#38bdf8", width=3), fillcolor="rgba(56, 189, 248, 0.18)")
 
                 event_data = st.plotly_chart(
                     blink_fig, use_container_width=True, key="blink_chart",
@@ -909,7 +922,6 @@ elif st.session_state.page == "radar":
         with st.container(border=True):
             st.markdown("<h4 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>🎯 LOCK TARGET COORDINATES & APERTURE PHOTOMETRY</h4>", unsafe_allow_html=True)
             
-            # Automatic syncing if drawn on chart
             def_x = st.session_state.get('auto_x', 200)
             def_y = st.session_state.get('auto_y', 200)
             def_r = max(4, st.session_state.get('auto_r', 12))
@@ -941,7 +953,7 @@ elif st.session_state.page == "radar":
                     user_logs = st.session_state.profiles[user]["logs"]
                     user_logs.append({
                         "Scan #": len(user_logs) + 1,
-                        "Timestamp": get_time_str(),
+                        "Timestamp": get_active_time_str(),
                         "Uplink Mode": chosen_mode,
                         "FITS Source": source_name,
                         "Attempt Type": "Retry Scan" if st.session_state.is_retry else "First Scan",
