@@ -1,3 +1,9 @@
+# ==============================================================================
+# EXOMAPPER: THE PLANET X HUNTER — INTERNATIONAL SUPERVISORY EDITION
+# Official Entry: NASA Space Apps Challenge 2026
+# Supervisory Architecture & M.Sc. Astrometric Pipeline
+# ==============================================================================
+
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -17,6 +23,7 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
+# --- Supervisory CSS & Cyber-Astrophysics UI Framework ---
 def load_css():
     st.markdown("""
     <style>
@@ -25,8 +32,8 @@ def load_css():
     .stApp {
         background-color: #010409;
         background-image: 
-            radial-gradient(circle at 10% 20%, rgba(0, 102, 255, 0.3), transparent 45%),
-            radial-gradient(circle at 90% 80%, rgba(0, 229, 255, 0.22), transparent 50%),
+            radial-gradient(circle at 12% 25%, rgba(0, 102, 255, 0.35), transparent 48%),
+            radial-gradient(circle at 88% 82%, rgba(0, 229, 255, 0.28), transparent 52%),
             radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.98), transparent 95%),
             url("https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=3000&auto=format&fit=crop");
         background-size: cover;
@@ -44,15 +51,15 @@ def load_css():
 
     .startup-banner {
         text-align: center; font-family: 'Chakra Petch', sans-serif; font-size: 1.4rem;
-        color: #2dd4bf; background: rgba(15, 23, 42, 0.9); border: 2px solid #38bdf8;
+        color: #2dd4bf; background: rgba(15, 23, 42, 0.92); border: 2px solid #38bdf8;
         padding: 18px; border-radius: 10px; margin-bottom: 30px; letter-spacing: 3px;
-        box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
+        box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
         animation: slideUpBanner 2.5s ease-in-out forwards;
     }
 
     .global-challenge-tag {
         text-align: center; font-family: 'Space Mono', monospace; font-size: 0.92rem;
-        color: #38bdf8; background: rgba(15, 23, 42, 0.85); border-bottom: 1.5px solid rgba(56, 189, 248, 0.3);
+        color: #38bdf8; background: rgba(15, 23, 42, 0.88); border-bottom: 1.5px solid rgba(56, 189, 248, 0.35);
         padding: 8px; margin-bottom: 25px; letter-spacing: 2.5px; text-transform: uppercase;
     }
 
@@ -85,7 +92,7 @@ def load_css():
     }
     
     .info-card {
-        background: rgba(11, 19, 41, 0.95); border: 1.5px solid rgba(56, 189, 248, 0.35); 
+        background: rgba(11, 19, 41, 0.96); border: 1.5px solid rgba(56, 189, 248, 0.38); 
         padding: 24px; border-radius: 14px; margin-bottom: 22px;
         backdrop-filter: blur(14px);
         box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85);
@@ -100,7 +107,7 @@ def load_css():
         box-shadow: 0 12px 35px rgba(0,0,0,0.9) !important;
     }
 
-    /* --- FIXING STREAMLIT WHITE BARS & DROPDOWN TEXT COLORS --- */
+    /* --- SECURE DARK THEME FOR DROPDOWNS & INPUTS (NO WHITE FLASH) --- */
     div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .streamlit-expanderHeader {
         background-color: #040c24 !important;
         color: #38bdf8 !important;
@@ -376,7 +383,7 @@ load_css()
 setup_session()
 
 if st.session_state.page == "login":
-    st.markdown('<div class="startup-banner">🚀 NASA Space Apps Challenge 2026 — Official Entry</div>', unsafe_allow_html=True)
+    st.markdown('<div class="startup-banner">🚀 NASA Space Apps Challenge 2026 — Official Supervisory Entry</div>', unsafe_allow_html=True)
     st.markdown("<div class='main-title'>ExoMapper</div>", unsafe_allow_html=True)
     st.markdown("<div class='sub-title'>THE PLANET X HUNTER</div>", unsafe_allow_html=True)
     
