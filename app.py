@@ -100,6 +100,7 @@ def load_css():
         box-shadow: 0 12px 35px rgba(0,0,0,0.9) !important;
     }
 
+    /* --- FIXING STREAMLIT WHITE BARS & DROPDOWN TEXT COLORS --- */
     div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .streamlit-expanderHeader {
         background-color: #040c24 !important;
         color: #38bdf8 !important;
@@ -488,12 +489,10 @@ elif st.session_state.page == "home":
             with st.expander(f"📌 {q}"):
                 st.write(a)
 
-    # --- MUST KNOW: ADVANCED ASTROMETRIC CONCEPTS & LIVE AUTOMATED LAB SIMULATIONS ---
     with st.container(border=True):
         st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Must Know: Advanced Astrometric Concepts & Live Automated Lab Simulations</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Explore the physical definitions, mathematical formulas, and <b>self-running professional laboratory simulations</b> powering professional space exploration:</p>", unsafe_allow_html=True)
         
-        # Row 1: RA, DEC, PROPER & ABSOLUTE MOTION
         mk_c1, mk_c2, mk_c3 = st.columns(3)
         
         with mk_c1:
@@ -505,7 +504,6 @@ elif st.session_state.page == "home":
                 </span>
                 """, unsafe_allow_html=True)
                 
-                # Live Automated Continuous RA Simulation (Rotating Meridian)
                 t_anim = int(time.time() * 2) % 24
                 fig_ra = go.Figure(go.Scatterpolar(r=[1, 1], theta=[t_anim * 15, t_anim * 15], mode='markers+lines', marker=dict(size=14, color='#38bdf8')))
                 fig_ra.update_layout(polar=dict(radialaxis=dict(visible=False), bgcolor='#010409'), paper_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=10,b=10), title=dict(text=f"Live Meridian: {t_anim}.0h", font=dict(size=11, color='#38bdf8')))
@@ -521,7 +519,6 @@ elif st.session_state.page == "home":
                 </span>
                 """, unsafe_allow_html=True)
                 
-                # Live Automated Continuous Dec Simulation
                 dec_wave = int(45 * math.sin(time.time()))
                 fig_dec = go.Figure(go.Bar(x=["Equator", "Star Dec"], y=[0, dec_wave], marker_color='#f59e0b'))
                 fig_dec.update_layout(paper_bgcolor='#030712', plot_bgcolor='#030712', font=dict(color='#f59e0b', size=10), height=170, margin=dict(l=10,r=10,t=10,b=10), yaxis=dict(range=[-90, 90]), title=dict(text=f"Live Elevation: {dec_wave}°", font=dict(size=11, color='#f59e0b')))
@@ -537,7 +534,6 @@ elif st.session_state.page == "home":
                 </span>
                 """, unsafe_allow_html=True)
                 
-                # Live Automated Continuous Motion Simulation
                 m_step = (time.time() * 3) % 20
                 fig_mot = go.Figure(go.Scatter(x=[10, 10 + m_step], y=[15, 15 + m_step*0.7], mode='markers+lines', marker=dict(size=12, color='#c084fc')))
                 fig_mot.update_layout(paper_bgcolor='#030712', plot_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(range=[0, 30]), yaxis=dict(range=[0, 30]), title=dict(text="Live Vector Shift ($\mu$)", font=dict(size=11, color='#c084fc')))
@@ -545,7 +541,6 @@ elif st.session_state.page == "home":
                 st.markdown('<a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff; padding:4px 10px; font-size:0.75rem;">SPHEREx Science Portal</a>', unsafe_allow_html=True)
 
         st.write("")
-        # Row 2: FLUX & ADU, DOPPLER EFFECT, AUDIO SONIFICATION
         mk_c4, mk_c5, mk_c6 = st.columns(3)
 
         with mk_c4:
@@ -557,7 +552,6 @@ elif st.session_state.page == "home":
                 </span>
                 """, unsafe_allow_html=True)
                 
-                # Live Automated Continuous Flux Simulation
                 live_adu = int(1500 + 400 * math.sin(time.time() * 2))
                 live_flux = live_adu * 1.38e-11
                 fig_flux = go.Figure(go.Indicator(mode="number", value=live_flux, number={'valueformat': '.2e', 'font': {'color': '#2dd4bf', 'size': 24}}, title={"text": "Live Flux ($W/m^2$)"}))
@@ -574,7 +568,6 @@ elif st.session_state.page == "home":
                 </span>
                 """, unsafe_allow_html=True)
                 
-                # Live Automated Continuous Doppler Wave Simulation
                 d_freq = 1.5 + 1.0 * math.sin(time.time() * 3)
                 xw = np.linspace(0, 4*np.pi, 50)
                 yw = np.sin(xw * d_freq)
@@ -592,7 +585,6 @@ elif st.session_state.page == "home":
                 </span>
                 """, unsafe_allow_html=True)
                 
-                # Live Automated Continuous Sonification Wave
                 s_freq = 440 + int(200 * math.sin(time.time() * 4))
                 xs = np.linspace(0, 1, 50)
                 ys = np.sin(2 * np.pi * s_freq * xs / 1000)
