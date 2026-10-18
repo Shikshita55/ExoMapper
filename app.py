@@ -500,14 +500,15 @@ elif st.session_state.page == "home":
         st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Must Know: Advanced Astrometric Concepts & Physics Principles</h3>", unsafe_allow_html=True)
         st.markdown("<p class='card-text'>Explore the physical definitions and mathematical formulas powering professional space exploration:</p>", unsafe_allow_html=True)
         
-        mk_c1, mk_c2, mk_c3 = st.columns(3)
+        # 6 Dedicated Standalone Astrometric Codex Modules
+        mk_c1, mk_c2 = st.columns(2)
         
         with mk_c1:
             with st.container(border=True):
                 st.latex(r"\alpha \text{ — Right Ascension (RA)}")
                 st.markdown("""
-                <span style='font-size:0.92rem; color:#cbd5e1;'>
-                <b>Physical Meaning:</b> The celestial equivalent of Earth's longitude projected onto the celestial sphere. Measured eastward from the Vernal Equinox in hours ($0\text{h}-24\text{h}$).
+                <span style='font-size:0.95rem; color:#cbd5e1;'>
+                <b>Physical Meaning:</b> The celestial equivalent of Earth's longitude projected onto the celestial sphere. Measured eastward from the Vernal Equinox in hours ($0\text{h}-24\text{h}$). It specifies the angular position of celestial objects along the celestial equator.
                 </span>
                 """, unsafe_allow_html=True)
                 st.markdown('<a href="https://science.nasa.gov/astrophysics/focus-areas/exoplanet-exploration" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.75rem;">NASA Astrometry Guide</a>', unsafe_allow_html=True)
@@ -516,41 +517,44 @@ elif st.session_state.page == "home":
             with st.container(border=True):
                 st.latex(r"\delta \text{ — Declination (Dec)}")
                 st.markdown("""
-                <span style='font-size:0.92rem; color:#cbd5e1;'>
-                <b>Physical Meaning:</b> The celestial equivalent of Earth's latitude. Measures angular distance north ($+90^\circ$) or south ($-90^\circ$) from the celestial equator.
+                <span style='font-size:0.95rem; color:#cbd5e1;'>
+                <b>Physical Meaning:</b> The celestial equivalent of Earth's latitude. Measures angular distance north ($+90^\circ$) or south ($-90^\circ$) from the celestial equator. Used alongside RA to map exact celestial coordinates in FITS headers.
                 </span>
                 """, unsafe_allow_html=True)
                 st.markdown('<a href="https://imagine.gsfc.nasa.gov/" target="_blank" class="ext-link" style="background:#f59e0b; padding:4px 10px; font-size:0.75rem;">NASA Universe Portal</a>', unsafe_allow_html=True)
+
+        st.write("")
+        mk_c3, mk_c4 = st.columns(2)
 
         with mk_c3:
             with st.container(border=True):
                 st.latex(r"\mu \text{ — Proper & Absolute Motion}")
                 st.markdown("""
-                <span style='font-size:0.92rem; color:#cbd5e1;'>
-                <b>Proper Motion ($\mu$):</b> Apparent angular shift of stars across baseline intervals $(t_0, t_0 + \Delta t)$. Absolute motion measures true 3D space velocity.
+                <span style='font-size:0.95rem; color:#cbd5e1;'>
+                <b>Proper Motion ($\mu$):</b> Apparent angular shift of stars across baseline intervals $(t_0, t_0 + \Delta t)$. Absolute motion measures true 3D space velocity relative to the local standard of rest.
                 </span>
                 """, unsafe_allow_html=True)
                 st.markdown('<a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff; padding:4px 10px; font-size:0.75rem;">SPHEREx Science Portal</a>', unsafe_allow_html=True)
-
-        st.write("")
-        mk_c4, mk_c5, mk_c6 = st.columns(3)
 
         with mk_c4:
             with st.container(border=True):
                 st.latex(r"\text{Flux & ADU (Photometry)}")
                 st.markdown("""
-                <span style='font-size:0.92rem; color:#cbd5e1;'>
-                <b>ADU:</b> Raw photon counts on CCD sensors. <b>Radiant Flux:</b> Total radiant energy flowing through aperture area per second after background subtraction.
+                <span style='font-size:0.95rem; color:#cbd5e1;'>
+                <b>ADU:</b> Raw photon counts on CCD sensors. <b>Radiant Flux:</b> Total radiant energy flowing through aperture area per second after background subtraction, quantifying stellar brightness.
                 </span>
                 """, unsafe_allow_html=True)
                 st.markdown('<a href="https://irsa.ipac.caltech.edu/" target="_blank" class="ext-link" style="background:#0d9488; color:#fff; padding:4px 10px; font-size:0.75rem;">Caltech IRSA Portal</a>', unsafe_allow_html=True)
+
+        st.write("")
+        mk_c5, mk_c6 = st.columns(2)
 
         with mk_c5:
             with st.container(border=True):
                 st.latex(r"\Delta \lambda \text{ — Doppler Effect}")
                 st.markdown("""
-                <span style='font-size:0.92rem; color:#cbd5e1;'>
-                <b>Doppler Shift:</b> Frequency shift of light from moving bodies. Stretched waves = Redshift ($\Delta \lambda > 0$); compressed waves = Blueshift ($\Delta \lambda < 0$).
+                <span style='font-size:0.95rem; color:#cbd5e1;'>
+                <b>Doppler Shift:</b> Frequency shift of light from moving bodies. Stretched waves = Redshift ($\Delta \lambda > 0$); compressed waves = Blueshift ($\Delta \lambda < 0$). Indicates radial velocity vector.
                 </span>
                 """, unsafe_allow_html=True)
                 st.markdown('<a href="https://science.nasa.gov/astrophysics/" target="_blank" class="ext-link" style="background:#be123c; color:#fff; padding:4px 10px; font-size:0.75rem;">NASA Astrophysics Guide</a>', unsafe_allow_html=True)
@@ -559,7 +563,7 @@ elif st.session_state.page == "home":
             with st.container(border=True):
                 st.latex(r"\text{Audio Sonification}")
                 st.markdown("""
-                <span style='font-size:0.92rem; color:#cbd5e1;'>
+                <span style='font-size:0.95rem; color:#cbd5e1;'>
                 <b>Sonification Model:</b> Vacuum space has no sound. We mathematically translate infrared spectral absorption bands into audible frequencies for human data analysis!
                 </span>
                 """, unsafe_allow_html=True)
