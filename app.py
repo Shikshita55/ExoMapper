@@ -497,8 +497,8 @@ elif st.session_state.page == "home":
                 st.write(a)
 
     with st.container(border=True):
-        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Must Know: Advanced Astrometric Concepts & Live Automated Lab Simulations</h3>", unsafe_allow_html=True)
-        st.markdown("<p class='card-text'>Explore the physical definitions, mathematical formulas, and <b>self-running professional laboratory simulations</b> powering professional space exploration:</p>", unsafe_allow_html=True)
+        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Must Know: Advanced Astrometric Concepts & Physics Principles</h3>", unsafe_allow_html=True)
+        st.markdown("<p class='card-text'>Explore the physical definitions and mathematical formulas powering professional space exploration:</p>", unsafe_allow_html=True)
         
         mk_c1, mk_c2, mk_c3 = st.columns(3)
         
@@ -510,11 +510,6 @@ elif st.session_state.page == "home":
                 <b>Physical Meaning:</b> The celestial equivalent of Earth's longitude projected onto the celestial sphere. Measured eastward from the Vernal Equinox in hours ($0\text{h}-24\text{h}$).
                 </span>
                 """, unsafe_allow_html=True)
-                
-                t_anim = int(time.time() * 2) % 24
-                fig_ra = go.Figure(go.Scatterpolar(r=[1, 1], theta=[t_anim * 15, t_anim * 15], mode='markers+lines', marker=dict(size=14, color='#38bdf8')))
-                fig_ra.update_layout(polar=dict(radialaxis=dict(visible=False), bgcolor='#010409'), paper_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=10,b=10), title=dict(text=f"Live Meridian: {t_anim}.0h", font=dict(size=11, color='#38bdf8')))
-                st.plotly_chart(fig_ra, use_container_width=True, key="auto_ra_plot")
                 st.markdown('<a href="https://science.nasa.gov/astrophysics/focus-areas/exoplanet-exploration" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.75rem;">NASA Astrometry Guide</a>', unsafe_allow_html=True)
 
         with mk_c2:
@@ -525,11 +520,6 @@ elif st.session_state.page == "home":
                 <b>Physical Meaning:</b> The celestial equivalent of Earth's latitude. Measures angular distance north ($+90^\circ$) or south ($-90^\circ$) from the celestial equator.
                 </span>
                 """, unsafe_allow_html=True)
-                
-                dec_wave = int(45 * math.sin(time.time()))
-                fig_dec = go.Figure(go.Bar(x=["Equator", "Star Dec"], y=[0, dec_wave], marker_color='#f59e0b'))
-                fig_dec.update_layout(paper_bgcolor='#030712', plot_bgcolor='#030712', font=dict(color='#f59e0b', size=10), height=170, margin=dict(l=10,r=10,t=10,b=10), yaxis=dict(range=[-90, 90]), title=dict(text=f"Live Elevation: {dec_wave}°", font=dict(size=11, color='#f59e0b')))
-                st.plotly_chart(fig_dec, use_container_width=True, key="auto_dec_plot")
                 st.markdown('<a href="https://imagine.gsfc.nasa.gov/" target="_blank" class="ext-link" style="background:#f59e0b; padding:4px 10px; font-size:0.75rem;">NASA Universe Portal</a>', unsafe_allow_html=True)
 
         with mk_c3:
@@ -540,11 +530,6 @@ elif st.session_state.page == "home":
                 <b>Proper Motion ($\mu$):</b> Apparent angular shift of stars across baseline intervals $(t_0, t_0 + \Delta t)$. Absolute motion measures true 3D space velocity.
                 </span>
                 """, unsafe_allow_html=True)
-                
-                m_step = (time.time() * 3) % 20
-                fig_mot = go.Figure(go.Scatter(x=[10, 10 + m_step], y=[15, 15 + m_step*0.7], mode='markers+lines', marker=dict(size=12, color='#c084fc')))
-                fig_mot.update_layout(paper_bgcolor='#030712', plot_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(range=[0, 30]), yaxis=dict(range=[0, 30]), title=dict(text="Live Vector Shift ($\mu$)", font=dict(size=11, color='#c084fc')))
-                st.plotly_chart(fig_mot, use_container_width=True, key="auto_mot_plot")
                 st.markdown('<a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff; padding:4px 10px; font-size:0.75rem;">SPHEREx Science Portal</a>', unsafe_allow_html=True)
 
         st.write("")
@@ -558,12 +543,6 @@ elif st.session_state.page == "home":
                 <b>ADU:</b> Raw photon counts on CCD sensors. <b>Radiant Flux:</b> Total radiant energy flowing through aperture area per second after background subtraction.
                 </span>
                 """, unsafe_allow_html=True)
-                
-                live_adu = int(1500 + 400 * math.sin(time.time() * 2))
-                live_flux = live_adu * 1.38e-11
-                fig_flux = go.Figure(go.Indicator(mode="number", value=live_flux, number={'valueformat': '.2e', 'font': {'color': '#2dd4bf', 'size': 24}}, title={"text": "Live Flux ($W/m^2$)"}))
-                fig_flux.update_layout(paper_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=25,b=10))
-                st.plotly_chart(fig_flux, use_container_width=True, key="auto_flux_plot")
                 st.markdown('<a href="https://irsa.ipac.caltech.edu/" target="_blank" class="ext-link" style="background:#0d9488; color:#fff; padding:4px 10px; font-size:0.75rem;">Caltech IRSA Portal</a>', unsafe_allow_html=True)
 
         with mk_c5:
@@ -574,13 +553,6 @@ elif st.session_state.page == "home":
                 <b>Doppler Shift:</b> Frequency shift of light from moving bodies. Stretched waves = Redshift ($\Delta \lambda > 0$); compressed waves = Blueshift ($\Delta \lambda < 0$).
                 </span>
                 """, unsafe_allow_html=True)
-                
-                d_freq = 1.5 + 1.0 * math.sin(time.time() * 3)
-                xw = np.linspace(0, 4*np.pi, 50)
-                yw = np.sin(xw * d_freq)
-                fig_dop = go.Figure(go.Scatter(x=xw, y=yw, mode='lines', line=dict(color='#f43f5e' if d_freq > 1.5 else '#38bdf8', width=3)))
-                fig_dop.update_layout(paper_bgcolor='#030712', plot_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(visible=False), yaxis=dict(visible=False), title=dict(text="Live Spectral Waveform", font=dict(size=11, color='#f43f5e' if d_freq > 1.5 else '#38bdf8')))
-                st.plotly_chart(fig_dop, use_container_width=True, key="auto_dop_plot")
                 st.markdown('<a href="https://science.nasa.gov/astrophysics/" target="_blank" class="ext-link" style="background:#be123c; color:#fff; padding:4px 10px; font-size:0.75rem;">NASA Astrophysics Guide</a>', unsafe_allow_html=True)
 
         with mk_c6:
@@ -591,13 +563,6 @@ elif st.session_state.page == "home":
                 <b>Sonification Model:</b> Vacuum space has no sound. We mathematically translate infrared spectral absorption bands into audible frequencies for human data analysis!
                 </span>
                 """, unsafe_allow_html=True)
-                
-                s_freq = 440 + int(200 * math.sin(time.time() * 4))
-                xs = np.linspace(0, 1, 50)
-                ys = np.sin(2 * np.pi * s_freq * xs / 1000)
-                fig_son = go.Figure(go.Scatter(x=xs, y=ys, mode='lines', line=dict(color='#38bdf8', width=2.5)))
-                fig_son.update_layout(paper_bgcolor='#030712', plot_bgcolor='#030712', height=170, margin=dict(l=10,r=10,t=10,b=10), xaxis=dict(visible=False), yaxis=dict(visible=False), title=dict(text=f"Live Pitch: {s_freq} Hz", font=dict(size=11, color='#38bdf8')))
-                st.plotly_chart(fig_son, use_container_width=True, key="auto_son_plot")
                 st.markdown('<a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.75rem;">SPHEREx Sound Portal</a>', unsafe_allow_html=True)
 
     st.markdown("<hr style='border-color: rgba(56,189,248,0.35);'>", unsafe_allow_html=True)
