@@ -1,1059 +1,1671 @@
-# ==============================================================================
-# EXOMAPPER: THE PLANET X HUNTER — INTERNATIONAL SUPERVISORY EDITION
-# Official Entry: NASA Space Apps Challenge 2026
-# Supervisory Architecture & M.Sc. Astrometric Pipeline
-# ==============================================================================
+"""
+ExoMapper: Infrared Sky Exploration, Multi-Epoch Blink Comparator,
+Aperture Photometry & Doppler Audio Sonification Suite
+===================================================================
+Built for the NASA Space Apps Challenge (Inspired by NASA's SPHEREx Mission)
 
-import streamlit as st
+Overview:
+---------
+ExoMapper is an interactive astronomy exploration application designed to make
+large-scale infrared sky observations (across SPHEREx's 102 spectral bands from
+0.75 to 5.00 microns) accessible to both researchers and citizen scientists.
+
+Core Architecture (per Project Specification):
+1. Data Ingestion Pipeline:
+   - Caltech/IPAC Infrared Science Archive (IRSA) cutout query interface & FITS/image ingestion
+   - Simulated 2-epoch infrared sky survey generator (~6 months apart) across 102 SPHEREx bands
+   - Hybrid data feed (injecting calibrated synthetic moving objects & transients into real/uploaded frames)
+   - Automatic cross-epoch image co-registration and resampling
+2. Astronomical Image Processing & Multi-Epoch Blink Comparator:
+   - Radiometric scaling algorithms: ZScale, Asinh, Logarithmic, Square Root, and Linear
+   - World Coordinate System (WCS) pixel-to-sky (RA/Dec) transformation and overlay grids
+   - Interactive & automated 2-epoch Blink Comparator (Epoch 1 vs Epoch 2, ~6 months baseline)
+     with HTML5/JS zero-flicker client-side blink engine + Difference Imaging (Epoch 2 - Epoch 1)
+3. Aperture Photometry & Pixel-Level Analysis:
+   - Region of Interest (ROI) selection with circular target aperture and sky background annulus
+   - Pixel-by-pixel matrix inspection, radial surface brightness profile, net calibrated flux (uJy),
+     AB magnitude (m_AB), delta-magnitude, SNR, and 102-band SPHEREx SED preview
+4. Doppler Audio Sonification & Telemetry Logbook:
+   - Converts pixel scans, multi-epoch flux changes, and 102-band spectra into playable WAV audio
+   - Generates relativistic/classical Doppler-shift waveforms from radial velocity (v_r) & redshift (z)
+   - Persistent Telemetry Logbook to record, filter, and export (CSV/JSON) citizen-science scans
+
+Run Instructions:
+-----------------
+    pip install streamlit numpy pandas matplotlib scipy pillow astropy requests
+    streamlit run exomapper_app.py
+"""
+
+from __future__ import annotations
+
+import base64
+import datetime
+import io
+import json
+import math
+import urllib.parse
+import urllib.request
+import wave
+from dataclasses import dataclass, asdict
+from typing import Dict, List, Optional, Tuple
+
+import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 import numpy as np
 import pandas as pd
-import plotly.graph_objects as go
-from astropy.io import fits
-from datetime import datetime, timedelta
-import random
-import math
-import time
-import io
-import wave
-import struct
+from PIL import Image
+from scipy import ndimage
 
-st.set_page_config(
-    page_title="ExoMapper — NASA Space Apps Challenge 2026",
-    layout="wide",
-    initial_sidebar_state="collapsed"
-)
+import streamlit as st
+import streamlit.components.v1 as components
 
-# --- Supervisory CSS & Cyber-Astrophysics UI Framework ---
-def load_css():
-    st.markdown("""
-    <style>
-    @import url('https://fonts.googleapis.com/css2?family=Audiowide&family=Chakra+Petch:ital,wght@0,500;0,700;1,500&family=Cinzel:ital,wght@0,600;1,600&family=Rajdhani:ital,wght@0,500;0,700;1,600&family=Space+Mono&display=swap');
-    
-    .stApp {
-        background-color: #010409;
-        background-image: 
-            radial-gradient(circle at 12% 25%, rgba(0, 102, 255, 0.35), transparent 48%),
-            radial-gradient(circle at 88% 82%, rgba(0, 229, 255, 0.28), transparent 52%),
-            radial-gradient(circle at 50% 50%, rgba(2, 6, 23, 0.98), transparent 95%),
-            url("https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?q=80&w=3000&auto=format&fit=crop");
-        background-size: cover;
-        background-attachment: fixed;
-        background-position: center;
-        color: #f1f5f9;
-        font-family: 'Rajdhani', sans-serif;
-    }
+# Optional Astropy FITS/WCS support (graceful fallback if not installed)
+try:
+    from astropy.io import fits
+    from astropy.wcs import WCS as AstropyWCS
+    ASTROPY_AVAILABLE = True
+except ImportError:
+    ASTROPY_AVAILABLE = False
 
-    @keyframes slideUpBanner {
-        0% { transform: translateY(0px); opacity: 1; }
-        85% { transform: translateY(0px); opacity: 1; }
-        100% { transform: translateY(-75px); opacity: 0; display: none; }
-    }
 
-    .startup-banner {
-        text-align: center; font-family: 'Chakra Petch', sans-serif; font-size: 1.4rem;
-        color: #2dd4bf; background: rgba(15, 23, 42, 0.92); border: 2px solid #38bdf8;
-        padding: 18px; border-radius: 10px; margin-bottom: 30px; letter-spacing: 3px;
-        box-shadow: 0 0 25px rgba(56, 189, 248, 0.35);
-        animation: slideUpBanner 2.5s ease-in-out forwards;
-    }
+# =====================================================================
+# 1. SPHEREx 102-BAND SPECTRAL CATALOG & WCS ENGINE
+# =====================================================================
 
-    .global-challenge-tag {
-        text-align: center; font-family: 'Space Mono', monospace; font-size: 0.92rem;
-        color: #38bdf8; background: rgba(15, 23, 42, 0.88); border-bottom: 1.5px solid rgba(56, 189, 248, 0.35);
-        padding: 8px; margin-bottom: 25px; letter-spacing: 2.5px; text-transform: uppercase;
-    }
+@dataclass
+class SPHERExBand:
+    band_index: int          # 1 to 102
+    lvf_array: int           # 1 to 6 (SPHEREx Linear Variable Filter bands)
+    wavelength_um: float     # Central wavelength in micrometers (0.75 - 5.00 um)
+    bandwidth_um: float      # Spectral resolution delta_lambda
+    resolving_power: float   # R = lambda / delta_lambda
+    spectral_feature: str    # Key astrophysical tracer in this band
 
-    @keyframes floatGlow {
-        0% { transform: translateY(0px); text-shadow: 0 0 25px #38bdf8, 0 0 50px rgba(56, 189, 248, 0.5); }
-        50% { transform: translateY(-5px); text-shadow: 0 0 35px #2dd4bf, 0 0 70px rgba(45, 212, 191, 0.7); }
-        100% { transform: translateY(0px); text-shadow: 0 0 25px #38bdf8, 0 0 50px rgba(56, 189, 248, 0.5); }
-    }
-
-    .main-title {
-        text-align: center; font-family: 'Audiowide', cursive; font-size: 5.8rem; 
-        color: #ffffff; margin-top: 1vh; letter-spacing: 5px;
-        animation: floatGlow 4s ease-in-out infinite;
-    }
-
-    .sub-title {
-        text-align: center; color: #5eead4; font-size: 1.85rem; 
-        font-family: 'Cinzel', serif; font-style: italic; 
-        font-weight: 600; letter-spacing: 6px; margin-top: -10px; margin-bottom: 40px;
-        text-shadow: 0 0 15px rgba(94, 234, 212, 0.4);
-    }
-    
-    .top-bar {
-        display: flex; align-items: center; border-bottom: 1.5px solid rgba(56,189,248,0.35);
-        padding-bottom: 14px; margin-bottom: 25px;
-    }
-    .top-bar h1 {
-        font-family: 'Audiowide', cursive; font-size: 2.4rem; color: #ffffff;
-        text-shadow: 0 0 15px #38bdf8; margin: 0; margin-left: 20px;
-    }
-    
-    .info-card {
-        background: rgba(11, 19, 41, 0.96); border: 1.5px solid rgba(56, 189, 248, 0.38); 
-        padding: 24px; border-radius: 14px; margin-bottom: 22px;
-        backdrop-filter: blur(14px);
-        box-shadow: 0 10px 35px rgba(0, 0, 0, 0.85);
-    }
-    
-    div[data-testid="stVerticalBlockBorderWrapper"] {
-        background: rgba(3, 7, 18, 0.98) !important;
-        border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
-        border-radius: 14px !important;
-        padding: 22px !important;
-        margin-bottom: 22px !important;
-        box-shadow: 0 12px 35px rgba(0,0,0,0.9) !important;
-    }
-
-    /* --- SECURE DARK THEME FOR DROPDOWNS & INPUTS (NO WHITE FLASH) --- */
-    div[data-baseweb="select"] > div, div[data-baseweb="input"] > div, .streamlit-expanderHeader {
-        background-color: #040c24 !important;
-        color: #38bdf8 !important;
-        border-color: rgba(56, 189, 248, 0.5) !important;
-    }
-    div[data-baseweb="select"] span, div[data-baseweb="menu"] div, div[data-baseweb="popover"] div {
-        color: #f1f5f9 !important;
-        background-color: #040c24 !important;
-    }
-    div[data-baseweb="select"]:hover span, div[data-baseweb="select"] div:hover {
-        color: #2dd4bf !important;
-    }
-    .stTextInput input, .stNumberInput input {
-        background-color: #040c24 !important;
-        color: #2dd4bf !important;
-        border: 1.5px solid rgba(56, 189, 248, 0.4) !important;
-    }
-    
-    .card-text { font-size: 1.15rem; line-height: 1.7; color: #cbd5e1; }
-    .mono-text { font-family: 'Space Mono', monospace; font-size: 0.95rem; color: #5eead4; margin-bottom: 8px; }
-    
-    .hit-banner {
-        background: rgba(6, 78, 59, 0.95); border-left: 6px solid #2dd4bf;
-        padding: 18px; border-radius: 8px; color: #fff; font-family: 'Chakra Petch'; font-size: 1.2rem; margin-bottom: 22px;
-        box-shadow: 0 0 25px rgba(45, 212, 191, 0.3);
-    }
-    .miss-banner {
-        background: rgba(127, 29, 29, 0.95); border-left: 6px solid #f43f5e;
-        padding: 18px; border-radius: 8px; color: #fff; font-family: 'Chakra Petch'; font-size: 1.2rem; margin-bottom: 22px;
-        box-shadow: 0 0 25px rgba(244, 63, 94, 0.3);
-    }
-    
-    div.stButton > button {
-        background: linear-gradient(135deg, rgba(3, 105, 161, 0.3), rgba(14, 165, 233, 0.3)); 
-        color: #38bdf8; border: 1.5px solid #38bdf8;
-        border-radius: 9px; font-weight: 700; padding: 11px 24px;
-        text-transform: uppercase; font-family: 'Chakra Petch', sans-serif;
-        transition: all 0.3s ease;
-    }
-    div.stButton > button:hover {
-        background: linear-gradient(135deg, #0284c7, #38bdf8); color: #020617; 
-        box-shadow: 0 0 22px rgba(56, 189, 248, 0.8); transform: scale(1.02);
-        border-color: #ffffff;
-    }
-    
-    label { font-family: 'Chakra Petch', sans-serif; color: #5eead4 !important; }
-    
-    .ext-link {
-        color: #020617; background: #38bdf8; padding: 8px 18px; border-radius: 7px;
-        text-decoration: none; font-weight: 700; font-family: 'Chakra Petch'; display: inline-block; margin-top: 14px;
-        transition: all 0.3s ease;
-    }
-    .ext-link:hover { background: #ffffff; box-shadow: 0 0 18px #2dd4bf; }
-
-    .footer-tag {
-        position: fixed; bottom: 10px; right: 20px; font-family: 'Space Mono', monospace;
-        font-size: 0.85rem; color: rgba(56, 189, 248, 0.75); z-index: 999;
-    }
-    #MainMenu {visibility: hidden;} footer {visibility: hidden;}
-    </style>
-    """, unsafe_allow_html=True)
-
-def setup_session():
-    defaults = {
-        'page': 'login',
-        'user': '',
-        'score': 0,
-        'result_data': None,
-        'is_hit': False,
-        'planet_x': 180,
-        'planet_y': 220,
-        'blinking': False,
-        'frame_step': 0,
-        'seed': 42,
-        'profiles': {},
-        'user_box': None,
-        'is_retry': False,
-        'last_log_idx': None,
-        'frame_view_mode': 'Single Frame',
-        'custom_loaded_frames': []
-    }
-    for k, v in defaults.items():
-        if k not in st.session_state:
-            st.session_state[k] = v
-
-def show_header():
-    st.markdown('<div class="global-challenge-tag">🚀 Official Entry: NASA Space Apps Challenge 2026</div>', unsafe_allow_html=True)
-    st.markdown("""
-    <div class="top-bar">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="52">
-        <div><h1>ExoMapper</h1></div>
-    </div>
-    """, unsafe_allow_html=True)
-
-def get_time_str():
-    ist = datetime.utcnow() + timedelta(hours=5, minutes=30)
-    return ist.strftime("%d %b %Y | %I:%M %p IST")
-
-TRIVIA_LIST = [
-    "🔭 'Did you know?' NASA's SPHEREx telescope maps the entire sky in 102 infrared wavelength bands to measure water ice across galaxies!",
-    "🪐 'Did you know?' Planet X (or Planet Nine) is theorized to orbit our Sun once every 10,000 to 20,000 years!",
-    "✨ 'Did you know?' Multi-epoch temporal comparison allows astronomers to spot moving stars and planets by measuring tiny pixel shifts over baseline intervals $(t_0, t_0 + \Delta t)$ where $\Delta t = 0.5\text{ yr}$!",
-    "📡 'Did you know?' Analog-to-Digital Units (ADU) quantify photon counts captured by space CCD sensors into precise radiant flux measurements."
-]
 
 @st.cache_data
-def make_sky_frames(mode, px, py, seed_val):
-    rng = np.random.default_rng(seed_val)
-    N = 400
-    y_grid, x_grid = np.mgrid[0:N, 0:N]
-    sky = rng.normal(25.0, 3.5, (N, N))
-    
-    if "Hybrid" in mode or "NASA" in mode:
-        cloud1 = 35.0 * np.exp(-((x_grid - 180)**2 + (y_grid - 220)**2) / (2 * 110**2))
-        cloud2 = 25.0 * np.exp(-((x_grid - 280)**2 + (y_grid - 120)**2) / (2 * 85**2))
-        sky += (cloud1 + cloud2)
-
-    for _ in range(70):
-        sx = rng.integers(15, N - 15)
-        sy = rng.integers(15, N - 15)
-        bright = rng.uniform(35, 190)
-        width = rng.uniform(1.1, 2.3)
-        y0, y1 = max(0, sy - 10), min(N, sy + 11)
-        x0, x1 = max(0, sx - 10), min(N, sx + 11)
-        yy, xx = y_grid[y0:y1, x0:x1], x_grid[y0:y1, x0:x1]
-        star_spot = bright * np.exp(-((xx - sx)**2 + (yy - sy)**2) / (2 * width**2))
-        sky[y0:y1, x0:x1] += star_spot
-
-    epoch1 = np.copy(sky) + rng.normal(0, 1.2, (N, N))
-    epoch2 = np.copy(sky) + rng.normal(0, 1.2, (N, N))
-
-    p_bright = 165.0
-    p_width = 2.4
-    epoch1 += p_bright * np.exp(-((x_grid - px)**2 + (y_grid - py)**2) / (2 * p_width**2))
-    
-    px2, py2 = min(N - 20, px + 14), min(N - 20, py + 9)
-    epoch2 += p_bright * np.exp(-((x_grid - px2)**2 + (y_grid - py2)**2) / (2 * p_width**2))
-
-    return np.clip(epoch1, 1, None), np.clip(epoch2, 1, None)
-
-def scale_image_professional(img, method, contrast):
-    clean = np.clip(np.nan_to_num(img, nan=1.0), 1e-3, None)
-    if method == "Logarithmic (Log)":
-        out = np.log10(clean)
-    elif method == "Square Root (Sqrt)":
-        out = np.sqrt(clean)
-    elif method == "Histogram Equalization":
-        flat = clean.flatten()
-        hist, bins = np.histogram(flat, 256)
-        cdf = hist.cumsum()
-        cdf_norm = cdf * float(hist.max()) / cdf.max()
-        out = np.interp(flat, bins[:-1], cdf_norm).reshape(clean.shape)
-    else:
-        out = clean
-
-    low_v, high_v = np.percentile(out, [1, 99.5 * contrast])
-    if high_v <= low_v:
-        high_v = low_v + 1e-5
-    return np.clip(out, low_v, high_v)
-
-def analyze_target_box(f1, f2, x0, x1, y0, y1, true_x, true_y, is_uploaded):
-    h, w = f1.shape
-    xa, xb = max(0, int(min(x0, x1))), min(w, int(max(x0, x1)))
-    ya, yb = max(0, int(min(y0, y1))), min(h, int(max(y0, y1)))
-    
-    if xb - xa < 2: xb = min(w, xa + 6)
-    if yb - ya < 2: yb = min(h, ya + 6)
-
-    box1 = f1[ya:yb, xa:xb]
-    box2 = f2[ya:yb, xa:xb]
-    
-    loc_y, loc_x = np.unravel_index(np.argmax(box1), box1.shape)
-    found_x = xa + loc_x
-    found_y = ya + loc_y
-
-    bg_level = float(np.median(f1))
-    noise_std = float(np.std(f1)) + 1e-5
-    peak_val = float(np.max(box1)) - bg_level
-    total_flux = float(np.sum(box1 - bg_level))
-    snr = max(0.0, peak_val / noise_std)
-    motion_diff = float(np.max(np.abs(box1 - box2)))
-
-    if not is_uploaded:
-        d1 = math.hypot(found_x - true_x, found_y - true_y)
-        d2 = math.hypot(found_x - (true_x + 14), found_y - (true_y + 9))
-        hit = (min(d1, d2) <= 28) and (snr >= 4.5)
-    else:
-        hit = float(np.max(box1)) >= np.percentile(f1, 92)
-
-    if not hit:
-        return False, found_x, found_y, {
-            "shift": "Static Cosmic Noise",
-            "prob": 0.0,
-            "score_breakdown": "Base Penalty (-75 Pts: False Alarm / Noise Aperture)",
-            "spectrum": {"Water Ice (H2O)": 0.0, "Ammonia (NH3)": 0.0, "Methane (CH4)": 0.0, "Silicate Dust": 0.0},
-            "stats": {
-                "Measured Center": f"X={found_x} px, Y={found_y} px",
-                "Aperture Flux": f"{max(0.0, total_flux):.2e} ADU (Noise)",
-                "Signal-to-Noise": f"{snr:.2f} σ (Below Threshold)",
-                "Radius": "N/A", "Albedo": "N/A", "Eccentricity": "N/A",
-                "Thermal Emission": "2.7 K (Background)"
-            }
-        }
-
-    rad = np.clip(1.6 + 0.19 * math.sqrt(max(10.0, peak_val)), 2.1, 8.9)
-    dist_center = math.hypot(found_x - 200, found_y - 200)
-    alb = np.clip(0.015 + (peak_val / 3200.0) + (dist_center / 8000.0), 0.020, 0.145)
-    ecc = np.clip(0.11 + (dist_center / 650.0) + (motion_diff / 1200.0), 0.12, 0.58)
-    temp_k = np.clip(24.0 + 0.18 * peak_val + 0.04 * snr, 28.0, 68.0)
-    shift_str = "Blueshift (-14.2 km/s)" if (found_x + found_y) % 2 == 0 else "Redshift (+18.6 km/s)"
-
-    h2o = round(float(np.clip(35.0 + (peak_val % 28.0), 35.0, 64.0)), 1)
-    nh3 = round(float(np.clip(10.0 + ((found_x * 0.13) % 16.0), 10.0, 26.0)), 1)
-    ch4 = round(float(np.clip(6.0 + ((found_y * 0.11) % 12.0), 6.0, 18.0)), 1)
-    dust = round(max(4.0, 100.0 - (h2o + nh3 + ch4)), 1)
-    prob = round(float(np.clip(74.0 + (snr * 0.65), 76.5, 98.4)), 1)
-
-    precision_bonus = 50 if snr > 8.0 else 25
-    total_delta_pts = 150 + precision_bonus
-    score_breakdown_str = f"+150 (Base Hit) + {precision_bonus} (Precision SNR Bonus) = +{total_delta_pts} Pts"
-
-    return True, found_x, found_y, {
-        "shift": shift_str,
-        "prob": prob,
-        "score_delta_val": total_delta_pts,
-        "score_breakdown": score_breakdown_str,
-        "spectrum": {"Water Ice (H2O)": h2o, "Ammonia (NH3)": nh3, "Methane (CH4)": ch4, "Silicate Dust": dust},
-        "stats": {
-            "Measured Center": f"X={found_x} px, Y={found_y} px",
-            "Aperture Flux": f"{total_flux:.4e} ADU (Peak: {peak_val:.2e})",
-            "Signal-to-Noise": f"{snr:.2f} σ (High-Confidence)",
-            "Radius": f"{rad:.3f} R⊕", "Albedo": f"{alb:.3f}",
-            "Eccentricity": f"{ecc:.3f}", "Thermal Emission": f"{temp_k:.1f} K"
-        }
-    }
-
-def make_audio_wav(spec_dict, shift_label):
-    try:
-        rate = 44100
-        frames = []
-        mult = 0.65 if "Redshift" in shift_label else (1.35 if "Blueshift" in shift_label else 0.15)
-        for _, val in spec_dict.items():
-            freq = (240.0 + (val * 8.5)) * mult
-            n_samples = int(rate * 0.5)
-            for i in range(n_samples):
-                t = float(i) / rate
-                amp = int(32767.0 * np.sin(freq * t * 2.0 * np.pi))
-                if i < 2000: amp = int(amp * (i / 2000))
-                elif i > n_samples - 2000: amp = int(amp * ((n_samples - i) / 2000))
-                frames.append(struct.pack('<h', amp))
-        buf = io.BytesIO()
-        with wave.open(buf, 'wb') as wf:
-            wf.setnchannels(1)
-            wf.setsampwidth(2)
-            wf.setframerate(rate)
-            wf.writeframes(b''.join(frames))
-        return buf.getvalue()
-    except Exception:
-        return None
-
-def read_fits_upload(file_obj):
-    try:
-        raw_bytes = io.BytesIO(file_obj.getvalue())
-        hdul = fits.open(raw_bytes)
-        for ext in hdul:
-            if ext.data is not None and len(ext.data.shape) >= 2:
-                return ext.data[0] if len(ext.data.shape) == 3 else ext.data
-        return None
-    except Exception:
-        return None
-
-load_css()
-setup_session()
-
-if st.session_state.page == "login":
-    st.markdown('<div class="startup-banner">🚀 NASA Space Apps Challenge 2026 — Official Supervisory Entry</div>', unsafe_allow_html=True)
-    st.markdown("<div class='main-title'>ExoMapper</div>", unsafe_allow_html=True)
-    st.markdown("<div class='sub-title'>THE PLANET X HUNTER</div>", unsafe_allow_html=True)
-    
-    c1, c2, c3 = st.columns([1, 2, 1])
-    with c2:
-        st.markdown("<h4 style='text-align:center; color:#38bdf8; font-family:Chakra Petch;'>ENTER HUNTER ID TO ACCESS WORKSTATION</h4>", unsafe_allow_html=True)
-        name_in = st.text_input("Hunter ID", placeholder="e.g. NebulaHunter-X / StarVoyager-9...", label_visibility="collapsed")
-        st.write("")
-        
-        if st.button("INITIALIZE SECURE LINK 🚀", use_container_width=True):
-            clean_name = name_in.strip()
-            if clean_name:
-                st.session_state.user = clean_name
-                if clean_name not in st.session_state.profiles:
-                    st.session_state.profiles[clean_name] = {
-                        "last_mode": "🛰️ Official NASA Challenge Data Feed",
-                        "score": 0, "logs": []
-                    }
-                st.session_state.score = st.session_state.profiles[clean_name]["score"]
-                st.session_state.page = "home"
-                st.rerun()
-            else:
-                st.markdown("<div class='miss-banner'>Access Denied. Please enter a valid Hunter ID first.</div>", unsafe_allow_html=True)
-
-elif st.session_state.page == "home":
-    show_header()
-    user = st.session_state.user
-    prof = st.session_state.profiles.get(user, {"last_mode": "🛰️ Official NASA Challenge Data Feed", "score": 0, "logs": []})
-    
-    st.markdown(f"<h2 style='color:white; font-family:Chakra Petch;'>Welcome to Command, <span style='color:#38bdf8;'>{user}</span></h2>", unsafe_allow_html=True)
-    if prof["logs"]:
-        st.markdown(f"<p class='mono-text'>💡 Session Memory: Last mode used was <b>{prof['last_mode']}</b> ({len(prof['logs'])} scans completed).</p>", unsafe_allow_html=True)
-        
-    b1, b2, b3 = st.columns([1, 1, 2])
-    with b1:
-        if st.button("Start the Task 📡", use_container_width=True):
-            st.session_state.blinking = False
-            st.session_state.user_box = None
-            st.session_state.is_retry = False
-            st.session_state.planet_x = random.randint(85, 315)
-            st.session_state.planet_y = random.randint(85, 315)
-            st.session_state.seed = random.randint(1, 99999)
-            st.session_state.page = "radar"
-            st.rerun()
-    with b2:
-        if st.button("Disconnect (Logout)", use_container_width=True):
-            st.session_state.user = ""
-            st.session_state.page = "login"
-            st.rerun()
-    with b3:
-        st.markdown(f"""
-        <div style="background: rgba(56, 189, 248, 0.1); border: 1.5px solid #38bdf8; padding: 12px 22px; border-radius: 8px; text-align: right;">
-            <h3 style="margin:0; color:#ffffff; font-family:Space Mono;">🏆 Hunter Record: <span style="color:#2dd4bf;">{st.session_state.score} Pts</span></h3>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.markdown("<hr style='border-color: rgba(56,189,248,0.25);'>", unsafe_allow_html=True)
-
-    left_col, right_col = st.columns(2)
-    with left_col:
-        st.markdown("""
-        <div class="info-card">
-            <h3 style='color:#38bdf8; font-family:"Chakra Petch";'>🌍 Mission Objective & Role</h3>
-            <p class='card-text'>Welcome to <i>ExoMapper</i> (NASA Space Apps Challenge 2026)! Our workstation compares infrared observations taken across distinct orbital observation epochs $(t_0, t_0 + \Delta t)$ where $\Delta t = 0.5\text{ yr}$ to isolate celestial objects that change position or brightness, helping researchers identify planetary candidates for further investigation.</p>
-        </div>
-        <div class="info-card" style="border-color: #f59e0b;">
-            <h3 style='color:#f59e0b; font-family:"Chakra Petch";'>🔭 About SPHEREx Mission</h3>
-            <p class='card-text'><b>SPHEREx</b> is a NASA space telescope launched in March 2025 to map the entire sky in 102 different wavelengths of light. Its observations help scientists study the early universe, galaxy evolution, and water molecules across our galaxy.</p>
-            <a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link">NASA SPHEREx Portal</a>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with right_col:
-        st.markdown("""
-        <div class="info-card" style="border-color: #c084fc;">
-            <h3 style='color:#c084fc; font-family:"Chakra Petch";'>🪐 The Mystery of Planet X</h3>
-            <p class='card-text'>Mathematical models and odd orbital alignments in the outer solar system suggest a massive <b>9th planet</b> exists far beyond Neptune. Infrared surveys like SPHEREx provide the key to catching its faint thermal glow.</p>
-            <a href="https://solarsystem.nasa.gov/planets/hypothetical-planet-x/in-depth/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff;">NASA Planet X Archive</a>
-        </div>
-        <div class="info-card">
-            <h3 style='color:#38bdf8; font-family:"Chakra Petch";'>🧑‍🚀 Team Members & Challenge Roles</h3>
-            <p class='card-text'><b>Team: ExoMapper (NASA Space Apps Challenge 2026)</b></p>
-            <ul class='card-text'>
-                <li><b>Shikshita Naryal:</b> Lead Astrophysics Researcher, Algorithm Architect & Python Developer.</li>
-                <li><b>Ayan Agarwal:</b> Technical Documentation Lead, Scientific Content Writer & Research Analyst.</li>
-            </ul>
-        </div>
-        """, unsafe_allow_html=True)
-
-    with st.container(border=True):
-        st.markdown("<h3 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>📖 Rules & Guide Menu (FAQ Hub)</h3>", unsafe_allow_html=True)
-        st.markdown("<p class='card-text'>Everything you need to know about navigating the ExoMapper workbench and maximizing your hunter score:</p>", unsafe_allow_html=True)
-        
-        faq_search = st.text_input("🔍 Search Rules & Guide FAQs:", placeholder="Type keywords like 'blink', 'score', 'WCS', 'noise'...", key="faq_keyword_search")
-        
-        faq_list = [
-            ("What is the main goal of ExoMapper?", "To assist NASA's SPHEREx mission by comparing multi-epoch infrared FITS files to identify moving Planet X candidates."),
-            ("How does the BLINK FRAMES feature work?", "It aligns multi-epoch baseline frames taken at $t_0$ and $t_0 + \Delta t$ ($\Delta t = 0.5\text{ yr}$) and alternates between them to measure stellar proper motion vectors."),
-            ("How do I score points & what are the penalties?", "Precision Target Lock earns +150 to +200 Pts (Base + SNR Bonus), while False Targets / Noise Apertures incur a strict -75 Pts penalty."),
-            ("What are WCS Grids?", "World Coordinate System overlays that display celestial Right Ascension (RA) and Declination (Dec) coordinates across the sky sector."),
-            ("How does Data Reduction (Noise Removal) work?", "It applies background subtraction algorithms to filter out cosmic ray hits and sensor read noise, raising the signal-to-noise ratio.")
-        ]
-        
-        filtered_faqs = faq_list
-        if faq_search.strip():
-            kw = faq_search.strip().lower()
-            filtered_faqs = [item for item in faq_list if kw in item[0].lower() or kw in item[1].lower()]
-            
-        for q, a in filtered_faqs:
-            with st.expander(f"📌 {q}"):
-                st.write(a)
-
-    with st.container(border=True):
-        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🌌 Must Know: Advanced Astrometric Concepts & Physics Principles</h3>", unsafe_allow_html=True)
-        st.markdown("<p class='card-text'>Explore the physical definitions and mathematical formulas powering professional space exploration:</p>", unsafe_allow_html=True)
-        
-        # 6 Dedicated Standalone Astrometric Codex Modules
-        mk_c1, mk_c2 = st.columns(2)
-        
-        with mk_c1:
-            with st.container(border=True):
-                st.latex(r"\alpha \text{ — Right Ascension (RA)}")
-                st.markdown("""
-                <span style='font-size:0.95rem; color:#cbd5e1;'>
-                <b>Physical Meaning:</b> The celestial equivalent of Earth's longitude projected onto the celestial sphere. Measured eastward from the Vernal Equinox in hours ($0\text{h}-24\text{h}$). It specifies the angular position of celestial objects along the celestial equator.
-                </span>
-                """, unsafe_allow_html=True)
-                st.markdown('<a href="https://science.nasa.gov/astrophysics/focus-areas/exoplanet-exploration" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.75rem;">NASA Astrometry Guide</a>', unsafe_allow_html=True)
-
-        with mk_c2:
-            with st.container(border=True):
-                st.latex(r"\delta \text{ — Declination (Dec)}")
-                st.markdown("""
-                <span style='font-size:0.95rem; color:#cbd5e1;'>
-                <b>Physical Meaning:</b> The celestial equivalent of Earth's latitude. Measures angular distance north ($+90^\circ$) or south ($-90^\circ$) from the celestial equator. Used alongside RA to map exact celestial coordinates in FITS headers.
-                </span>
-                """, unsafe_allow_html=True)
-                st.markdown('<a href="https://imagine.gsfc.nasa.gov/" target="_blank" class="ext-link" style="background:#f59e0b; padding:4px 10px; font-size:0.75rem;">NASA Universe Portal</a>', unsafe_allow_html=True)
-
-        st.write("")
-        mk_c3, mk_c4 = st.columns(2)
-
-        with mk_c3:
-            with st.container(border=True):
-                st.latex(r"\mu \text{ — Proper & Absolute Motion}")
-                st.markdown("""
-                <span style='font-size:0.95rem; color:#cbd5e1;'>
-                <b>Proper Motion ($\mu$):</b> Apparent angular shift of stars across baseline intervals $(t_0, t_0 + \Delta t)$. Absolute motion measures true 3D space velocity relative to the local standard of rest.
-                </span>
-                """, unsafe_allow_html=True)
-                st.markdown('<a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="background:#c084fc; color:#fff; padding:4px 10px; font-size:0.75rem;">SPHEREx Science Portal</a>', unsafe_allow_html=True)
-
-        with mk_c4:
-            with st.container(border=True):
-                st.latex(r"\text{Flux & ADU (Photometry)}")
-                st.markdown("""
-                <span style='font-size:0.95rem; color:#cbd5e1;'>
-                <b>ADU:</b> Raw photon counts on CCD sensors. <b>Radiant Flux:</b> Total radiant energy flowing through aperture area per second after background subtraction, quantifying stellar brightness.
-                </span>
-                """, unsafe_allow_html=True)
-                st.markdown('<a href="https://irsa.ipac.caltech.edu/" target="_blank" class="ext-link" style="background:#0d9488; color:#fff; padding:4px 10px; font-size:0.75rem;">Caltech IRSA Portal</a>', unsafe_allow_html=True)
-
-        st.write("")
-        mk_c5, mk_c6 = st.columns(2)
-
-        with mk_c5:
-            with st.container(border=True):
-                st.latex(r"\Delta \lambda \text{ — Doppler Effect}")
-                st.markdown("""
-                <span style='font-size:0.95rem; color:#cbd5e1;'>
-                <b>Doppler Shift:</b> Frequency shift of light from moving bodies. Stretched waves = Redshift ($\Delta \lambda > 0$); compressed waves = Blueshift ($\Delta \lambda < 0$). Indicates radial velocity vector.
-                </span>
-                """, unsafe_allow_html=True)
-                st.markdown('<a href="https://science.nasa.gov/astrophysics/" target="_blank" class="ext-link" style="background:#be123c; color:#fff; padding:4px 10px; font-size:0.75rem;">NASA Astrophysics Guide</a>', unsafe_allow_html=True)
-
-        with mk_c6:
-            with st.container(border=True):
-                st.latex(r"\text{Audio Sonification}")
-                st.markdown("""
-                <span style='font-size:0.95rem; color:#cbd5e1;'>
-                <b>Sonification Model:</b> Vacuum space has no sound. We mathematically translate infrared spectral absorption bands into audible frequencies for human data analysis!
-                </span>
-                """, unsafe_allow_html=True)
-                st.markdown('<a href="https://science.nasa.gov/mission/spherex/" target="_blank" class="ext-link" style="padding:4px 10px; font-size:0.75rem;">SPHEREx Sound Portal</a>', unsafe_allow_html=True)
-
-    st.markdown("<hr style='border-color: rgba(56,189,248,0.35);'>", unsafe_allow_html=True)
-    with st.container(border=True):
-        st.markdown("<h3 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>📋 Hunter Telemetry Logbook — Track Your Work</h3>", unsafe_allow_html=True)
-        
-        logs = prof.get("logs", [])
-        if not logs:
-            st.markdown("<p style='color:#2dd4bf; font-family:Space Mono; font-size:1rem; padding:12px; background:rgba(45,212,191,0.06); border-radius:6px;'>⭐ No scans recorded yet. Click 'Start the Task 📡' above to begin your first deep-space scan!</p>", unsafe_allow_html=True)
-        else:
-            cols_to_show = ["Scan #", "Timestamp", "Uplink Mode", "FITS Source", "Attempt Type", "Target Coords (X, Y)", "Status", "Score Delta", "Planet Name", "Radius", "Thermal Emission"]
-            st.dataframe(pd.DataFrame(logs)[cols_to_show], use_container_width=True, hide_index=True)
-            
-            st.markdown("<h4 style='color:#c084fc; font-family:Chakra Petch; margin-top:15px;'>🔍 Past Scan Details (Interactive Log Cards)</h4>", unsafe_allow_html=True)
-            for item in reversed(logs):
-                b_col = "#38bdf8" if "VERIFIED" in item["Status"] else "#f43f5e"
-                st.markdown(f"""
-                <div style='background: rgba(11, 19, 41, 0.95); border-left: 6px solid {b_col}; padding: 18px; border-radius: 10px; margin-bottom: 16px; box-shadow: 0 8px 25px rgba(0,0,0,0.8);'>
-                    <div style='display:flex; justify-content:space-between; align-items:center;'>
-                        <b style='color:{b_col}; font-family:Chakra Petch; font-size:1.15rem;'>Scan #{item['Scan #']} — {item['Status']} ({item['Score Delta']})</b>
-                        <span style='font-family:Space Mono; font-size:0.88rem; color:#5eead4;'>🕒 {item['Timestamp']}</span>
-                    </div>
-                    <hr style='border-color:rgba(56,189,248,0.2); margin:10px 0;'>
-                    <span style='color:#cbd5e1;'><b>Uplink Mode:</b> {item['Uplink Mode']}</span><br>
-                    <span style='color:#cbd5e1;'><b>FITS Source:</b> {item['FITS Source']} | <b>Type:</b> {item['Attempt Type']}</span><br>
-                    <span style='color:#cbd5e1;'><b>Coordinates:</b> {item['Target Coords (X, Y)']} | <b>Planet Name:</b> <b style='color:#c084fc;'>{item['Planet Name']}</b></span><br>
-                    <div style='margin-top:8px; background:rgba(56,189,248,0.06); padding:8px 12px; border-radius:6px; font-family:Space Mono; font-size:0.9rem; color:#38bdf8;'>
-                        <b>Astrophysical Telemetry:</b> Radius={item['Radius']} | Albedo={item['Albedo']} | Eccentricity={item['Eccentricity']} | Temperature={item['Thermal Emission']}
-                    </div>
-                </div>
-                """, unsafe_allow_html=True)
-
-elif st.session_state.page == "radar":
-    show_header()
-    
-    t1, t2, t3 = st.columns([3, 1, 1])
-    t1.markdown("<h2 style='color:white; font-family:Chakra Petch;'>Live Optics: Interferometer</h2>", unsafe_allow_html=True)
-    if t2.button("🔄 New Sky Sector", use_container_width=True):
-        st.session_state.planet_x = random.randint(85, 315)
-        st.session_state.planet_y = random.randint(85, 315)
-        st.session_state.seed = random.randint(1, 99999)
-        st.session_state.user_box = None
-        st.session_state.is_retry = True
-        st.toast("✨ Real New Sky Sector loaded! New coordinate grid, starseed, and trajectory matrix generated.", icon="🚀")
-        st.rerun()
-    if t3.button("Abort Task", use_container_width=True):
-        st.session_state.page = "home"
-        st.rerun()
-
-    user = st.session_state.user
-    modes = [
-        "🛰️ Official NASA Challenge Data Feed", 
-        "📂 Custom FITS File Upload", 
-        "📡 Live Caltech IRSA (API / Archive Cutouts)"
+def build_spherex_102_bands() -> List[SPHERExBand]:
+    """
+    Constructs the 102 spectral wavelength channels inspired by NASA's SPHEREx
+    all-sky spectrophotometric survey (0.75 um to 5.00 um across 6 LVF bands).
+    """
+    # SPHEREx 6 LVF segments: (start_um, end_um, n_channels, resolving_power)
+    segments = [
+        (1, 0.75, 1.11, 17, 41.0),
+        (2, 1.11, 1.64, 17, 41.0),
+        (3, 1.64, 2.42, 17, 41.0),
+        (4, 2.42, 3.82, 17, 35.0),
+        (5, 3.82, 4.42, 17, 110.0),
+        (6, 4.42, 5.00, 17, 130.0),
     ]
-    saved_mode = st.session_state.profiles[user].get("last_mode", modes[0])
-
-    with st.container(border=True):
-        st.markdown("<h4 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>📡 SELECT UPLINK SOURCE</h4>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style='display:flex; gap:12px; flex-wrap:wrap; margin-bottom:10px; font-size:0.95rem;'>
-            <div style='flex:1; background:rgba(56,189,248,0.06); padding:10px; border-radius:6px; border-left:3px solid #38bdf8;'>
-                <b style='color:#38bdf8;'>1. Official NASA Data:</b> Prepared pipeline for NASA Space Apps official challenge release.
-            </div>
-            <div style='flex:1; background:rgba(245,158,11,0.06); padding:10px; border-radius:6px; border-left:3px solid #f59e0b;'>
-                <b style='color:#f59e0b;'>2. Custom Upload:</b> Upload your own observation FITS files directly into the workbench.
-            </div>
-            <div style='flex:1; background:rgba(192,132,252,0.06); padding:10px; border-radius:6px; border-left:3px solid #c084fc;'>
-                <b style='color:#c084fc;'>3. Caltech IRSA:</b> Use pre-loaded NASA FITS archive cutouts.
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
-        
-        chosen_mode = st.radio("Select Mode", modes, index=modes.index(saved_mode) if saved_mode in modes else 0, horizontal=True, label_visibility="collapsed")
-        st.session_state.profiles[user]["last_mode"] = chosen_mode
-
-    with st.container(border=True):
-        ctrl_col_h1, ctrl_col_h2 = st.columns([4, 1])
-        ctrl_col_h1.markdown("<h4 style='color:#c084fc; font-family:Chakra Petch; margin-top:0;'>🎛️ Advanced Astronomical Image Controls & Frame Management</h4>", unsafe_allow_html=True)
-        
-        with ctrl_col_h2:
-            show_control_guide = st.toggle("📖 Guide & Tooltips", value=False)
-
-        if show_control_guide:
-            st.markdown("""
-            <div style='background:rgba(11, 19, 41, 0.98); padding:18px; border-radius:10px; border:1.5px solid #38bdf8; margin-bottom:15px; font-size:0.95rem; color:#f1f5f9;'>
-                <b style='color:#38bdf8;'>📚 Observatory Controls Guide & Documentation:</b><br>
-                &bull; <b>Image Scale Algorithm (Linear, Log, Sqrt, HistEq):</b> Controls how pixel brightness maps to visual shades. Log and Square Root stretch faint infrared signals so hidden planets become visible.<br>
-                &bull; <b>Color Palette (LUT - Inferno, Viridis, Gray, etc.):</b> Color Lookup Tables highlight thermal gradients and optical density.<br>
-                &bull; <b>Bias / Contrast Stretch:</b> Adjusts black and white clipping points to isolate sources from background noise.<br>
-                &bull; <b>Region Select Shapes (Box, Circle, Star, Hexagon):</b> Astrometric tools for bounding and measuring target apertures.<br>
-                &bull; <b>View Frame Modes (Single, Tile, Fade Blend):</b> Lets you inspect epochs side-by-side or blended.<br>
-                &bull; <b>WCS Coordinate Grid:</b> Overlays celestial Right Ascension (RA) and Declination (Dec) coordinate lines.<br>
-                &bull; <b>Clear / Reset Frames:</b> Flushes active selections and temporary canvas memory.
-            </div>
-            """, unsafe_allow_html=True)
-        
-        ctrl_c1, ctrl_c2, ctrl_c3, ctrl_c4 = st.columns([1.2, 1.2, 1.2, 1.2])
-        with ctrl_c1:
-            scale_opt = st.selectbox("Image Scale Algorithm:", ["Linear", "Logarithmic (Log)", "Square Root (Sqrt)", "Histogram Equalization"])
-        with ctrl_c2:
-            color_opt = st.selectbox("Color Palette (LUT):", ["gray", "inferno", "viridis", "plasma", "magma", "cividis"])
-        with ctrl_c3:
-            contrast_val = st.slider("Bias / Contrast Stretch:", 0.85, 1.0, 0.98, 0.01)
-        with ctrl_c4:
-            region_shape = st.selectbox("Region Select Shape:", ["Rectangle / Box", "Circle", "Star", "Hexagon", "Polygon / Trapezoid"])
-
-        st.markdown("<hr style='border-color: rgba(192,132,252,0.2); margin: 12px 0;'>", unsafe_allow_html=True)
-        
-        sub_c1, sub_c2, sub_c3, sub_c4 = st.columns([1.2, 1.2, 1.2, 1.2])
-        with sub_c1:
-            st.session_state.frame_view_mode = st.selectbox("View Frames Mode:", ["Single Frame", "Tile Frames", "Previous Frame", "Fade Frame"])
-        with sub_c2:
-            wcs_overlay = st.checkbox("WCS Coordinate Analysis Grid", value=True)
-        with sub_c3:
-            invert_color = st.checkbox("Invert Palette", value=False)
-        with sub_c4:
-            st.write("")
-            if st.button("Clear / Reset Frames", use_container_width=True):
-                st.session_state.user_box = None
-                st.session_state.custom_loaded_frames = []
-                st.rerun()
-
-        st.markdown("<hr style='border-color: rgba(56,189,248,0.2); margin: 12px 0;'>", unsafe_allow_html=True)
-        fm_col1, fm_col2 = st.columns([2, 2])
-        with fm_col1:
-            total_active_frames = 2 + len(st.session_state.custom_loaded_frames)
-            st.markdown(f"<p class='mono-text'>📂 Active Loaded FITS Frames in Stack: <b style='color:#38bdf8;'>{total_active_frames} Frames</b> (Epoch 1, Epoch 2 + {len(st.session_state.custom_loaded_frames)} Extra Multi-Extension Extensions)</p>", unsafe_allow_html=True)
-        with fm_col2:
-            extra_frame_file = st.file_uploader("➕ Add Additional Extension Frame (.fits)", type=["fits", "fit"], key="extra_ext_uploader")
-            if extra_frame_file is not None:
-                ef_data = read_fits_upload(extra_frame_file)
-                if ef_data is not None:
-                    st.session_state.custom_loaded_frames.append(ef_data)
-                    st.success(f"Successfully added frame {extra_frame_file.name} to stack!")
-                    st.rerun()
-
-    cmap_final = f"{color_opt}_r" if invert_color else color_opt
-
-    px, py = st.session_state.planet_x, st.session_state.planet_y
-    f1_raw, f2_raw = None, None
-    custom_file_used = False
-    source_name = ""
-
-    if "Official NASA" in chosen_mode:
-        source_name = f"Official NASA SPHEREx Feed (Seed #{st.session_state.seed})"
-        f1_raw, f2_raw = make_sky_frames("Hybrid", px, py, st.session_state.seed)
-    elif "Custom" in chosen_mode:
-        up_file = st.file_uploader("📂 Upload Custom FITS Observation File (.fits / .fit)", type=["fits", "fit"], key="custom_fits_main")
-        if up_file is not None:
-            arr = read_fits_upload(up_file)
-            if arr is not None:
-                f1_raw = arr
-                f2_raw = np.roll(arr, shift=(5, 8), axis=(0, 1))
-                custom_file_used = True
-                source_name = f"Custom Upload: {up_file.name}"
-                st.success(f"Successfully loaded {up_file.name}")
+    bands: List[SPHERExBand] = []
+    idx = 1
+    for lvf_id, lam_min, lam_max, n_ch, res_p in segments:
+        wavelengths = np.geomspace(lam_min, lam_max, n_ch)
+        for lam in wavelengths:
+            bw = float(lam / res_p)
+            # Tag notable infrared astrophysics features
+            if 0.80 <= lam <= 0.95:
+                feat = "Stellar Continuum / TiO & Redshift BAO Tracer"
+            elif 1.05 <= lam <= 1.35:
+                feat = "Paschen-Beta / Near-IR Galaxy Continuum"
+            elif 1.50 <= lam <= 1.75:
+                feat = "H-Band Stellar Photosphere (1.6 um H- Opacity Minimum)"
+            elif 2.00 <= lam <= 2.35:
+                feat = "K-Band CO Rvibrational Bandhead / High-z Galaxy Tracer"
+            elif 2.95 <= lam <= 3.18:
+                feat = "H2O Water-Ice Absorption Band (3.05 um Interstellar Ices)"
+            elif 3.25 <= lam <= 3.35:
+                feat = "PAH Aromatic Hydrocarbon Emission (3.3 um)"
+            elif 4.10 <= lam <= 4.35:
+                feat = "CO2 Ice Absorption Band (4.27 um Biogenic/Prebiotic Ice)"
+            elif 4.55 <= lam <= 4.80:
+                feat = "CO Gas & Ice Rovibrational Band (4.67 um)"
             else:
-                st.error("Could not read 2D image from this FITS file.")
-        else:
-            st.info("ℹ️ Please upload a `.fits` file above to begin your custom analysis, or switch to Official NASA / IRSA mode.")
-            f1_raw, f2_raw = make_sky_frames("Proxy", px, py, st.session_state.seed)
+                feat = "Infrared Continuum & Extragalactic Background Light (EBL)"
+
+            bands.append(
+                SPHERExBand(
+                    band_index=idx,
+                    lvf_array=lvf_id,
+                    wavelength_um=round(float(lam), 4),
+                    bandwidth_um=round(bw, 4),
+                    resolving_power=res_p,
+                    spectral_feature=feat,
+                )
+            )
+            idx += 1
+    return bands
+
+
+class SimpleWCS:
+    """
+    Lightweight World Coordinate System (WCS) engine relating pixel coordinates (x, y)
+    to Right Ascension (RA) and Declination (Dec) in degrees and sexagesimal notation.
+    Default pixel scale matches SPHEREx detectors (~6.15 arcsec/pixel).
+    """
+
+    def __init__(
+        self,
+        crval_ra: float = 270.0000,   # Reference RA in degrees (e.g. North Ecliptic / Deep Field)
+        crval_dec: float = 66.5607,   # Reference Dec in degrees
+        crpix_x: float = 64.0,
+        crpix_y: float = 64.0,
+        pixel_scale_arcsec: float = 6.15,
+        rotation_deg: float = 0.0,
+    ):
+        self.crval_ra = crval_ra
+        self.crval_dec = crval_dec
+        self.crpix_x = crpix_x
+        self.crpix_y = crpix_y
+        self.pixel_scale_arcsec = pixel_scale_arcsec
+        self.cdelt = pixel_scale_arcsec / 3600.0  # deg/pixel
+        self.rotation_rad = math.radians(rotation_deg)
+
+    def pixel_to_world(self, x: float, y: float) -> Tuple[float, float]:
+        """Convert 0-indexed pixel coordinates (x, y) to (RA_deg, Dec_deg) via TAN projection."""
+        dx = x - self.crpix_x
+        dy = y - self.crpix_y
+        cos_r = math.cos(self.rotation_rad)
+        sin_r = math.sin(self.rotation_rad)
+        dra_proj = (-dx * cos_r + dy * sin_r) * self.cdelt
+        ddec = (dx * sin_r + dy * cos_r) * self.cdelt
+        dec = max(-89.999, min(89.999, self.crval_dec + ddec))
+        cos_dec = max(0.01, math.cos(math.radians(dec)))
+        ra = (self.crval_ra + dra_proj / cos_dec) % 360.0
+        return ra, dec
+
+    def world_to_pixel(self, ra: float, dec: float) -> Tuple[float, float]:
+        """Convert (RA_deg, Dec_deg) back to 0-indexed pixel coordinates (x, y)."""
+        cos_dec = max(0.01, math.cos(math.radians(dec)))
+        dra_proj = ((ra - self.crval_ra + 180.0) % 360.0 - 180.0) * cos_dec
+        ddec = dec - self.crval_dec
+        cos_r = math.cos(self.rotation_rad)
+        sin_r = math.sin(self.rotation_rad)
+        dx = (-dra_proj * cos_r + ddec * sin_r) / self.cdelt
+        dy = (dra_proj * sin_r + ddec * cos_r) / self.cdelt
+        return self.crpix_x + dx, self.crpix_y + dy
+
+    @staticmethod
+    def format_sexagesimal(ra_deg: float, dec_deg: float) -> Tuple[str, str]:
+        """Format RA (HH:MM:SS.ss) and Dec (+DD:MM:SS.s)."""
+        ra_total_sec = (ra_deg / 15.0) * 3600.0
+        ra_h = int(ra_total_sec // 3600)
+        ra_m = int((ra_total_sec % 3600) // 60)
+        ra_s = ra_total_sec % 60.0
+
+        sign = "+" if dec_deg >= 0 else "-"
+        dec_abs_sec = abs(dec_deg) * 3600.0
+        dec_d = int(dec_abs_sec // 3600)
+        dec_m = int((dec_abs_sec % 3600) // 60)
+        dec_s = dec_abs_sec % 60.0
+
+        return f"{ra_h:02d}h {ra_m:02d}m {ra_s:05.2f}s", f"{sign}{dec_d:02d}d {dec_m:02d}m {dec_s:04.1f}s"
+
+
+# =====================================================================
+# 2. DATA INGESTION PIPELINE (SIMULATED, HYBRID, IRSA & FITS UPLOAD)
+# =====================================================================
+
+@dataclass
+class SimulatedObject:
+    obj_id: str
+    obj_type: str
+    x_epoch1: float
+    y_epoch1: float
+    x_epoch2: float
+    y_epoch2: float
+    flux_epoch1_ujy: float
+    flux_epoch2_ujy: float
+    temperature_k: float
+    radial_velocity_kms: float
+    notes: str
+
+
+def blackbody_sed_factor(wavelength_um: float, temp_k: float) -> float:
+    """Normalized Planck blackbody spectral shape evaluated at wavelength_um."""
+    h_c_k = 14387.77  # um * K
+    x = h_c_k / max(0.1, wavelength_um * max(100.0, temp_k))
+    x_ref = h_c_k / (1.5 * max(100.0, temp_k))
+    val = (1.5 / wavelength_um) ** 3 * (math.exp(min(50.0, x_ref)) - 1.0) / max(1e-9, math.exp(min(50.0, x)) - 1.0)
+    return float(np.clip(val, 0.05, 15.0))
+
+
+@st.cache_data
+def generate_simulated_dual_epoch_survey(
+    image_size: int,
+    band_index: int,
+    wavelength_um: float,
+    seed: int = 42,
+    sky_noise_sigma: float = 4.2,
+    pm_shift_px: float = 5.5,
+    transient_amp_factor: float = 2.8,
+) -> Tuple[np.ndarray, np.ndarray, List[SimulatedObject], Dict[str, str]]:
+    """
+    Generates two realistic infrared sky cutouts separated by a 6-month baseline
+    (Epoch 1: 2026-03-15, Epoch 2: 2026-09-15) inspired by NASA's SPHEREx survey.
+    Includes static stars, an extended spiral/elliptical galaxy, zodiacal infrared background,
+    and three benchmark anomalies:
+      1. High-Proper-Motion Brown Dwarf (shifts position across the 6-month baseline)
+      2. Variable AGB / Young Stellar Object (changes brightness across epochs)
+      3. Extragalactic Infrared Transient / Supernova (appears in Epoch 2)
+    """
+    rng = np.random.default_rng(seed)
+    yy, xx = np.mgrid[0:image_size, 0:image_size]
+
+    # Smooth zodiacal light + diffuse galactic cirrus gradient
+    zodi_bg = (
+        45.0
+        + 8.0 * np.sin(xx / (image_size * 0.35))
+        + 6.0 * np.cos(yy / (image_size * 0.42))
+    ) * (1.0 + 0.15 * (wavelength_um - 1.5))
+
+    img1 = zodi_bg.copy()
+    img2 = zodi_bg.copy()
+
+    # Wavelength-dependent PSF FWHM (diffraction limit scales with wavelength)
+    psf_sigma = 1.25 + 0.18 * (wavelength_um / 2.5)
+
+    catalog: List[SimulatedObject] = []
+
+    # 1. Static Field Stars (35 stars across field)
+    n_stars = 35
+    for i in range(n_stars):
+        sx = float(rng.uniform(10, image_size - 10))
+        sy = float(rng.uniform(10, image_size - 10))
+        base_flux = float(rng.lognormal(mean=5.4, sigma=0.75))
+        temp_k = float(rng.choice([3200.0, 4500.0, 5800.0, 7500.0, 9500.0]))
+        sed_mult = blackbody_sed_factor(wavelength_um, temp_k)
+        flux = base_flux * sed_mult
+        rv_kms = float(rng.normal(0.0, 35.0))
+
+        psf = flux * np.exp(-((xx - sx) ** 2 + (yy - sy) ** 2) / (2.0 * psf_sigma ** 2))
+        img1 += psf
+        img2 += psf
+
+        if i < 5:  # Keep top reference stars in catalog
+            catalog.append(
+                SimulatedObject(
+                    obj_id=f"SPX-REF-{i+1:02d}",
+                    obj_type="Static Field Star",
+                    x_epoch1=round(sx, 2),
+                    y_epoch1=round(sy, 2),
+                    x_epoch2=round(sx, 2),
+                    y_epoch2=round(sy, 2),
+                    flux_epoch1_ujy=round(flux, 1),
+                    flux_epoch2_ujy=round(flux, 1),
+                    temperature_k=temp_k,
+                    radial_velocity_kms=round(rv_kms, 1),
+                    notes="WCS Astrometric & Photometric Reference Calibrator",
+                )
+            )
+
+    # 2. Extended Background Infrared Galaxy
+    gx, gy = image_size * 0.28, image_size * 0.72
+    gal_flux = 620.0 * blackbody_sed_factor(wavelength_um, 4200.0)
+    dx_g = (xx - gx) * math.cos(0.6) + (yy - gy) * math.sin(0.6)
+    dy_g = -(xx - gx) * math.sin(0.6) + (yy - gy) * math.cos(0.6)
+    gal_profile = gal_flux * np.exp(-np.sqrt((dx_g / 3.8) ** 2 + (dy_g / 2.1) ** 2))
+    img1 += gal_profile
+    img2 += gal_profile
+    catalog.append(
+        SimulatedObject(
+            obj_id="SPX-GAL-01",
+            obj_type="Extended IR Galaxy",
+            x_epoch1=round(gx, 2),
+            y_epoch1=round(gy, 2),
+            x_epoch2=round(gx, 2),
+            y_epoch2=round(gy, 2),
+            flux_epoch1_ujy=round(gal_flux * 2.4, 1),
+            flux_epoch2_ujy=round(gal_flux * 2.4, 1),
+            temperature_k=4200.0,
+            radial_velocity_kms=1420.0,
+            notes="Extended Sersic profile galaxy; redshift z = 0.0047",
+        )
+    )
+
+    # 3. ANOMALY A: High-Proper-Motion T/Y Brown Dwarf (Moving Object across 6 months)
+    bd_x1, bd_y1 = image_size * 0.52, image_size * 0.48
+    bd_x2 = bd_x1 + pm_shift_px * 0.85
+    bd_y2 = bd_y1 - pm_shift_px * 0.52
+    bd_flux = 880.0 * blackbody_sed_factor(wavelength_um, 1450.0) * transient_amp_factor * 0.55
+    img1 += bd_flux * np.exp(-((xx - bd_x1) ** 2 + (yy - bd_y1) ** 2) / (2.0 * psf_sigma ** 2))
+    img2 += bd_flux * np.exp(-((xx - bd_x2) ** 2 + (yy - bd_y2) ** 2) / (2.0 * psf_sigma ** 2))
+    catalog.append(
+        SimulatedObject(
+            obj_id="ANOM-MOV-01",
+            obj_type="Moving Object (Brown Dwarf)",
+            x_epoch1=round(bd_x1, 2),
+            y_epoch1=round(bd_y1, 2),
+            x_epoch2=round(bd_x2, 2),
+            y_epoch2=round(bd_y2, 2),
+            flux_epoch1_ujy=round(bd_flux, 1),
+            flux_epoch2_ujy=round(bd_flux, 1),
+            temperature_k=1450.0,
+            radial_velocity_kms=-185.0,
+            notes=f"Proper motion shift of {pm_shift_px:.1f} px over 6-month baseline",
+        )
+    )
+
+    # 4. ANOMALY B: Variable Young Stellar Object / Mira AGB Variable (Brightness Change)
+    var_x, var_y = image_size * 0.70, image_size * 0.34
+    var_flux1 = 360.0 * blackbody_sed_factor(wavelength_um, 2600.0)
+    var_flux2 = var_flux1 * transient_amp_factor
+    img1 += var_flux1 * np.exp(-((xx - var_x) ** 2 + (yy - var_y) ** 2) / (2.0 * psf_sigma ** 2))
+    img2 += var_flux2 * np.exp(-((xx - var_x) ** 2 + (yy - var_y) ** 2) / (2.0 * psf_sigma ** 2))
+    catalog.append(
+        SimulatedObject(
+            obj_id="ANOM-VAR-02",
+            obj_type="Variable IR Star (YSO Flare)",
+            x_epoch1=round(var_x, 2),
+            y_epoch1=round(var_y, 2),
+            x_epoch2=round(var_x, 2),
+            y_epoch2=round(var_y, 2),
+            flux_epoch1_ujy=round(var_flux1, 1),
+            flux_epoch2_ujy=round(var_flux2, 1),
+            temperature_k=2600.0,
+            radial_velocity_kms=62.5,
+            notes=f"Brightened by {transient_amp_factor:.2f}x between Epoch 1 and Epoch 2",
+        )
+    )
+
+    # 5. ANOMALY C: New Transient Event (Appears in Epoch 2 near galaxy outskirts)
+    tr_x, tr_y = image_size * 0.33, image_size * 0.66
+    tr_flux1 = 12.0
+    tr_flux2 = 690.0 * blackbody_sed_factor(wavelength_um, 3800.0) * (transient_amp_factor / 2.0)
+    img2 += tr_flux2 * np.exp(-((xx - tr_x) ** 2 + (yy - tr_y) ** 2) / (2.0 * psf_sigma ** 2))
+    catalog.append(
+        SimulatedObject(
+            obj_id="ANOM-TRN-03",
+            obj_type="Transient Outburst (SN / TDE)",
+            x_epoch1=round(tr_x, 2),
+            y_epoch1=round(tr_y, 2),
+            x_epoch2=round(tr_x, 2),
+            y_epoch2=round(tr_y, 2),
+            flux_epoch1_ujy=round(tr_flux1, 1),
+            flux_epoch2_ujy=round(tr_flux2, 1),
+            temperature_k=3800.0,
+            radial_velocity_kms=1480.0,
+            notes="New infrared point-source transient detected exclusively in Epoch 2",
+        )
+    )
+
+    # 6. ANOMALY D: Fast Solar System Outer Kuiper Belt / Centaur Candidate
+    kb_x1, kb_y1 = image_size * 0.22, image_size * 0.26
+    kb_x2 = kb_x1 - pm_shift_px * 1.15
+    kb_y2 = kb_y1 + pm_shift_px * 0.75
+    kb_flux = 520.0 * blackbody_sed_factor(wavelength_um, 1900.0)
+    img1 += kb_flux * np.exp(-((xx - kb_x1) ** 2 + (yy - kb_y1) ** 2) / (2.0 * psf_sigma ** 2))
+    img2 += kb_flux * np.exp(-((xx - kb_x2) ** 2 + (yy - kb_y2) ** 2) / (2.0 * psf_sigma ** 2))
+    catalog.append(
+        SimulatedObject(
+            obj_id="ANOM-MOV-04",
+            obj_type="Solar System Centaur / NEO",
+            x_epoch1=round(kb_x1, 2),
+            y_epoch1=round(kb_y1, 2),
+            x_epoch2=round(kb_x2, 2),
+            y_epoch2=round(kb_y2, 2),
+            flux_epoch1_ujy=round(kb_flux, 1),
+            flux_epoch2_ujy=round(kb_flux, 1),
+            temperature_k=1900.0,
+            radial_velocity_kms=-42.0,
+            notes="High-displacement moving target across 6-month parallax/orbital baseline",
+        )
+    )
+
+    # Add realistic detector readout + Poisson sky noise
+    noise1 = rng.normal(0.0, sky_noise_sigma, size=(image_size, image_size))
+    noise2 = rng.normal(0.0, sky_noise_sigma, size=(image_size, image_size))
+    img1 = np.clip(img1 + noise1, 1.0, None)
+    img2 = np.clip(img2 + noise2, 1.0, None)
+
+    metadata = {
+        "mission": "SPHEREx Simulated Survey Pipeline",
+        "band_index": str(band_index),
+        "wavelength_um": f"{wavelength_um:.4f}",
+        "epoch1_date": "2026-03-15T04:12:00Z",
+        "epoch2_date": "2026-09-15T04:18:00Z",
+        "baseline_months": "6.0",
+        "image_dimensions": f"{image_size}x{image_size}",
+    }
+    return img1, img2, catalog, metadata
+
+
+def load_uploaded_astronomical_image(uploaded_file, target_size: int = 128) -> Tuple[np.ndarray, Dict[str, str]]:
+    """
+    Loads a user-uploaded FITS (.fits/.fit), NumPy (.npy), or standard image (.png/.jpg/.tif)
+    and normalizes/resamples it to target_size for co-registered multi-epoch analysis.
+    """
+    fname = uploaded_file.name.lower()
+    raw_bytes = uploaded_file.read()
+    meta: Dict[str, str] = {"filename": uploaded_file.name}
+
+    if fname.endswith((".fits", ".fit")) and ASTROPY_AVAILABLE:
+        with fits.open(io.BytesIO(raw_bytes)) as hdul:
+            data = None
+            for hdu in hdul:
+                if hdu.data is not None and hdu.data.ndim >= 2:
+                    data = np.asarray(hdu.data, dtype=np.float64)
+                    if data.ndim > 2:
+                        data = data[0]
+                    meta["fits_header_object"] = str(hdu.header.get("OBJECT", "Unknown"))
+                    meta["fits_header_date"] = str(hdu.header.get("DATE-OBS", "Unknown"))
+                    break
+            if data is None:
+                raise ValueError("No 2D image array found in FITS file.")
+    elif fname.endswith(".npy"):
+        data = np.load(io.BytesIO(raw_bytes)).astype(np.float64)
+        if data.ndim > 2:
+            data = data[:, :, 0]
     else:
-        st.markdown('<a href="https://irsa.ipac.caltech.edu/applications/Cutouts/" target="_blank" class="ext-link" style="margin-bottom:14px;">🔗 Open NASA/Caltech IRSA Cutouts</a>', unsafe_allow_html=True)
-        preset = st.selectbox("Choose Sample NASA FITS Cutout:", ["SPHEREx_DeepField_SectorA.fits", "NEOWISE_W1_OuterRim_Epoch1.fits", "2MASS_KuiperBelt_Survey_09.fits"])
-        p_seed = sum(ord(ch) for ch in preset) + st.session_state.seed
-        source_name = f"IRSA Sample: {preset}"
-        f1_raw, f2_raw = make_sky_frames("Hybrid", px, py, p_seed)
+        pil_img = Image.open(io.BytesIO(raw_bytes)).convert("L")
+        data = np.asarray(pil_img, dtype=np.float64)
 
-    if f1_raw is not None and f2_raw is not None:
-        img1 = scale_image_professional(f1_raw, scale_opt, contrast_val)
-        img2 = scale_image_professional(f2_raw, scale_opt, contrast_val)
+    data = np.nan_to_num(data, nan=np.nanmedian(data))
+    # Resample to common target_size grid if dimensions differ
+    if data.shape != (target_size, target_size):
+        zoom_y = target_size / data.shape[0]
+        zoom_x = target_size / data.shape[1]
+        data = ndimage.zoom(data, (zoom_y, zoom_x), order=1)
+        meta["resampled"] = f"Co-registered to {target_size}x{target_size}"
+    return data, meta
 
-        view_mode = st.session_state.frame_view_mode
-        
-        if not st.session_state.blinking:
-            st.markdown(f"<p class='card-text'><b>Step 1:</b> Current View Mode: <b>{view_mode}</b>. Compare epochs below and launch blink analysis.</p>", unsafe_allow_html=True)
-            
-            with st.container(border=True):
-                if view_mode == "Tile Frames" or view_mode == "Fade Frame":
-                    col_a, col_b = st.columns(2)
-                    with col_a:
-                        fig1 = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                        fig1.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 1 ($t_0$)", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
-                        if wcs_overlay:
-                            fig1.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                            fig1.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                        st.plotly_chart(fig1, use_container_width=True)
-                    with col_b:
-                        blend_z = (img1 * 0.5 + img2 * 0.5) if view_mode == "Fade Frame" else img2
-                        fig2 = go.Figure(data=go.Heatmap(z=blend_z, colorscale=cmap_final, showscale=False))
-                        fig2.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Epoch 2 / Fade Blend", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=350)
-                        if wcs_overlay:
-                            fig2.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                            fig2.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                        st.plotly_chart(fig2, use_container_width=True)
-                else:
-                    fig_single = go.Figure(data=go.Heatmap(z=img1, colorscale=cmap_final, showscale=False))
-                    fig_single.update_layout(margin=dict(l=0,r=0,t=25,b=0), title="Active Frame — Epoch 1 ($t_0$)", xaxis=dict(title="X (px)", color="#5eead4"), yaxis=dict(title="Y (px)", color="#5eead4"), paper_bgcolor="#010409", plot_bgcolor="#010409", height=400)
-                    if wcs_overlay:
-                        fig_single.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                        fig_single.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                    st.plotly_chart(fig_single, use_container_width=True)
-                
-            if st.button("🚨 LAUNCH BLINK FRAMES", use_container_width=True):
-                start_load = time.time()
-                trivia_msg = random.choice(TRIVIA_LIST)
-                with st.spinner(f"✨ Initializing high-speed interferometry matrix... {trivia_msg}"):
-                    time.sleep(0.4)
-                
-                if time.time() - start_load > 10.0:
-                    st.warning("⚠️ Mission telemetry timeout exceeded (10s threshold). Aborting sequence to protect sensor arrays.")
-                    st.session_state.page = "home"
-                    st.rerun()
 
-                st.session_state.blinking = True
-                st.rerun()
-        else:
-            st.markdown("<p class='card-text'><b>Step 2:</b> BLINK FRAMES active! Use the selection tool matching your chosen shape to mark the moving anomaly.</p>", unsafe_allow_html=True)
-            
-            with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction) — Learn More"):
-                st.markdown("""
-                <div style='background:rgba(3, 7, 18, 0.98); padding:14px; border-radius:8px; margin-bottom:12px; font-size:0.92rem; color:#cbd5e1;'>
-                    <b>🔭 What is Data Reduction & Background Subtraction?</b><br>
-                    Telescope detectors capture unwanted background glow (starlight scatter, thermal instrument emissions). Background subtraction measures median sky levels and subtracts them to isolate true astronomical point sources.<br>
-                    &bull; <b>Wavelet / Median Smoothing Filters:</b> Mathematical algorithms that smooth out high-frequency sensor noise while preserving sharp point-spread functions (PSF) of stars.<br>
-                    &bull; <b>Background ADU Cutoff:</b> Threshold limit (in Analog-to-Digital Units) below which all pixel values are treated as sky noise and zeroed out.<br>
-                    &bull; <b>Sensor Readout Noises & Cosmic Ray Artifacts:</b> Electronic static and high-energy particle streaks on the CCD. Checking this filter cleans them instantly.
-                </div>
-                """, unsafe_allow_html=True)
-                
-                dr_col1, dr_col2 = st.columns(2)
-                with dr_col1:
-                    enable_denoise = st.checkbox("Apply Wavelet / Median Smoothing Filter", value=False)
-                    noise_threshold = st.slider("Background ADU Cutoff:", 1.0, 30.0, 12.5, 0.5)
-                with dr_col2:
-                    if enable_denoise:
-                        before_noise = float(np.std(f1_raw))
-                        f1_raw = np.where(f1_raw < noise_threshold, float(np.median(f1_raw)), f1_raw)
-                        after_noise = float(np.std(f1_raw))
-                        st.markdown(f"""
-                        <div style='background:rgba(56,189,248,0.1); padding:10px; border-radius:6px; font-family:Space Mono; font-size:0.88rem;'>
-                            <b>📊 Data Reduction Report:</b><br>
-                            &bull; Initial Noise Floor: <span style='color:#f43f5e;'>{before_noise:.2f} ADU</span><br>
-                            &bull; Reduced Noise Floor: <span style='color:#2dd4bf;'>{after_noise:.2f} ADU</span><br>
-                            &bull; SNR Enhancement: <span style='color:#38bdf8;'>+{(before_noise - after_noise):.2f} ADU Cleaned</span>
-                        </div>
-                        """, unsafe_allow_html=True)
-                    else:
-                        st.info("Check the box above to filter sensor readout noise and cosmic ray artifacts.")
+def build_irsa_cutout_url(ra_deg: float, dec_deg: float, size_arcsec: float, survey: str = "wise") -> str:
+    """
+    Builds a Caltech/IPAC Infrared Science Archive (IRSA) FinderChart / Cutout API URL
+    for retrieving real infrared cutouts (WISE/NEOWISE, 2MASS, Spitzer, or SPHEREx-ready).
+    """
+    size_deg = round(size_arcsec / 3600.0, 4)
+    params = {
+        "locstr": f"{ra_deg:.5f} {dec_deg:.5f}",
+        "subsetsize": str(max(0.02, min(1.0, size_deg * 60.0))),  # arcmin
+        "survey": survey,
+    }
+    return f"https://irsa.ipac.caltech.edu/applications/finderchart/servlet/api?{urllib.parse.urlencode(params)}"
 
-            c_loop, c_spd, c_stop = st.columns([1.5, 1.5, 1])
-            with c_loop:
-                keep_looping = st.toggle("🔄 AUTO-LOOP BLINK (NON-STOP)", value=False)
-            with c_spd:
-                speed_ms = st.number_input("Blink Speed (ms) [Exact Control]:", min_value=10.0, max_value=5000.0, value=450.0, step=5.0)
-                st.markdown("<span style='font-size:0.8rem; color:#5eead4;'>ℹ️ <b>Blink Speed (ms):</b> Sets interval duration in milliseconds between frame switches.</span>", unsafe_allow_html=True)
-            with c_stop:
-                st.write("")
-                if st.button("⏹ EXIT BLINK MODE", use_container_width=True):
-                    st.session_state.blinking = False
-                    st.rerun()
 
-            frames_list = [
-                go.Frame(data=[go.Heatmap(z=img1 if i % 2 == 0 else img2, colorscale=cmap_final, showscale=True)], name=f"fr_{i}")
-                for i in range(30)
-            ]
-            
-            curr_img = img1 if st.session_state.frame_step % 2 == 0 else img2
-            ep_name = "$t_0$" if st.session_state.frame_step % 2 == 0 else "$t_0 + \Delta t$"
+# =====================================================================
+# 3. ASTRONOMICAL IMAGE SCALING & ANOMALY DETECTION
+# =====================================================================
 
-            drag_mode_map = {
-                "Rectangle / Box": "select",
-                "Circle": "drawcircle",
-                "Star": "drawopenpath",
-                "Hexagon": "drawclosedpath",
-                "Polygon / Trapezoid": "drawclosedpath"
+def scale_astronomical_image(
+    img: np.ndarray,
+    method: str = "Asinh",
+    p_min: float = 1.0,
+    p_max: float = 99.5,
+) -> np.ndarray:
+    """
+    Applies astronomical radiometric scaling algorithms to map high-dynamic-range
+    infrared pixel intensities onto [0.0, 1.0] for display.
+    Supported methods: ZScale, Asinh, Logarithmic, Square Root, Linear.
+    """
+    arr = np.asarray(img, dtype=np.float64)
+    if method == "ZScale":
+        # Robust IRAF-inspired median +/- sigma clipping
+        med = np.median(arr)
+        mad = np.median(np.abs(arr - med))
+        sigma = 1.4826 * mad if mad > 0 else np.std(arr)
+        vmin = max(float(np.min(arr)), med - 1.5 * sigma)
+        vmax = min(float(np.max(arr)), med + 6.5 * sigma)
+    else:
+        vmin = float(np.percentile(arr, p_min))
+        vmax = float(np.percentile(arr, p_max))
+
+    if vmax <= vmin:
+        vmax = vmin + 1e-6
+
+    clipped = np.clip((arr - vmin) / (vmax - vmin), 0.0, 1.0)
+
+    if method == "Asinh":
+        beta = 12.0
+        scaled = np.arcsinh(clipped * beta) / np.arcsinh(beta)
+    elif method == "Logarithmic":
+        alpha = 100.0
+        scaled = np.log10(1.0 + alpha * clipped) / np.log10(1.0 + alpha)
+    elif method == "Square Root":
+        scaled = np.sqrt(clipped)
+    else:  # Linear or post-ZScale linear
+        scaled = clipped
+
+    return np.clip(scaled, 0.0, 1.0)
+
+
+def detect_multi_epoch_anomalies(
+    img1: np.ndarray,
+    img2: np.ndarray,
+    sigma_threshold: float = 4.5,
+    max_candidates: int = 8,
+) -> pd.DataFrame:
+    """
+    Automated multi-epoch anomaly detector using difference imaging (Epoch 2 - Epoch 1).
+    Identifies statistically significant positive/negative residuals caused by moving objects
+    (dipole signatures) or flux transients (monopole signatures).
+    """
+    diff = img2 - img1
+    med = float(np.median(diff))
+    mad = float(np.median(np.abs(diff - med)))
+    robust_sigma = 1.4826 * mad if mad > 1e-6 else float(np.std(diff))
+    snr_map = (diff - med) / max(1e-6, robust_sigma)
+
+    abs_snr = np.abs(snr_map)
+    local_max = ndimage.maximum_filter(abs_snr, size=7)
+    peaks = (abs_snr == local_max) & (abs_snr >= sigma_threshold)
+
+    # Exclude 5-pixel border
+    peaks[:5, :] = False
+    peaks[-5:, :] = False
+    peaks[:, :5] = False
+    peaks[:, -5:] = False
+
+    py, px = np.where(peaks)
+    rows = []
+    for x, y in zip(px, py):
+        val_snr = float(snr_map[y, x])
+        f1 = float(img1[y, x])
+        f2 = float(img2[y, x])
+        classification = (
+            "Epoch 2 Brightening / Appearance"
+            if val_snr > 0
+            else "Epoch 1 Disappearance / Moving Source Origin"
+        )
+        rows.append(
+            {
+                "Pixel X": int(x),
+                "Pixel Y": int(y),
+                "Epoch 1 Peak (uJy)": round(f1, 1),
+                "Epoch 2 Peak (uJy)": round(f2, 1),
+                "Delta Flux (uJy)": round(f2 - f1, 1),
+                "Significance (SNR)": round(val_snr, 2),
+                "Candidate Type": classification,
             }
-            active_drag = drag_mode_map.get(region_shape, "select")
+        )
 
-            with st.container(border=True):
-                blink_fig = go.Figure(
-                    data=[go.Heatmap(z=curr_img, colorscale=cmap_final, showscale=True)],
-                    layout=go.Layout(
-                        title=dict(text=f"BLINK FRAMES ({region_shape}) — Active: {ep_name}", font=dict(color="#38bdf8", family="Chakra Petch", size=16)),
-                        xaxis=dict(title="X Axis (Pixels)", color="#5eead4", range=[0, f1_raw.shape[1]]),
-                        yaxis=dict(title="Y Axis (Pixels)", color="#5eead4", range=[0, f1_raw.shape[0]]),
-                        paper_bgcolor="#010409", plot_bgcolor="#010409", height=500,
-                        margin=dict(l=40, r=40, t=45, b=40),
-                        dragmode=active_drag,
-                        newshape=dict(line_color='#38bdf8', line_width=3, fillcolor='rgba(56, 189, 248, 0.18)'),
-                        updatemenus=[dict(
-                            type="buttons", showactive=True, x=0.01, y=1.12, direction="left",
-                            buttons=[
-                                dict(label="▶ PLAY BLINK", method="animate", args=[None, dict(frame=dict(duration=speed_ms, redraw=True), fromcurrent=True, mode="immediate")]),
-                                dict(label="⏸ PAUSE", method="animate", args=[[None], dict(frame=dict(duration=0, redraw=False), mode="immediate")])
-                            ]
-                        )]
-                    ),
-                    frames=frames_list
-                )
+    df = pd.DataFrame(rows)
+    if not df.empty:
+        df["Abs_SNR"] = df["Significance (SNR)"].abs()
+        df = df.sort_values("Abs_SNR", ascending=False).drop(columns=["Abs_SNR"]).head(max_candidates)
+        df = df.reset_index(drop=True)
+    return df
 
-                if wcs_overlay:
-                    blink_fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
-                    blink_fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='rgba(56,189,248,0.25)')
 
-                if st.session_state.user_box is not None:
-                    bx0, bx1, by0, by1 = st.session_state.user_box
-                    blink_fig.add_shape(type="rect", x0=bx0, y0=by0, x1=bx1, y1=by1, line=dict(color="#38bdf8", width=3), fillcolor="rgba(56, 189, 248, 0.18)")
+# =====================================================================
+# 4. APERTURE PHOTOMETRY ENGINE
+# =====================================================================
 
-                event_data = st.plotly_chart(
-                    blink_fig, use_container_width=True, key="blink_chart",
-                    on_select="rerun", selection_mode=("box", "lasso"),
-                    config={'scrollZoom': True, 'displayModeBar': True, 'modeBarButtonsToAdd': ['select2d', 'lasso2d', 'drawcircle', 'drawrect', 'eraseshape']}
-                )
+@dataclass
+class PhotometryResult:
+    epoch_label: str
+    center_x: float
+    center_y: float
+    ra_deg: float
+    dec_deg: float
+    aperture_radius_px: float
+    annulus_in_px: float
+    annulus_out_px: float
+    n_aperture_pixels: int
+    raw_aperture_sum: float
+    sky_median_per_px: float
+    sky_std_per_px: float
+    net_flux_ujy: float
+    flux_uncertainty_ujy: float
+    snr: float
+    ab_magnitude: float
 
-            if event_data and "selection" in event_data:
-                sel = event_data["selection"]
-                if sel.get("box"):
-                    b = sel["box"][0]
-                    st.session_state.user_box = (b["x"][0], b["x"][1], b["y"][0], b["y"][1])
-                    st.session_state.auto_x = int((b["x"][0] + b["x"][1]) / 2)
-                    st.session_state.auto_y = int((b["y"][0] + b["y"][1]) / 2)
-                    st.session_state.auto_r = int(abs(b["x"][1] - b["x"][0]) / 2)
-                elif sel.get("lasso"):
-                    l = sel["lasso"][0]
-                    st.session_state.user_box = (min(l["x"]), max(l["x"]), min(l["y"]), max(l["y"]))
-                    st.session_state.auto_x = int((min(l["x"]) + max(l["x"])) / 2)
-                    st.session_state.auto_y = int((min(l["y"]) + max(l["y"])) / 2)
-                    st.session_state.auto_r = int((max(l["x"]) - min(l["x"])) / 2)
 
-            if keep_looping:
-                time.sleep(speed_ms / 1000.0)
-                st.session_state.frame_step += 1
-                st.rerun()
+def perform_aperture_photometry(
+    img: np.ndarray,
+    center_x: float,
+    center_y: float,
+    r_ap: float,
+    r_in: float,
+    r_out: float,
+    wcs: SimpleWCS,
+    epoch_label: str = "Epoch 1",
+    zero_point_mag: float = 23.90,  # Standard AB magnitude zero point for uJy (m_AB = -2.5 log10(F_uJy) + 23.9)
+) -> PhotometryResult:
+    """
+    Computes circular aperture photometry with local sky background estimation
+    using a concentric sky annulus (r_in to r_out).
+    """
+    h, w = img.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    dist = np.sqrt((xx - center_x) ** 2 + (yy - center_y) ** 2)
 
-        with st.container(border=True):
-            st.markdown("<h4 style='color:#38bdf8; font-family:Chakra Petch; margin-top:0;'>🎯 LOCK TARGET COORDINATES & APERTURE PHOTOMETRY</h4>", unsafe_allow_html=True)
-            
-            def_x = st.session_state.get('auto_x', 200)
-            def_y = st.session_state.get('auto_y', 200)
-            def_r = max(4, st.session_state.get('auto_r', 12))
+    ap_mask = dist <= r_ap
+    ann_mask = (dist >= r_in) & (dist <= r_out)
 
-            if st.session_state.user_box is not None:
-                st.success(f"Region captured from chart! Auto-synced Center: X={def_x}, Y={def_y}, Radius={def_r} px")
-            else:
-                st.markdown("<p class='card-text'>Draw a selection box on the chart above, or adjust coordinate inputs below:</p>", unsafe_allow_html=True)
+    ap_pixels = img[ap_mask]
+    ann_pixels = img[ann_mask]
 
-            cx1, cy1, crad, cbtn = st.columns([1, 1, 1, 1.8])
-            with cx1:
-                in_x = st.number_input("Center X (px) [Horizontal Pixel Coordinate]:", 0, f1_raw.shape[1]-1, int(np.clip(def_x, 0, f1_raw.shape[1]-1)))
-            with cy1:
-                in_y = st.number_input("Center Y (px) [Vertical Pixel Coordinate]:", 0, f1_raw.shape[0]-1, int(np.clip(def_y, 0, f1_raw.shape[0]-1)))
-            with crad:
-                in_r = st.number_input("Radius (px) [Aperture Boundary Size]:", 4, 40, int(def_r))
-            with cbtn:
-                st.write("")
-                if st.button("🎯 LOCK TARGET & EXTRACT DATA", use_container_width=True):
-                    hit_ok, mx, my, res_dict = analyze_target_box(
-                        f1_raw, f2_raw, in_x - in_r, in_x + in_r, in_y - in_r, in_y + in_r, px, py, custom_file_used
-                    )
-                    st.session_state.is_hit = hit_ok
-                    delta_pts = res_dict.get("score_delta_val", 150) if hit_ok else -75
-                    st.session_state.score += delta_pts
-                    st.session_state.profiles[user]["score"] = st.session_state.score
-                    st.session_state.result_data = res_dict
+    n_ap = int(ap_pixels.size)
+    raw_sum = float(np.sum(ap_pixels))
 
-                    user_logs = st.session_state.profiles[user]["logs"]
-                    user_logs.append({
-                        "Scan #": len(user_logs) + 1,
-                        "Timestamp": get_time_str(),
-                        "Uplink Mode": chosen_mode,
-                        "FITS Source": source_name,
-                        "Attempt Type": "Retry Scan" if st.session_state.is_retry else "First Scan",
-                        "Target Coords (X, Y)": f"X={mx}, Y={my}",
-                        "Status": "VERIFIED HIT" if hit_ok else "FALSE ALARM",
-                        "Score Delta": res_dict.get("score_breakdown", "+150 Pts"),
-                        "Planet Name": "Unassigned" if hit_ok else "N/A (Noise)",
-                        "Radius": res_dict["stats"]["Radius"],
-                        "Albedo": res_dict["stats"]["Albedo"],
-                        "Eccentricity": res_dict["stats"]["Eccentricity"],
-                        "Thermal Emission": res_dict["stats"]["Thermal Emission"]
-                    })
-                    st.session_state.last_log_idx = len(user_logs) - 1
-                    st.session_state.page = "analysis"
-                    st.rerun()
-
-elif st.session_state.page == "analysis":
-    show_header()
-    user = st.session_state.user
-    res = st.session_state.result_data
-    
-    if st.session_state.is_hit:
-        st.markdown(f"<div class='hit-banner'>✅ TARGET VERIFIED: {res.get('score_breakdown', 'Verified Hit')}</div>", unsafe_allow_html=True)
+    if ann_pixels.size > 0:
+        # Sigma-clipped sky background estimate
+        med_sky = float(np.median(ann_pixels))
+        mad_sky = float(np.median(np.abs(ann_pixels - med_sky)))
+        std_sky = 1.4826 * mad_sky if mad_sky > 0 else float(np.std(ann_pixels))
     else:
-        st.markdown(f"<div class='miss-banner'>❌ FALSE ALARM: Background noise detected. (-75 Pts Penalty). True anomaly was at X={st.session_state.planet_x}, Y={st.session_state.planet_y}.</div>", unsafe_allow_html=True)
+        med_sky = float(np.median(img))
+        std_sky = float(np.std(img))
 
-    c_stat, c_graph = st.columns([1.1, 1.9])
-    with c_stat:
-        html_stats = "<div class='info-card'><h3 style='color:#c084fc; font-family:Chakra Petch;'>🪐 Measured Planet Stats (Scientific Notation)</h3><hr style='border-color:#333;'>"
-        for k, v in res["stats"].items():
-            html_stats += f"<div class='mono-text'>{k}: <br><span style='color:#fff; font-size:1.05rem;'>{v}</span></div>"
-        html_stats += "</div>"
-        st.markdown(html_stats, unsafe_allow_html=True)
+    total_sky = med_sky * n_ap
+    net_flux = max(1e-3, raw_sum - total_sky)
 
-    with c_graph:
-        df_spec = pd.DataFrame(list(res["spectrum"].items()), columns=["Molecule", "Abundance"])
-        bar_col = '#38bdf8' if st.session_state.is_hit else '#475569'
-        fig_spec = go.Figure(data=[go.Bar(x=df_spec["Molecule"], y=df_spec["Abundance"], marker_color=bar_col, marker_line=dict(width=2, color='#ffffff'))])
-        fig_spec.update_layout(
-            title=dict(text="Atmospheric Molecular Abundance (%)", font=dict(color="#fff", size=19, family="Chakra Petch")),
-            xaxis_title="Molecules", yaxis_title="Abundance (%)",
-            paper_bgcolor='rgba(11, 19, 41, 0.85)', plot_bgcolor='rgba(0,0,0,0)',
-            font=dict(color='#5eead4', family='Space Mono'), height=360
-        )
-        st.plotly_chart(fig_spec, use_container_width=True)
+    # CCD / Infrared detector noise equation (source shot noise + sky background + annulus uncertainty)
+    gain = 2.5  # e-/uJy effective conversion
+    n_sky = max(1, int(ann_pixels.size))
+    variance = (net_flux / gain) + n_ap * (std_sky ** 2) * (1.0 + (n_ap / n_sky))
+    flux_err = math.sqrt(max(1e-6, variance))
+    snr = net_flux / flux_err
 
-    st.markdown("<hr style='border-color: rgba(56,189,248,0.25);'>", unsafe_allow_html=True)
-    
-    c_dop, c_aud = st.columns(2)
-    shift_txt = res["shift"]
-    with c_dop:
-        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch;'>📡 Doppler Shift Wave (Interactive Spectral Shift)</h3>", unsafe_allow_html=True)
-        w_col = "#f43f5e" if "Red" in shift_txt else ("#38bdf8" if "Blue" in shift_txt else "#64748b")
-        w_freq = 0.8 if "Red" in shift_txt else (3.0 if "Blue" in shift_txt else 0.2)
-        xw = np.linspace(0, 4 * np.pi, 100)
-        yw = np.sin(xw * w_freq)
-        fig_w = go.Figure(go.Scatter(x=xw, y=yw, mode='lines+markers', line=dict(color=w_col, width=4), marker=dict(size=6, color='#ffffff')))
-        fig_w.update_layout(
-            paper_bgcolor='rgba(11, 19, 41, 0.85)', plot_bgcolor='rgba(0,0,0,0)',
-            height=180, margin=dict(l=10,r=10,t=40,b=10),
-            title=dict(text=f"Shift Signature: {shift_txt}", font=dict(color=w_col, family="Space Mono", size=14)),
-            xaxis=dict(visible=False), yaxis=dict(visible=False)
-        )
-        st.plotly_chart(fig_w, use_container_width=True)
+    ab_mag = -2.5 * math.log10(max(1e-3, net_flux)) + zero_point_mag
+    ra_deg, dec_deg = wcs.pixel_to_world(center_x, center_y)
 
-    with c_aud:
-        st.markdown("<h3 style='color:#c084fc; font-family:Chakra Petch;'>🎧 Data Sonification</h3>", unsafe_allow_html=True)
-        st.markdown("""
-        <div style='background: rgba(255, 255, 255, 0.04); padding: 12px; border-left: 3px solid #c084fc; margin-bottom:12px; font-size:0.92rem; color:#cbd5e1;'>
-            <b style='color:#c084fc;'>DISCLAIMER (Class 11 Student Note):</b> Space is a vacuum where sound waves cannot travel. This audio is a mathematical sonification model generated by humans, translating infrared spectral absorption bands and Doppler frequency shifts into audible sound for data analysis!
+    return PhotometryResult(
+        epoch_label=epoch_label,
+        center_x=round(center_x, 2),
+        center_y=round(center_y, 2),
+        ra_deg=round(ra_deg, 5),
+        dec_deg=round(dec_deg, 5),
+        aperture_radius_px=r_ap,
+        annulus_in_px=r_in,
+        annulus_out_px=r_out,
+        n_aperture_pixels=n_ap,
+        raw_aperture_sum=round(raw_sum, 2),
+        sky_median_per_px=round(med_sky, 2),
+        sky_std_per_px=round(std_sky, 2),
+        net_flux_ujy=round(net_flux, 2),
+        flux_uncertainty_ujy=round(flux_err, 2),
+        snr=round(snr, 2),
+        ab_magnitude=round(ab_mag, 3),
+    )
+
+
+def compute_radial_profile(img: np.ndarray, center_x: float, center_y: float, max_r: int = 15) -> pd.DataFrame:
+    """Computes radial surface brightness profile I(r) around (center_x, center_y)."""
+    h, w = img.shape
+    yy, xx = np.mgrid[0:h, 0:w]
+    dist = np.sqrt((xx - center_x) ** 2 + (yy - center_y) ** 2)
+    radii = np.arange(0, max_r + 1)
+    records = []
+    for r in radii:
+        mask = (dist >= r) & (dist < r + 1.0)
+        if np.any(mask):
+            records.append(
+                {
+                    "Radius (px)": float(r + 0.5),
+                    "Radius (arcsec)": round(float((r + 0.5) * 6.15), 2),
+                    "Mean Intensity (uJy/px)": float(np.mean(img[mask])),
+                    "Std Intensity": float(np.std(img[mask])),
+                }
+            )
+    return pd.DataFrame(records)
+
+
+# =====================================================================
+# 5. DOPPLER AUDIO SONIFICATION & WAVEFORM SYNTHESIS
+# =====================================================================
+
+def synthesize_doppler_sonification_wav(
+    flux_profile_ep1: np.ndarray,
+    flux_profile_ep2: np.ndarray,
+    base_freq_hz: float = 440.0,
+    radial_velocity_kms: float = -185.0,
+    duration_sec: float = 3.5,
+    sample_rate: int = 44100,
+    mode: str = "Doppler Shift & Multi-Epoch Dual-Tone",
+) -> Tuple[bytes, np.ndarray, np.ndarray, np.ndarray, Dict[str, float]]:
+    """
+    Converts astronomical measurements into a 16-bit PCM WAV audio representation
+    and generates relativistic Doppler-shift waveforms.
+    - Relativistic Doppler equation: f_obs = f_0 * sqrt((1 - beta) / (1 + beta)),
+      where beta = v_r / c (positive v_r = recession/redshift -> lower pitch;
+      negative v_r = approach/blueshift -> higher pitch).
+    """
+    c_kms = 299792.458
+    # Amplify radial velocity perceptual scaling option for subtle galactic velocities while keeping exact physics telemetry
+    beta_true = np.clip(radial_velocity_kms / c_kms, -0.85, 0.85)
+    # Perceptually enhanced acoustic scaling (100x acoustic magnification when |v_r| < 2000 km/s so human ear hears clear pitch shift)
+    beta_acoustic = np.clip((radial_velocity_kms * 60.0) / c_kms, -0.65, 0.65)
+
+    doppler_factor_true = math.sqrt((1.0 - beta_true) / (1.0 + beta_true))
+    doppler_factor_audio = math.sqrt((1.0 - beta_acoustic) / (1.0 + beta_acoustic))
+
+    freq_rest = base_freq_hz
+    freq_shifted = base_freq_hz * doppler_factor_audio
+    redshift_z = math.sqrt((1.0 + beta_true) / (1.0 - beta_true)) - 1.0
+
+    n_samples = int(duration_sec * sample_rate)
+    t = np.linspace(0.0, duration_sec, n_samples, endpoint=False)
+
+    # Normalize flux profiles onto [0.1, 1.0]
+    p1 = np.asarray(flux_profile_ep1, dtype=np.float64).ravel()
+    p2 = np.asarray(flux_profile_ep2, dtype=np.float64).ravel()
+    p1_norm = (p1 - np.min(p1)) / max(1e-6, np.max(p1) - np.min(p1))
+    p2_norm = (p2 - np.min(p2)) / max(1e-6, np.max(p2) - np.min(p2))
+
+    # Interpolate profiles across time vector t
+    x_idx = np.linspace(0.0, duration_sec, len(p1_norm))
+    env1 = np.interp(t, x_idx, p1_norm)
+    env2 = np.interp(t, x_idx, p2_norm)
+
+    if mode == "Doppler Shift & Multi-Epoch Dual-Tone":
+        # First half plays Epoch 1 rest reference modulated by Epoch 1 scan;
+        # Second half plays Doppler-shifted carrier modulated by Epoch 2 scan
+        split = n_samples // 2
+        inst_freq = np.empty(n_samples)
+        inst_freq[:split] = freq_rest * (1.0 + 0.25 * env1[:split])
+        inst_freq[split:] = freq_shifted * (1.0 + 0.35 * env2[split:])
+        amp_env = np.concatenate([0.3 + 0.7 * env1[:split], 0.3 + 0.7 * env2[split:]])
+    elif mode == "1D Pixel Brightness Frequency Sweep (FM)":
+        # Frequency sweeps linearly with flux difference between Epoch 2 and Epoch 1
+        diff_env = env2 - env1
+        inst_freq = freq_shifted + 260.0 * diff_env
+        amp_env = 0.25 + 0.75 * np.maximum(env1, env2)
+    else:  # Spectral / Harmonic Chord Sonification
+        inst_freq = freq_shifted * (1.0 + 0.45 * env2)
+        amp_env = 0.2 + 0.8 * env2
+
+    phase = 2.0 * np.pi * np.cumsum(inst_freq) / sample_rate
+    # Fundamental + 2nd & 3rd astronomical harmonics
+    waveform_shifted = amp_env * (
+        0.70 * np.sin(phase)
+        + 0.20 * np.sin(2.0 * phase)
+        + 0.10 * np.sin(3.0 * phase)
+    )
+    waveform_rest = (0.3 + 0.7 * env1) * np.sin(2.0 * np.pi * freq_rest * t)
+
+    # Apply smooth fade-in / fade-out envelope to prevent clicks
+    fade_len = min(int(0.05 * sample_rate), n_samples // 10)
+    fade_window = np.ones(n_samples)
+    fade_window[:fade_len] = np.linspace(0.0, 1.0, fade_len)
+    fade_window[-fade_len:] = np.linspace(1.0, 0.0, fade_len)
+    waveform_shifted *= fade_window
+
+    # Normalize to 16-bit signed PCM
+    peak = np.max(np.abs(waveform_shifted))
+    pcm_samples = np.int16((waveform_shifted / max(1e-6, peak)) * 30000)
+
+    wav_buffer = io.BytesIO()
+    with wave.open(wav_buffer, "wb") as wf:
+        wf.setnchannels(1)
+        wf.setsampwidth(2)
+        wf.setframerate(sample_rate)
+        wf.writeframes(pcm_samples.tobytes())
+
+    telemetry = {
+        "rest_freq_hz": round(freq_rest, 2),
+        "shifted_freq_hz": round(freq_shifted, 2),
+        "delta_freq_hz": round(freq_shifted - freq_rest, 2),
+        "radial_velocity_kms": round(radial_velocity_kms, 2),
+        "redshift_z": round(redshift_z, 6),
+        "true_doppler_ratio": round(doppler_factor_true, 6),
+    }
+    return wav_buffer.getvalue(), t, waveform_rest, waveform_shifted, telemetry
+
+
+# =====================================================================
+# 6. CLIENT-SIDE ZERO-FLICKER BLINK COMPARATOR COMPONENT
+# =====================================================================
+
+def render_figure_to_base64(
+    img: np.ndarray,
+    title: str,
+    wcs: SimpleWCS,
+    cmap: str,
+    show_wcs_grid: bool,
+    roi_x: float,
+    roi_y: float,
+    r_ap: float,
+    r_in: float,
+    r_out: float,
+    anomalies_df: Optional[pd.DataFrame] = None,
+) -> str:
+    """Renders an astronomical sky frame with WCS axes, aperture overlays, and anomaly markers to Base64 PNG."""
+    fig, ax = plt.subplots(figsize=(5.6, 5.6), dpi=130)
+    fig.patch.set_facecolor("#0b0f19")
+    ax.set_facecolor("#0b0f19")
+
+    h, w = img.shape
+    im = ax.imshow(img, origin="lower", cmap=cmap, vmin=0.0, vmax=1.0, interpolation="nearest")
+
+    # WCS Grid Overlay
+    if show_wcs_grid:
+        xticks = np.linspace(0, w - 1, 5)
+        yticks = np.linspace(0, h - 1, 5)
+        xlabels = [f"{wcs.pixel_to_world(x, h/2)[0]:.2f}°" for x in xticks]
+        ylabels = [f"{wcs.pixel_to_world(w/2, y)[1]:.2f}°" for y in yticks]
+        ax.set_xticks(xticks)
+        ax.set_xticklabels(xlabels, color="#cbd5e1", fontsize=8)
+        ax.set_yticks(yticks)
+        ax.set_yticklabels(ylabels, color="#cbd5e1", fontsize=8)
+        ax.grid(color="#38bdf8", linestyle="--", linewidth=0.6, alpha=0.45)
+        ax.set_xlabel("Right Ascension (J2000)", color="#94a3b8", fontsize=9)
+        ax.set_ylabel("Declination (J2000)", color="#94a3b8", fontsize=9)
+    else:
+        ax.tick_params(colors="#cbd5e1", labelsize=8)
+        ax.set_xlabel("Detector Pixel X", color="#94a3b8", fontsize=9)
+        ax.set_ylabel("Detector Pixel Y", color="#94a3b8", fontsize=9)
+
+    # Target Aperture & Background Annulus Overlays
+    ap_circle = mpatches.Circle((roi_x, roi_y), r_ap, fill=False, edgecolor="#22d3ee", linewidth=1.6, label="Aperture")
+    in_circle = mpatches.Circle((roi_x, roi_y), r_in, fill=False, edgecolor="#facc15", linewidth=1.0, linestyle="--")
+    out_circle = mpatches.Circle((roi_x, roi_y), r_out, fill=False, edgecolor="#facc15", linewidth=1.0, linestyle=":")
+    ax.add_patch(ap_circle)
+    ax.add_patch(in_circle)
+    ax.add_patch(out_circle)
+    ax.plot(roi_x, roi_y, marker="+", color="#22d3ee", markersize=8, markeredgewidth=1.4)
+
+    # Optional candidate anomaly markers
+    if anomalies_df is not None and not anomalies_df.empty:
+        for _, row in anomalies_df.iterrows():
+            ax.plot(
+                row["Pixel X"],
+                row["Pixel Y"],
+                marker="o",
+                markersize=11,
+                fillstyle="none",
+                markeredgecolor="#f43f5e",
+                markeredgewidth=1.3,
+                alpha=0.85,
+            )
+
+    ax.set_title(title, color="#f8fafc", fontsize=10.5, fontweight="bold", pad=10)
+    cbar = fig.colorbar(im, ax=ax, fraction=0.046, pad=0.04)
+    cbar.ax.tick_params(colors="#94a3b8", labelsize=7)
+    cbar.set_label("Scaled Surface Brightness", color="#94a3b8", fontsize=8)
+
+    fig.tight_layout()
+    buf = io.BytesIO()
+    fig.savefig(buf, format="png", facecolor=fig.get_facecolor(), bbox_inches="tight")
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode("utf-8")
+
+
+def render_html_blink_comparator(
+    b64_ep1: str,
+    b64_ep2: str,
+    blink_interval_ms: int = 650,
+    auto_play: bool = True,
+) -> None:
+    """
+    Renders an interactive, zero-flicker HTML5/JS automated Blink Comparator widget
+    allowing users to toggle seamlessly between Epoch 1 and Epoch 2 (~6 months apart),
+    adjust blink cadence, or step manually.
+    """
+    html_code = f"""
+    <div style="background:#0f172a; border:1px solid #1e293b; border-radius:12px; padding:14px; text-align:center; font-family:sans-serif; color:#f8fafc;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; flex-wrap:wrap; gap:8px;">
+            <div>
+                <span style="font-size:13px; color:#94a3b8; font-weight:600;">ACTIVE BLINK FRAME:</span>
+                <span id="epochBadge" style="background:#0284c7; color:#fff; padding:4px 10px; border-radius:6px; font-size:13px; font-weight:700; margin-left:6px;">
+                    EPOCH 1 (2026-03-15)
+                </span>
+            </div>
+            <div style="display:flex; gap:6px;">
+                <button id="toggleBtn" onclick="toggleBlink()" style="background:#2563eb; color:white; border:none; border-radius:6px; padding:6px 12px; cursor:pointer; font-weight:600; font-size:12px;">
+                    {"Pause Blink" if auto_play else "Start Blink"}
+                </button>
+                <button onclick="setFrame(1)" style="background:#334155; color:white; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:12px;">
+                    Hold Epoch 1
+                </button>
+                <button onclick="setFrame(2)" style="background:#334155; color:white; border:none; border-radius:6px; padding:6px 10px; cursor:pointer; font-size:12px;">
+                    Hold Epoch 2 (+6 mo)
+                </button>
+            </div>
         </div>
-        """, unsafe_allow_html=True)
-        wav_data = make_audio_wav(res["spectrum"], shift_txt)
-        if wav_data: st.audio(wav_data, format='audio/wav')
+        <div style="display:flex; justify-content:center;">
+            <img id="blinkImg" src="data:image/png;base64,{b64_ep1}" style="max-width:100%; height:440px; object-fit:contain; border-radius:8px; border:1px solid #334155;" />
+        </div>
+    </div>
+    <script>
+        const img1 = "data:image/png;base64,{b64_ep1}";
+        const img2 = "data:image/png;base64,{b64_ep2}";
+        let currentEpoch = 1;
+        let playing = {str(auto_play).lower()};
+        let timer = null;
 
-    st.markdown("<hr style='border-color: rgba(56,189,248,0.25);'>", unsafe_allow_html=True)
+        function updateDisplay() {{
+            const imgEl = document.getElementById("blinkImg");
+            const badge = document.getElementById("epochBadge");
+            if (currentEpoch === 1) {{
+                imgEl.src = img1;
+                badge.innerText = "EPOCH 1 (Baseline: 2026-03-15)";
+                badge.style.background = "#0284c7";
+            }} else {{
+                imgEl.src = img2;
+                badge.innerText = "EPOCH 2 (+6 Months: 2026-09-15)";
+                badge.style.background = "#e11d48";
+            }}
+        }}
 
-    if st.session_state.is_hit:
-        st.markdown(f"<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#38bdf8;'>YES ({res['prob']}% Confidence)</span></h3>", unsafe_allow_html=True)
-        p_name = st.text_input("Name your discovered planet:", placeholder="e.g. Bharat-X1 / Spherex-9b")
-        
-        b_sub, b_next, b_home = st.columns(3)
-        with b_sub:
-            if st.button("Transmit Data to NASA 📡", use_container_width=True):
-                if p_name.strip():
-                    idx = st.session_state.last_log_idx
-                    if idx is not None:
-                        st.session_state.profiles[user]["logs"][idx]["Planet Name"] = p_name.strip()
-                    st.markdown(f"<div class='hit-banner'>Saved! Planet <b>'{p_name.strip()}'</b> added to your Mission Logbook.</div>", unsafe_allow_html=True)
-                else:
-                    st.markdown("<div class='miss-banner'>Please enter a planet name first.</div>", unsafe_allow_html=True)
-        with b_next:
-            if st.button("Scan Another Sector 🔄", use_container_width=True):
-                st.session_state.blinking = False
-                st.session_state.user_box = None
-                st.session_state.is_retry = True
-                st.session_state.planet_x = random.randint(85, 315)
-                st.session_state.planet_y = random.randint(85, 315)
-                st.session_state.seed = random.randint(1, 99999)
-                st.session_state.page = "radar"
-                st.rerun()
-        with b_home:
-            if st.button("Return to Dashboard 🏠", use_container_width=True):
-                st.session_state.page = "home"
-                st.rerun()
-    else:
-        st.markdown("<h3 style='color:white; font-family:Chakra Petch;'>Planet X Match: <span style='color:#f43f5e;'>FAILED (0%)</span></h3>", unsafe_allow_html=True)
-        b_ret, b_hm = st.columns(2)
-        with b_ret:
-            if st.button("🔄 Try Again", use_container_width=True):
-                st.session_state.is_retry = True
-                st.session_state.page = "radar"
-                st.rerun()
-        with b_hm:
-            if st.button("Return to Dashboard 🏠", use_container_width=True):
-                st.session_state.page = "home"
-                st.rerun()
+        function startTimer() {{
+            if (timer) clearInterval(timer);
+            timer = setInterval(() => {{
+                if (playing) {{
+                    currentEpoch = (currentEpoch === 1) ? 2 : 1;
+                    updateDisplay();
+                }}
+            }}, {blink_interval_ms});
+        }}
 
-st.markdown("<div class='footer-tag'>Developed by: Team ExoMapper (NASA Space Apps 2026)</div>", unsafe_allow_html=True)
+        function toggleBlink() {{
+            playing = !playing;
+            document.getElementById("toggleBtn").innerText = playing ? "Pause Blink" : "Start Blink";
+            document.getElementById("toggleBtn").style.background = playing ? "#2563eb" : "#16a34a";
+        }}
+
+        function setFrame(ep) {{
+            playing = false;
+            document.getElementById("toggleBtn").innerText = "Start Blink";
+            document.getElementById("toggleBtn").style.background = "#16a34a";
+            currentEpoch = ep;
+            updateDisplay();
+        }}
+
+        startTimer();
+    </script>
+    """
+    components.html(html_code, height=520)
+
+
+# =====================================================================
+# 7. TELEMETRY LOGBOOK INITIALIZATION
+# =====================================================================
+
+def init_session_state() -> None:
+    """Initializes persistent Streamlit session state for ROI coordinates and Telemetry Logbook."""
+    if "roi_x" not in st.session_state:
+        st.session_state.roi_x = 66.5
+    if "roi_y" not in st.session_state:
+        st.session_state.roi_y = 61.4
+    if "selected_target_id" not in st.session_state:
+        st.session_state.selected_target_id = "ANOM-MOV-01"
+    if "telemetry_log" not in st.session_state:
+        st.session_state.telemetry_log = [
+            {
+                "Timestamp (UTC)": "2026-10-20 14:15:00",
+                "Target ID": "ANOM-MOV-01",
+                "Classification": "Moving Object (Brown Dwarf)",
+                "SPHEREx Band": "Band #42 (2.1485 um)",
+                "Pixel (X, Y)": "(66.5, 61.4)",
+                "WCS (RA, Dec)": "18h 00m 00.81s, +66d 33m 23.6s",
+                "Epoch 1 Flux (uJy)": 3420.5,
+                "Epoch 2 Flux (uJy)": 485.2,
+                "Epoch 1 m_AB": 15.065,
+                "Epoch 2 m_AB": 17.185,
+                "Delta m_AB": +2.120,
+                "Epoch 1 SNR": 48.2,
+                "Doppler Shift (Hz)": +15.84,
+                "Observer Notes": "Baseline calibration scan: high proper motion dipole verified across 6-month baseline.",
+            }
+        ]
+
+
+# =====================================================================
+# 8. MAIN STREAMLIT APPLICATION UI
+# =====================================================================
+
+def main() -> None:
+    st.set_page_config(
+        page_title="ExoMapper | NASA Space Apps Infrared Exploration Suite",
+        page_icon="🔭",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    init_session_state()
+
+    # Custom dark-sky observatory styling
+    st.markdown(
+        """
+        <style>
+        .block-container { padding-top: 1.4rem; padding-bottom: 2rem; }
+        div[data-testid="stMetric"] {
+            background-color: #0f172a;
+            border: 1px solid #1e293b;
+            padding: 12px 14px;
+            border-radius: 10px;
+        }
+        </style>
+        """,
+        unsafe_allow_html=True,
+    )
+
+    bands_catalog = build_spherex_102_bands()
+
+    # -----------------------------------------------------------------
+    # SIDEBAR: DATA INGESTION, SPHEREx 102-BAND TUNER & SCALING CONTROLS
+    # -----------------------------------------------------------------
+    with st.sidebar:
+        st.markdown("## 🔭 ExoMapper Control Deck")
+        st.caption("NASA Space Apps Challenge | SPHEREx-Inspired Multi-Epoch Infrared Explorer")
+
+        st.markdown("### 1. Data Ingestion Source")
+        data_source = st.selectbox(
+            "Select Pipeline Feed",
+            [
+                "Simulated SPHEREx Dual-Epoch Survey",
+                "Hybrid Feed (Upload + Injected Anomalies)",
+                "Custom FITS / Cutout Upload (2 Epochs)",
+                "Caltech/IPAC IRSA Archive Cutout Query",
+            ],
+            help="Supports simulated multi-epoch cutouts, hybrid testing feeds, and IRSA/FITS observations.",
+        )
+
+        st.markdown("### 2. SPHEREx 102-Band Selector")
+        selected_band_idx = st.slider(
+            "SPHEREx Wavelength Channel (1 - 102)",
+            min_value=1,
+            max_value=102,
+            value=42,
+            help="Scan across all 102 spectrophotometric wavelength bands (0.75 um to 5.00 um).",
+        )
+        current_band = bands_catalog[selected_band_idx - 1]
+        st.info(
+            f"**Channel #{current_band.band_index} (LVF Array {current_band.lvf_array})**\n\n"
+            f"- **Wavelength ($\\lambda_c$):** `{current_band.wavelength_um:.4f} μm`\n"
+            f"- **Bandwidth ($\\Delta\\lambda$):** `{current_band.bandwidth_um:.4f} μm` ($R={int(current_band.resolving_power)}$)\n"
+            f"- **Tracer:** {current_band.spectral_feature}"
+        )
+
+        st.markdown("### 3. Image Processing & WCS")
+        scaling_method = st.selectbox(
+            "Radiometric Scaling Algorithm",
+            ["Asinh", "ZScale", "Logarithmic", "Square Root", "Linear"],
+            index=0,
+        )
+        cmap_choice = st.selectbox(
+            "Infrared False-Color Palette",
+            ["inferno", "magma", "plasma", "viridis", "cividis", "afmhot", "gray"],
+            index=0,
+        )
+        show_wcs_grid = st.checkbox("Overlay WCS (RA/Dec) Coordinate Grid", value=True)
+        show_detected_anomalies = st.checkbox("Highlight Candidate Anomalies (Red Circles)", value=True)
+
+        with st.expander("Advanced Simulation & WCS Parameters", expanded=False):
+            img_size = st.select_slider("Cutout Grid Resolution (px)", options=[96, 128, 160], value=128)
+            sky_noise = st.slider("Detector + Zodiacal Noise (uJy)", 1.0, 15.0, 4.2, 0.2)
+            pm_shift = st.slider("6-Month Proper Motion Shift (px)", 2.0, 12.0, 5.5, 0.5)
+            transient_amp = st.slider("Transient / Flare Amplitude Ratio", 1.5, 5.0, 2.8, 0.1)
+            ref_ra = st.number_input("WCS Reference RA (deg, J2000)", value=270.0000, format="%.4f")
+            ref_dec = st.number_input("WCS Reference Dec (deg, J2000)", value=66.5607, format="%.4f")
+
+    # Initialize WCS
+    wcs = SimpleWCS(
+        crval_ra=ref_ra,
+        crval_dec=ref_dec,
+        crpix_x=img_size / 2.0,
+        crpix_y=img_size / 2.0,
+        pixel_scale_arcsec=6.15,
+    )
+
+    # -----------------------------------------------------------------
+    # DATA INGESTION EXECUTION
+    # -----------------------------------------------------------------
+    sim_img1, sim_img2, sim_catalog, sim_meta = generate_simulated_dual_epoch_survey(
+        image_size=img_size,
+        band_index=current_band.band_index,
+        wavelength_um=current_band.wavelength_um,
+        seed=42,
+        sky_noise_sigma=sky_noise,
+        pm_shift_px=pm_shift,
+        transient_amp_factor=transient_amp,
+    )
+
+    img_epoch1, img_epoch2 = sim_img1, sim_img2
+    ingestion_banner = (
+        f"Active Pipeline: **{data_source}** | Epoch 1 (`2026-03-15`) vs Epoch 2 (`2026-09-15`, Δt = 6.0 months) | "
+        f"SPHEREx Band #{current_band.band_index} (`{current_band.wavelength_um:.3f} μm`)"
+    )
+
+    if data_source == "Custom FITS / Cutout Upload (2 Epochs)":
+        with st.sidebar:
+            st.markdown("#### Upload Multi-Epoch Cutouts")
+            up_ep1 = st.file_uploader("Upload Epoch 1 (.fits, .png, .jpg, .npy)", type=["fits", "fit", "png", "jpg", "jpeg", "tif", "npy"], key="u1")
+            up_ep2 = st.file_uploader("Upload Epoch 2 (.fits, .png, .jpg, .npy)", type=["fits", "fit", "png", "jpg", "jpeg", "tif", "npy"], key="u2")
+            if up_ep1 is not None and up_ep2 is not None:
+                try:
+                    img_epoch1, m1 = load_uploaded_astronomical_image(up_ep1, target_size=img_size)
+                    img_epoch2, m2 = load_uploaded_astronomical_image(up_ep2, target_size=img_size)
+                    st.success(f"Co-registered {m1['filename']} & {m2['filename']} to {img_size}x{img_size} grid.")
+                except Exception as exc:
+                    st.error(f"Upload parsing error: {exc}. Falling back to simulated survey.")
+            else:
+                st.warning("Upload both Epoch 1 & Epoch 2 files to override the simulated survey.")
+
+    elif data_source == "Hybrid Feed (Upload + Injected Anomalies)":
+        with st.sidebar:
+            st.markdown("#### Hybrid Baseline Image")
+            up_base = st.file_uploader("Optional Baseline Sky Frame (.fits, .png, .jpg)", type=["fits", "fit", "png", "jpg", "jpeg"], key="ubase")
+            if up_base is not None:
+                try:
+                    base_arr, _ = load_uploaded_astronomical_image(up_base, target_size=img_size)
+                    # Blend uploaded background with synthetic multi-epoch transient deltas
+                    img_epoch1 = base_arr + (sim_img1 - np.median(sim_img1)) * 0.5
+                    img_epoch2 = base_arr + (sim_img2 - np.median(sim_img1)) * 0.5
+                    st.success("Injected calibrated synthetic moving objects & transients into uploaded sky cutout.")
+                except Exception as exc:
+                    st.error(f"Could not parse baseline image: {exc}")
+
+    # Scale images for visualization
+    scaled_ep1 = scale_astronomical_image(img_epoch1, method=scaling_method)
+    scaled_ep2 = scale_astronomical_image(img_epoch2, method=scaling_method)
+    anomalies_df = detect_multi_epoch_anomalies(img_epoch1, img_epoch2, sigma_threshold=4.5)
+
+    # -----------------------------------------------------------------
+    # TOP HEADER & TELEMETRY OVERVIEW
+    # -----------------------------------------------------------------
+    st.title("🛰️ ExoMapper: Multi-Epoch Infrared Sky Explorer")
+    st.markdown(ingestion_banner)
+
+    # Quick Target Preset Selector Bar
+    col_preset, col_x, col_y, col_ap = st.columns([2.4, 1.1, 1.1, 1.4])
+    with col_preset:
+        preset_options = {
+            f"{obj.obj_id} — {obj.obj_type} (E1: {obj.x_epoch1:.1f}, {obj.y_epoch1:.1f})": obj
+            for obj in sim_catalog
+        }
+        chosen_label = st.selectbox(
+            "Quick-Lock ROI onto Catalog / Anomaly Target",
+            options=list(preset_options.keys()),
+            index=6,  # Default to ANOM-MOV-01 (Brown Dwarf Moving Object)
+        )
+        chosen_obj = preset_options[chosen_label]
+        if chosen_obj.obj_id != st.session_state.selected_target_id:
+            st.session_state.selected_target_id = chosen_obj.obj_id
+            # For Epoch 2 transients, lock onto Epoch 2 position; otherwise Epoch 1 position
+            st.session_state.roi_x = float(chosen_obj.x_epoch1)
+            st.session_state.roi_y = float(chosen_obj.y_epoch1)
+
+    with col_x:
+        roi_x = st.number_input(
+            "Target Pixel X",
+            min_value=4.0,
+            max_value=float(img_size - 5),
+            value=float(st.session_state.roi_x),
+            step=0.5,
+        )
+        st.session_state.roi_x = roi_x
+
+    with col_y:
+        roi_y = st.number_input(
+            "Target Pixel Y",
+            min_value=4.0,
+            max_value=float(img_size - 5),
+            value=float(st.session_state.roi_y),
+            step=0.5,
+        )
+        st.session_state.roi_y = roi_y
+
+    with col_ap:
+        r_ap = st.slider("Aperture Radius r_ap (px)", min_value=2.0, max_value=12.0, value=4.5, step=0.5)
+        r_in = r_ap + 2.5
+        r_out = r_ap + 6.5
+
+    # Compute real-time photometry at selected ROI for both epochs
+    phot_ep1 = perform_aperture_photometry(img_epoch1, roi_x, roi_y, r_ap, r_in, r_out, wcs, "Epoch 1 (2026-03-15)")
+    phot_ep2 = perform_aperture_photometry(img_epoch2, roi_x, roi_y, r_ap, r_in, r_out, wcs, "Epoch 2 (2026-09-15)")
+    ra_str, dec_str = wcs.format_sexagesimal(phot_ep1.ra_deg, phot_ep1.dec_deg)
+    delta_mag = phot_ep2.ab_magnitude - phot_ep1.ab_magnitude
+
+    # Top KPI Metrics Row
+    m1, m2, m3, m4, m5 = st.columns(5)
+    m1.metric("WCS Coordinates (J2000)", f"{ra_str}", f"Dec: {dec_str}")
+    m2.metric("Epoch 1 Net Flux", f"{phot_ep1.net_flux_ujy:,.1f} μJy", f"m_AB = {phot_ep1.ab_magnitude:.2f} mag")
+    m3.metric(
+        "Epoch 2 Net Flux (+6 mo)",
+        f"{phot_ep2.net_flux_ujy:,.1f} μJy",
+        f"{phot_ep2.net_flux_ujy - phot_ep1.net_flux_ujy:+,.1f} μJy",
+    )
+    m4.metric("Magnitude Shift (Δm_AB)", f"{delta_mag:+.3f} mag", f"SNR E1: {phot_ep1.snr:.1f} | E2: {phot_ep2.snr:.1f}")
+    m5.metric("Detected Field Anomalies", f"{len(anomalies_df)} Candidates", "≥ 4.5σ Residual Threshold")
+
+    # -----------------------------------------------------------------
+    # MAIN WORKSPACE TABS
+    # -----------------------------------------------------------------
+    tab_blink, tab_phot, tab_audio, tab_log, tab_arch = st.tabs(
+        [
+            "👁️ 1. Multi-Epoch Blink Comparator",
+            "🎯 2. Aperture Photometry & SED",
+            "🔊 3. Doppler Audio Sonification",
+            "📓 4. Telemetry Logbook",
+            "🌐 5. IRSA Ingestion & Architecture",
+        ]
+    )
+
+    # =================================================================
+    # TAB 1: MULTI-EPOCH BLINK COMPARATOR & DIFFERENCE IMAGING
+    # =================================================================
+    with tab_blink:
+        st.subheader("Automated 2-Epoch Blink Comparator & Residual Anomaly Detector")
+        st.caption(
+            "Switches rapidly between Epoch 1 (2026-03-15) and Epoch 2 (2026-09-15, ~6 months apart) so proper-motion "
+            "shifts and brightness transients stand out clearly. Cyan circles mark your active photometry aperture; "
+            "red circles highlight automated ≥4.5σ difference residuals."
+        )
+
+        b_col1, b_col2 = st.columns([1.15, 1.0])
+
+        with b_col1:
+            ctrl_c1, ctrl_c2 = st.columns(2)
+            with ctrl_c1:
+                blink_ms = st.slider("Blink Switch Cadence (ms)", min_value=200, max_value=1500, value=600, step=50)
+            with ctrl_c2:
+                auto_blink = st.checkbox("Auto-Start Blink Comparator", value=True)
+
+            overlay_df = anomalies_df if show_detected_anomalies else None
+            b64_ep1 = render_figure_to_base64(
+                scaled_ep1,
+                f"Epoch 1 (2026-03-15) | {current_band.wavelength_um:.2f} μm ({scaling_method})",
+                wcs,
+                cmap_choice,
+                show_wcs_grid,
+                roi_x,
+                roi_y,
+                r_ap,
+                r_in,
+                r_out,
+                overlay_df,
+            )
+            b64_ep2 = render_figure_to_base64(
+                scaled_ep2,
+                f"Epoch 2 (2026-09-15, +6 mo) | {current_band.wavelength_um:.2f} μm ({scaling_method})",
+                wcs,
+                cmap_choice,
+                show_wcs_grid,
+                roi_x,
+                roi_y,
+                r_ap,
+                r_in,
+                r_out,
+                overlay_df,
+            )
+            render_html_blink_comparator(b64_ep1, b64_ep2, blink_interval_ms=blink_ms, auto_play=auto_blink)
+
+        with b_col2:
+            st.markdown("#### Multi-Epoch Difference Image ($I_{\\text{Epoch 2}} - I_{\\text{Epoch 1}}$)")
+            diff_map = img_epoch2 - img_epoch1
+            vmax_diff = float(np.percentile(np.abs(diff_map), 99.6))
+
+            fig_diff, ax_diff = plt.subplots(figsize=(5.2, 4.5), dpi=120)
+            fig_diff.patch.set_facecolor("#0b0f19")
+            ax_diff.set_facecolor("#0b0f19")
+            im_d = ax_diff.imshow(
+                diff_map,
+                origin="lower",
+                cmap="coolwarm",
+                vmin=-vmax_diff,
+                vmax=vmax_diff,
+                interpolation="nearest",
+            )
+            ax_diff.plot(roi_x, roi_y, marker="+", color="#22d3ee", markersize=10, markeredgewidth=1.8)
+            ax_diff.add_patch(mpatches.Circle((roi_x, roi_y), r_ap, fill=False, edgecolor="#22d3ee", linewidth=1.4))
+            ax_diff.set_title("Subtraction Residual Map (Red = +Epoch 2, Blue = +Epoch 1)", color="#f8fafc", fontsize=9.5)
+            ax_diff.tick_params(colors="#cbd5e1", labelsize=8)
+            cbar_d = fig_diff.colorbar(im_d, ax=ax_diff, fraction=0.046, pad=0.04)
+            cbar_d.ax.tick_params(colors="#94a3b8", labelsize=7)
+            cbar_d.set_label("Δ Flux (μJy/px)", color="#94a3b8", fontsize=8)
+            fig_diff.tight_layout()
+            st.pyplot(fig_diff)
+            plt.close(fig_diff)
+
+            st.markdown("#### Automated ≥ 4.5σ Anomaly Candidates")
+            st.dataframe(anomalies_df, use_container_width=True, hide_index=True)
+
+        with st.expander("View Side-by-Side Static Epoch Comparison & Known Injection Catalog", expanded=False):
+            s1, s2 = st.columns(2)
+            with s1:
+                st.image(f"data:image/png;base64,{b64_ep1}", caption="Epoch 1 Observation (2026-03-15)", use_container_width=True)
+            with s2:
+                st.image(f"data:image/png;base64,{b64_ep2}", caption="Epoch 2 Observation (2026-09-15)", use_container_width=True)
+            st.markdown("##### Benchmark Survey Object Catalog")
+            st.dataframe(pd.DataFrame([asdict(o) for o in sim_catalog]), use_container_width=True, hide_index=True)
+
+    # =================================================================
+    # TAB 2: APERTURE PHOTOMETRY, PIXEL INSPECTOR & 102-BAND SED
+    # =================================================================
+    with tab_phot:
+        st.subheader("Aperture Photometry, Pixel-by-Pixel Matrix & 102-Band SPHEREx Spectrophotometry")
+
+        p_col1, p_col2 = st.columns([1.05, 1.15])
+
+        with p_col1:
+            st.markdown("#### Calibrated Two-Epoch Photometry Summary")
+            phot_df = pd.DataFrame(
+                [
+                    {
+                        "Metric": "Target Center (Pixel X, Y)",
+                        "Epoch 1 (2026-03-15)": f"({phot_ep1.center_x:.2f}, {phot_ep1.center_y:.2f})",
+                        "Epoch 2 (2026-09-15)": f"({phot_ep2.center_x:.2f}, {phot_ep2.center_y:.2f})",
+                    },
+                    {
+                        "Metric": "WCS J2000 (RA, Dec)",
+                        "Epoch 1 (2026-03-15)": f"{ra_str} / {dec_str}",
+                        "Epoch 2 (2026-09-15)": f"{ra_str} / {dec_str}",
+                    },
+                    {
+                        "Metric": "Aperture Pixels (N_ap)",
+                        "Epoch 1 (2026-03-15)": f"{phot_ep1.n_aperture_pixels} px (r={r_ap} px)",
+                        "Epoch 2 (2026-09-15)": f"{phot_ep2.n_aperture_pixels} px (r={r_ap} px)",
+                    },
+                    {
+                        "Metric": "Raw Aperture Sum (μJy)",
+                        "Epoch 1 (2026-03-15)": f"{phot_ep1.raw_aperture_sum:,.2f}",
+                        "Epoch 2 (2026-09-15)": f"{phot_ep2.raw_aperture_sum:,.2f}",
+                    },
+                    {
+                        "Metric": "Local Sky Background (μJy/px)",
+                        "Epoch 1 (2026-03-15)": f"{phot_ep1.sky_median_per_px:.2f} ± {phot_ep1.sky_std_per_px:.2f}",
+                        "Epoch 2 (2026-09-15)": f"{phot_ep2.sky_median_per_px:.2f} ± {phot_ep2.sky_std_per_px:.2f}",
+                    },
+                    {
+                        "Metric": "Net Calibrated Flux (μJy)",
+                        "Epoch 1 (2026-03-15)": f"{phot_ep1.net_flux_ujy:,.2f} ± {phot_ep1.flux_uncertainty_ujy:.2f}",
+                        "Epoch 2 (2026-09-15)": f"{phot_ep2.net_flux_ujy:,.2f} ± {phot_ep2.flux_uncertainty_ujy:.2f}",
+                    },
+                    {
+                        "Metric": "Signal-to-Noise Ratio (SNR)",
+                        "Epoch 1 (2026-03-15)": f"{phot_ep1.snr:.2f}",
+                        "Epoch 2 (2026-09-15)": f"{phot_ep2.snr:.2f}",
+                    },
+                    {
+                        "Metric": "Calibrated AB Magnitude (m_AB)",
+                        "Epoch 1 (2026-03-15)": f"{phot_ep1.ab_magnitude:.3f} mag",
+                        "Epoch 2 (2026-09-15)": f"{phot_ep2.ab_magnitude:.3f} mag (Δm = {delta_mag:+.3f})",
+                    },
+                ]
+            )
+            st.dataframe(phot_df, use_container_width=True, hide_index=True)
+
+            # Zoomed ROI Cutout & Pixel-Level Heatmap
+            st.markdown("#### Zoomed ROI Cutout & Pixel-Level Flux Inspector (15×15 px)")
+            ix, iy = int(round(roi_x)), int(round(roi_y))
+            half_w = 7
+            y0, y1 = max(0, iy - half_w), min(img_size, iy + half_w + 1)
+            x0, x1 = max(0, ix - half_w), min(img_size, ix + half_w + 1)
+            cut1 = img_epoch1[y0:y1, x0:x1]
+            cut2 = img_epoch2[y0:y1, x0:x1]
+
+            fig_cut, (ax_c1, ax_c2) = plt.subplots(1, 2, figsize=(6.2, 3.0), dpi=115)
+            fig_cut.patch.set_facecolor("#0b0f19")
+            for ax_c, cut_arr, lbl in [(ax_c1, cut1, "Epoch 1 ROI Pixels"), (ax_c2, cut2, "Epoch 2 ROI Pixels")]:
+                ax_c.set_facecolor("#0b0f19")
+                ax_c.imshow(cut_arr, origin="lower", cmap=cmap_choice, extent=[x0 - 0.5, x1 - 0.5, y0 - 0.5, y1 - 0.5])
+                ax_c.add_patch(mpatches.Circle((roi_x, roi_y), r_ap, fill=False, edgecolor="#22d3ee", linewidth=1.5))
+                ax_c.set_title(lbl, color="#f8fafc", fontsize=9)
+                ax_c.tick_params(colors="#cbd5e1", labelsize=7)
+            fig_cut.tight_layout()
+            st.pyplot(fig_cut)
+            plt.close(fig_cut)
+
+        with p_col2:
+            # Radial Surface Brightness Profile
+            st.markdown("#### Radial Surface Brightness Profile $I(r)$")
+            prof1 = compute_radial_profile(img_epoch1, roi_x, roi_y, max_r=14)
+            prof2 = compute_radial_profile(img_epoch2, roi_x, roi_y, max_r=14)
+
+            fig_rad, ax_rad = plt.subplots(figsize=(6.0, 2.8), dpi=115)
+            fig_rad.patch.set_facecolor("#0b0f19")
+            ax_rad.set_facecolor("#0b0f19")
+            ax_rad.plot(prof1["Radius (px)"], prof1["Mean Intensity (uJy/px)"], "-o", color="#38bdf8", markersize=4, label="Epoch 1")
+            ax_rad.plot(prof2["Radius (px)"], prof2["Mean Intensity (uJy/px)"], "-s", color="#f43f5e", markersize=4, label="Epoch 2 (+6 mo)")
+            ax_rad.axvline(r_ap, color="#22d3ee", linestyle="--", linewidth=1.1, label=f"Aperture r_ap={r_ap}px")
+            ax_rad.axvspan(r_in, r_out, color="#facc15", alpha=0.15, label="Sky Annulus")
+            ax_rad.set_xlabel("Radial Distance from ROI Center (pixels)", color="#cbd5e1", fontsize=8.5)
+            ax_rad.set_ylabel("Mean Flux (μJy/px)", color="#cbd5e1", fontsize=8.5)
+            ax_rad.tick_params(colors="#cbd5e1", labelsize=8)
+            ax_rad.grid(color="#1e293b", linestyle="--", linewidth=0.6)
+            ax_rad.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.5)
+            fig_rad.tight_layout()
+            st.pyplot(fig_rad)
+            plt.close(fig_rad)
+
+            # SPHEREx 102-Band Spectral Energy Distribution (SED) for Target
+            st.markdown("#### 102-Band SPHEREx Spectral Energy Distribution ($0.75\\text{--}5.00\\ \\mu\\text{m}$)")
+            lam_vec = np.array([b.wavelength_um for b in bands_catalog])
+            # Reconstruct spectral shape based on selected target temperature + H2O / CO2 ice absorption troughs
+            t_eff = chosen_obj.temperature_k
+            bb_curve = np.array([blackbody_sed_factor(l, t_eff) for l in lam_vec])
+            ice_absorption = 1.0 - 0.28 * np.exp(-((lam_vec - 3.05) / 0.12) ** 2) - 0.22 * np.exp(-((lam_vec - 4.27) / 0.08) ** 2)
+            sed_flux_ep1 = phot_ep1.net_flux_ujy * (bb_curve / max(1e-6, blackbody_sed_factor(current_band.wavelength_um, t_eff))) * ice_absorption
+            sed_flux_ep2 = phot_ep2.net_flux_ujy * (bb_curve / max(1e-6, blackbody_sed_factor(current_band.wavelength_um, t_eff))) * ice_absorption
+
+            fig_sed, ax_sed = plt.subplots(figsize=(6.0, 2.9), dpi=115)
+            fig_sed.patch.set_facecolor("#0b0f19")
+            ax_sed.set_facecolor("#0b0f19")
+            ax_sed.plot(lam_vec, sed_flux_ep1, color="#38bdf8", linewidth=1.5, label="Epoch 1 102-Band SED")
+            ax_sed.plot(lam_vec, sed_flux_ep2, color="#f43f5e", linewidth=1.5, linestyle="--", label="Epoch 2 102-Band SED")
+            ax_sed.axvline(current_band.wavelength_um, color="#facc15", linestyle=":", linewidth=1.4, label=f"Active Band #{current_band.band_index} ({current_band.wavelength_um:.2f} μm)")
+            ax_sed.set_xlabel("Wavelength λ (μm) [SPHEREx 102 Channels]", color="#cbd5e1", fontsize=8.5)
+            ax_sed.set_ylabel("Aperture Flux Density (μJy)", color="#cbd5e1", fontsize=8.5)
+            ax_sed.tick_params(colors="#cbd5e1", labelsize=8)
+            ax_sed.grid(color="#1e293b", linestyle="--", linewidth=0.6)
+            ax_sed.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.5)
+            fig_sed.tight_layout()
+            st.pyplot(fig_sed)
+            plt.close(fig_sed)
+
+        with st.expander("Inspect Raw Numeric Pixel Matrix Around ROI (Epoch 1 & Epoch 2)", expanded=False):
+            m_col1, m_col2 = st.columns(2)
+            with m_col1:
+                st.caption("Epoch 1 Pixel Values (μJy/px)")
+                st.dataframe(pd.DataFrame(np.round(cut1, 1)), use_container_width=True)
+            with m_col2:
+                st.caption("Epoch 2 Pixel Values (μJy/px)")
+                st.dataframe(pd.DataFrame(np.round(cut2, 1)), use_container_width=True)
+
+    # =================================================================
+    # TAB 3: DOPPLER AUDIO SONIFICATION & WAVEFORM GENERATOR
+    # =================================================================
+    with tab_audio:
+        st.subheader("Doppler Audio Sonification & Waveform Generator")
+        st.caption(
+            "Converts astronomical brightness profiles and multi-epoch changes into audible frequencies and "
+            "synthesizes Doppler-shift waveforms from target radial velocity ($v_r$)."
+        )
+
+        a_col1, a_col2 = st.columns([1.0, 1.35])
+
+        with a_col1:
+            son_mode = st.selectbox(
+                "Sonification Mapping Mode",
+                [
+                    "Doppler Shift & Multi-Epoch Dual-Tone",
+                    "1D Pixel Brightness Frequency Sweep (FM)",
+                    "102-Band Spectral Harmonic Walk",
+                ],
+            )
+            base_pitch_hz = st.slider("Rest-Frame Reference Carrier Frequency f₀ (Hz)", 220.0, 880.0, 440.0, 10.0)
+            rv_input_kms = st.slider(
+                "Target Radial Velocity v_r (km/s) [Negative = Blueshift, Positive = Redshift]",
+                min_value=-2500.0,
+                max_value=2500.0,
+                value=float(chosen_obj.radial_velocity_kms),
+                step=5.0,
+            )
+            audio_duration = st.slider("Audio Scan Duration (seconds)", 2.0, 6.0, 3.5, 0.5)
+
+            # Extract 1D horizontal pixel scan through (roi_x, roi_y)
+            row_idx = int(np.clip(round(roi_y), 0, img_size - 1))
+            scan_ep1 = img_epoch1[row_idx, :]
+            scan_ep2 = img_epoch2[row_idx, :]
+
+            wav_bytes, t_vec, wave_rest, wave_shift, doppler_meta = synthesize_doppler_sonification_wav(
+                flux_profile_ep1=scan_ep1,
+                flux_profile_ep2=scan_ep2,
+                base_freq_hz=base_pitch_hz,
+                radial_velocity_kms=rv_input_kms,
+                duration_sec=audio_duration,
+                mode=son_mode,
+            )
+
+            st.markdown("#### 🎧 Listen to Astronomical Sonification")
+            st.audio(wav_bytes, format="audio/wav")
+            st.download_button(
+                "⬇️ Download Sonified Observation (.wav)",
+                data=wav_bytes,
+                file_name=f"exomapper_sonification_{chosen_obj.obj_id}_band{current_band.band_index}.wav",
+                mime="audio/wav",
+            )
+
+            st.markdown(
+                f"""
+                **Doppler Acoustic Telemetry:**
+                - **Rest Carrier Frequency ($f_0$):** `{doppler_meta['rest_freq_hz']:.2f} Hz`
+                - **Doppler-Shifted Carrier ($f_{{\\text{{obs}}}}$):** `{doppler_meta['shifted_freq_hz']:.2f} Hz` (`{doppler_meta['delta_freq_hz']:+.2f} Hz`)
+                - **Radial Velocity ($v_r$):** `{doppler_meta['radial_velocity_kms']:+.1f} km/s` ($z = {doppler_meta['redshift_z']:+.6f}$)
+                """
+            )
+
+        with a_col2:
+            # Plot Doppler-shift waveform comparison (zoomed 35 ms window) and full scan envelope
+            fig_wav, (ax_w1, ax_w2) = plt.subplots(2, 1, figsize=(6.8, 4.8), dpi=120)
+            fig_wav.patch.set_facecolor("#0b0f19")
+
+            # Top panel: Rest vs Doppler-shifted carrier phase waveform (first 25 ms)
+            n_zoom = int(0.025 * 44100)
+            ax_w1.set_facecolor("#0b0f19")
+            ax_w1.plot(t_vec[:n_zoom] * 1000.0, wave_rest[:n_zoom], color="#94a3b8", linestyle="--", linewidth=1.2, label=f"Rest Frame ({doppler_meta['rest_freq_hz']:.0f} Hz)")
+            ax_w1.plot(t_vec[:n_zoom] * 1000.0, wave_shift[:n_zoom], color="#38bdf8", linewidth=1.5, label=f"Doppler Shifted ({doppler_meta['shifted_freq_hz']:.1f} Hz, v_r={rv_input_kms:+.0f} km/s)")
+            ax_w1.set_title("Relativistic Doppler-Shift Waveform Comparison (25 ms Acoustic Window)", color="#f8fafc", fontsize=9.5)
+            ax_w1.set_xlabel("Time (ms)", color="#cbd5e1", fontsize=8)
+            ax_w1.set_ylabel("Normalized Amplitude", color="#cbd5e1", fontsize=8)
+            ax_w1.tick_params(colors="#cbd5e1", labelsize=7.5)
+            ax_w1.grid(color="#1e293b", linestyle="--", linewidth=0.5)
+            ax_w1.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.5, loc="upper right")
+
+            # Bottom panel: Full multi-epoch scan intensity envelope
+            ax_w2.set_facecolor("#0b0f19")
+            px_axis = np.arange(img_size)
+            ax_w2.plot(px_axis, scan_ep1, color="#38bdf8", linewidth=1.4, label="Epoch 1 Intensity Scan (Left Half)")
+            ax_w2.plot(px_axis, scan_ep2, color="#f43f5e", linewidth=1.4, label="Epoch 2 Intensity Scan (Right Half)")
+            ax_w2.axvline(roi_x, color="#facc15", linestyle=":", linewidth=1.3, label=f"Selected Target X={roi_x:.1f}")
+            ax_w2.set_title(f"1D Detector Slice Across Y = {row_idx} Driving Audio Modulation", color="#f8fafc", fontsize=9.5)
+            ax_w2.set_xlabel("Detector Pixel X", color="#cbd5e1", fontsize=8)
+            ax_w2.set_ylabel("Flux (μJy/px)", color="#cbd5e1", fontsize=8)
+            ax_w2.tick_params(colors="#cbd5e1", labelsize=7.5)
+            ax_w2.grid(color="#1e293b", linestyle="--", linewidth=0.5)
+            ax_w2.legend(facecolor="#0f172a", edgecolor="#334155", labelcolor="#f8fafc", fontsize=7.5, loc="upper right")
+
+            fig_wav.tight_layout()
+            st.pyplot(fig_wav)
+            plt.close(fig_wav)
+
+    # =================================================================
+    # TAB 4: OBSERVATION TELEMETRY LOGBOOK
+    # =================================================================
+    with tab_log:
+        st.subheader("Observation & Telemetry Logbook")
+        st.caption(
+            "Record multi-epoch scans, photometric measurements, and Doppler sonification telemetry into a structured "
+            "scientific logbook ready for export and citizen-science collaboration."
+        )
+
+        with st.form("telemetry_entry_form", clear_on_submit=False):
+            f_c1, f_c2, f_c3 = st.columns([1.2, 1.2, 1.8])
+            with f_c1:
+                entry_id = st.text_input("Target / Scan Identifier", value=chosen_obj.obj_id)
+            with f_c2:
+                entry_class = st.selectbox(
+                    "Scientific Classification",
+                    [
+                        "Moving Object (Brown Dwarf / NEO)",
+                        "Variable Star / Flare (YSO / AGB)",
+                        "Transient Outburst (SN / TDE)",
+                        "Static Reference Calibrator",
+                        "Extended Galaxy",
+                        "Unverified Candidate Anomaly",
+                    ],
+                )
+            with f_c3:
+                entry_notes = st.text_input(
+                    "Observer Scientific Notes",
+                    value=f"Measured at {current_band.wavelength_um:.3f} um ({current_band.spectral_feature}); Δm_AB = {delta_mag:+.3f}.",
+                )
+
+            submitted = st.form_submit_button("📌 Record Current Scan & Photometry to Logbook")
+            if submitted:
+                new_record = {
+                    "Timestamp (UTC)": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d %H:%M:%S"),
+                    "Target ID": entry_id,
+                    "Classification": entry_class,
+                    "SPHEREx Band": f"Band #{current_band.band_index} ({current_band.wavelength_um:.4f} um)",
+                    "Pixel (X, Y)": f"({roi_x:.1f}, {roi_y:.1f})",
+                    "WCS (RA, Dec)": f"{ra_str}, {dec_str}",
+                    "Epoch 1 Flux (uJy)": phot_ep1.net_flux_ujy,
+                    "Epoch 2 Flux (uJy)": phot_ep2.net_flux_ujy,
+                    "Epoch 1 m_AB": phot_ep1.ab_magnitude,
+                    "Epoch 2 m_AB": phot_ep2.ab_magnitude,
+                    "Delta m_AB": round(delta_mag, 3),
+                    "Epoch 1 SNR": phot_ep1.snr,
+                    "Doppler Shift (Hz)": doppler_meta["delta_freq_hz"],
+                    "Observer Notes": entry_notes,
+                }
+                st.session_state.telemetry_log.insert(0, new_record)
+                st.success(f"Logged observation for `{entry_id}` at WCS `{ra_str}, {dec_str}`.")
+
+        log_df = pd.DataFrame(st.session_state.telemetry_log)
+        st.dataframe(log_df, use_container_width=True, hide_index=True)
+
+        exp_c1, exp_c2, exp_c3 = st.columns([1.0, 1.0, 2.0])
+        with exp_c1:
+            csv_bytes = log_df.to_csv(index=False).encode("utf-8")
+            st.download_button(
+                "⬇️ Export Logbook as CSV",
+                data=csv_bytes,
+                file_name="exomapper_telemetry_logbook.csv",
+                mime="text/csv",
+            )
+        with exp_c2:
+            json_bytes = json.dumps(st.session_state.telemetry_log, indent=2).encode("utf-8")
+            st.download_button(
+                "⬇️ Export Logbook as JSON",
+                data=json_bytes,
+                file_name="exomapper_telemetry_logbook.json",
+                mime="application/json",
+            )
+
+    # =================================================================
+    # TAB 5: IRSA ARCHIVE INGESTION & SCALABLE NASA PIPELINE ARCHITECTURE
+    # =================================================================
+    with tab_arch:
+        st.subheader("Caltech/IPAC IRSA Archive Cutout Builder & NASA Challenge Dataset Pipeline")
+        irsa_c1, irsa_c2 = st.columns([1.15, 1.0])
+
+        with irsa_c1:
+            st.markdown("#### Live Caltech/IPAC IRSA Image Cutout Query")
+            q_survey = st.selectbox("IRSA Survey Mission", ["wise", "2mass", "spitzer", "iras"])
+            q_size = st.slider("Cutout Angular Size (arcseconds)", 60.0, 600.0, 300.0, 30.0)
+            irsa_url = build_irsa_cutout_url(phot_ep1.ra_deg, phot_ep1.dec_deg, q_size, survey=q_survey)
+            st.code(irsa_url, language="text")
+            st.markdown(
+                f"🔗 **[Open Target Cutout Directly in Caltech/IPAC IRSA FinderChart]({irsa_url})** "
+                f"(RA `{phot_ep1.ra_deg:.4f}°`, Dec `{phot_ep1.dec_deg:.4f}°`)"
+            )
+
+            st.markdown("#### Full 102-Band SPHEREx Wavelength Table")
+            st.dataframe(pd.DataFrame([asdict(b) for b in bands_catalog]), use_container_width=True, hide_index=True, height=260)
+
+        with irsa_c2:
+            st.markdown("#### Modular Architecture & Challenge Alignment")
+            st.markdown(
+                """
+                - **1. Multi-Source Data Ingestion (`DataIngestionPipeline`)**:
+                  Supports Caltech/IPAC Infrared Science Archive (IRSA) cutouts, FITS/WCS headers, simulated
+                  102-band SPHEREx sky surveys, and hybrid synthetic-injection feeds for validation.
+                - **2. Co-Registered Multi-Epoch Image Processing**:
+                  Automatically resamples and aligns observations taken ~6 months apart onto a unified WCS grid,
+                  applying `Asinh`, `ZScale`, `Logarithmic`, `Square Root`, or `Linear` stretches.
+                - **3. Automated Blink Comparator & Difference Imaging**:
+                  Combines zero-flicker client-side epoch blinking with $\\ge 4.5\\sigma$ residual peak detection
+                  to flag high-proper-motion objects and brightness transients.
+                - **4. Calibrated Aperture Photometry & Doppler Sonification**:
+                  Integrates background-subtracted circular aperture photometry ($F_{\\text{net}}$, $m_{\\text{AB}}$, SNR)
+                  with relativistic Doppler audio waveform synthesis and a persistent CSV/JSON Telemetry Logbook.
+                """
+            )
+
+
+if __name__ == "__main__":
+    main()
