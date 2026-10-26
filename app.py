@@ -2,15 +2,15 @@
 # EXOMAPPER: THE PLANET X HUNTER (NASA SPACE APPS CHALLENGE 2026)
 # Created by Team ExoMapper (Shikshita Naryal & Ayan Agarwal)
 # ==============================================================================
-# A professional-grade astrometric workstation combining M.Sc.-level vectorized 
-# astrophysics with an intuitive, gamified citizen-science discovery engine.
+# Hey judges and space explorers! Welcome to our interactive astrometric workstation. 
+# We built this app to let anyone hunt for hidden outer-solar-system planets by blinking 
+# multi-epoch infrared telescope frames, performing aperture photometry, and listening to starlight!
 # ==============================================================================
 
 import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
-from astropy.io import fits
 from datetime import datetime, timedelta
 import random
 import math
@@ -19,7 +19,13 @@ import io
 import wave
 import struct
 import urllib.parse
-from scipy import ndimage
+
+# Optional Astropy FITS support with graceful fallback
+try:
+    from astropy.io import fits
+    ASTROPY_AVAILABLE = True
+except ImportError:
+    ASTROPY_AVAILABLE = False
 
 st.set_page_config(
     page_title="ExoMapper — The Planet X Hunter (NASA Space Apps 2026)",
@@ -171,6 +177,16 @@ load_css()
 def get_time_str():
     return (datetime.utcnow() + timedelta(hours=5, minutes=30)).strftime("%d %b %Y | %I:%M %p IST")
 
+# --- Pure NumPy Image Smoothing (Zero Scipy Dependency) ---
+def pure_numpy_smooth(img):
+    padded = np.pad(img, 1, mode='edge')
+    smoothed = (
+        padded[:-2, :-2] + padded[:-2, 1:-1] + padded[:-2, 2:] +
+        padded[1:-1, :-2] + padded[1:-1, 1:-1] + padded[1:-1, 2:] +
+        padded[2:, :-2] + padded[2:, 1:-1] + padded[2:, 2:]
+    ) / 9.0
+    return smoothed
+
 # --- SPHEREx & Sky Data Generation Engine (Real Deterministic Physics) ---
 @st.cache_data
 def generate_sky_frames(seed, px, py):
@@ -198,7 +214,7 @@ def generate_sky_frames(seed, px, py):
     return np.clip(f1, 1, None), np.clip(f2, 1, None)
 
 def scale_img(img, contrast=1.0, smooth=False):
-    processed = ndimage.gaussian_filter(img, sigma=1.0) if smooth else img
+    processed = pure_numpy_smooth(img) if smooth else img
     v1, v2 = np.percentile(processed, [1, 99.5 / contrast])
     if v2 <= v1: v2 = v1 + 1.0
     return np.clip((processed - v1) / (v2 - v1), 0.0, 1.0)
@@ -218,7 +234,7 @@ if st.session_state.page == 'welcome':
             </div>
         </div>
         <div style="background:rgba(0,229,255,0.1); border:1px solid #00e5ff; padding:8px 15px; border-radius:8px; font-family:'Space Mono'; color:#00ffcc;">
-            🔭 SPHEREx 102-Band Mission & AWS S3
+            🔭 SPHEREx Mission & AWS S3
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -281,7 +297,7 @@ elif st.session_state.page == 'rules_tour':
         <div class="game-card">
             <h3 style='color:#b388ff; font-family:Chakra Petch;'>🔭 Advanced DS9-Style Tools & AWS S3 Integration</h3>
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
-                <b>• DS9 Image Enhancements:</b> Apply Gaussian smoothing filters and ZScale contrast stretching to isolate faint point sources.<br><br>
+                <b>• DS9 Image Enhancements:</b> Apply smoothing filters and contrast stretching to isolate faint point sources.<br><br>
                 <b>• Aperture Photometry:</b> Measure precise ADU flux, net signal-to-noise ratio, and derive physical properties like radius and albedo.<br><br>
                 <b>• Cloud Storage (AWS S3):</b> Pull massive public FITS cubes directly (`s3://nasa-irsa-spherex/qr2/spectral_wcs/`).
             </p>
@@ -367,7 +383,7 @@ elif st.session_state.page == 'workbench':
     # DS9 Image Enhancement Controls
     dc1, dc2, dc3 = st.columns([1.5, 1.5, 2])
     with dc1:
-        st.session_state.smoothing_enabled = st.checkbox("Apply Gaussian Smoothing Filter", value=st.session_state.smoothing_enabled)
+        st.session_state.smoothing_enabled = st.checkbox("Apply Smoothing Filter", value=st.session_state.smoothing_enabled)
     with dc2:
         st.session_state.contrast_mult = st.slider("Contrast Stretch:", 0.8, 1.5, 1.0, 0.1)
     with dc3:
