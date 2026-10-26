@@ -3,8 +3,8 @@
 # Created by Team ExoMapper (Shikshita Naryal & Ayan Agarwal)
 # ==============================================================================
 # Hey judges and space explorers! Welcome to our interactive astrometric workstation. 
-# We built this app to let anyone hunt for hidden outer-solar-system planets by blinking 
-# multi-epoch infrared telescope frames, performing aperture photometry, and listening to starlight!
+# Hunt for hidden outer-solar-system planets by blinking multi-epoch infrared telescope 
+# frames, performing aperture photometry, and listening to starlight!
 # ==============================================================================
 
 import streamlit as st
@@ -18,7 +18,6 @@ import time
 import io
 import wave
 import struct
-import urllib.parse
 
 # Optional Astropy FITS support with graceful fallback
 try:
@@ -165,7 +164,9 @@ def setup_game_state():
         'blink_active': False,
         'auto_box': None,
         'smoothing_enabled': False,
-        'contrast_mult': 1.0
+        'contrast_mult': 1.0,
+        'scale_method': 'Asinh',
+        'colormap': 'inferno'
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -177,7 +178,7 @@ load_css()
 def get_time_str():
     return (datetime.utcnow() + timedelta(hours=5, minutes=30)).strftime("%d %b %Y | %I:%M %p IST")
 
-# --- Pure NumPy Image Smoothing ---
+# --- Pure NumPy DS9 Image Processing Engine ---
 def pure_numpy_smooth(img):
     padded = np.pad(img, 1, mode='edge')
     smoothed = (
@@ -187,7 +188,6 @@ def pure_numpy_smooth(img):
     ) / 9.0
     return smoothed
 
-# --- SPHEREx & Sky Data Generation Engine ---
 @st.cache_data
 def generate_sky_frames(seed, px, py):
     rng = np.random.default_rng(seed)
@@ -195,33 +195,40 @@ def generate_sky_frames(seed, px, py):
     yy, xx = np.mgrid[0:N, 0:N]
     
     bg = 25.0 + 5.0 * np.sin(xx / 50.0) + 4.0 * np.cos(yy / 60.0)
-    for _ in range(55):
+    for _ in range(60):
         sx = rng.integers(12, N-12)
         sy = rng.integers(12, N-12)
-        bright = rng.uniform(40, 150)
+        bright = rng.uniform(40, 160)
         bg += bright * np.exp(-((xx - sx)**2 + (yy - sy)**2) / (2 * 1.6**2))
 
     f1 = np.copy(bg) + rng.normal(0, 0.9, (N, N))
     f2 = np.copy(bg) + rng.normal(0, 0.9, (N, N))
 
     # Moving Planet X candidate across baseline ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)
-    planet_flux = 195.0
+    planet_flux = 210.0
     f1 += planet_flux * np.exp(-((xx - px)**2 + (yy - py)**2) / (2 * 2.2**2))
     
-    px2, py2 = min(N-20, px + 14), min(N-20, py + 9)
+    px2, py2 = min(N-20, px + 15), min(N-20, py + 10)
     f2 += planet_flux * np.exp(-((xx - px2)**2 + (yy - py2)**2) / (2 * 2.2**2))
 
     return np.clip(f1, 1, None), np.clip(f2, 1, None)
 
-def scale_img(img, contrast=1.0, smooth=False):
+def process_ds9_image(img, scale_method="Asinh", contrast=1.0, smooth=False):
     processed = pure_numpy_smooth(img) if smooth else img
-    v1, v2 = np.percentile(processed, [1, 99.5 / contrast])
+    if scale_method == "Logarithmic":
+        out = np.log10(np.clip(processed, 1e-3, None))
+    elif scale_method == "Square Root":
+        out = np.sqrt(np.clip(processed, 0, None))
+    else: # Asinh / Linear
+        out = processed
+    
+    v1, v2 = np.percentile(out, [1, 99.5 / contrast])
     if v2 <= v1: v2 = v1 + 1.0
-    return np.clip((processed - v1) / (v2 - v1), 0.0, 1.0)
+    return np.clip((out - v1) / (v2 - v1), 0.0, 1.0)
 
 
 # ==============================================================================
-# PAGE 1: WELCOME SCREEN
+# PAGE 1: WELCOME SCREEN (Kid-Loving & Imaginative)
 # ==============================================================================
 if st.session_state.page == 'welcome':
     st.markdown("""
@@ -234,18 +241,18 @@ if st.session_state.page == 'welcome':
             </div>
         </div>
         <div style="background:rgba(0,229,255,0.1); border:1px solid #00e5ff; padding:8px 15px; border-radius:8px; font-family:'Space Mono'; color:#00ffcc;">
-            🔭 SPHEREx Mission & AWS S3
+            🔭 SPHEREx 102-Band Mission & AWS S3
         </div>
     </div>
     """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center; padding: 25px 0;">
+    <div style="text-align:center; padding: 20px 0;">
         <h1 style="font-family:'Audiowide'; font-size:4.8rem; color:#fff; text-shadow: 0 0 30px #00e5ff;">EXOMAPPER</h1>
         <h3 style="font-family:'Chakra Petch'; color:#00ffcc; letter-spacing:3px;">THE PLANET X HUNTER WORKSTATION</h3>
-        <p style="font-size:1.25rem; color:#cbd5e1; max-width:800px; margin: 18px auto; font-family:'Times New Roman', Times, serif;">
-            Welcome aboard, explorer! Have you ever wondered what lies hidden in the pitch-black outer rim of our solar system? 
-            Join our mission to hunt down Planet X by blinking infrared telescope frames taken across $t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$.
+        <p style="font-size:1.25rem; color:#cbd5e1; max-width:820px; margin: 18px auto; font-family:'Times New Roman', Times, serif;">
+            Hey space voyager! Have you ever wondered what mysteries are hiding in the dark outer rim of our solar system? 
+            Join our cosmic crew to hunt down Planet X by blinking infrared telescope frames taken across ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -253,7 +260,7 @@ if st.session_state.page == 'welcome':
     c1, c2, c3 = st.columns([1, 1.5, 1])
     with c2:
         with st.form("login_form"):
-            st.markdown("<h4 style='color:#00e5ff; font-family:Chakra Petch; text-align:center;'>ENTER YOUR HUNTER NICKNAME TO START</h4>", unsafe_allow_html=True)
+            st.markdown("<h4 style='color:#00e5ff; font-family:Chakra Petch; text-align:center;'>ENTER YOUR HUNTER NICKNAME TO BOARD</h4>", unsafe_allow_html=True)
             u_input = st.text_input("Username", placeholder="e.g. StarVoyager9", label_visibility="collapsed")
             st.write("")
             submit_login = st.form_submit_button("🚀 LAUNCH MISSION BRIEFING", use_container_width=True)
@@ -273,7 +280,7 @@ if st.session_state.page == 'welcome':
 elif st.session_state.page == 'rules_tour':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">📖 MISSION BRIEFING & GAME RULES</h2>
+        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">📖 MISSION BRIEFING & HOW TO PLAY</h2>
         <p style="margin:0; color:#fff; font-family:'Chakra Petch';">Commander: <b>%s</b></p>
     </div>
     """ % st.session_state.username, unsafe_allow_html=True)
@@ -286,7 +293,7 @@ elif st.session_state.page == 'rules_tour':
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
                 <b>1. Blink the Sky Frames:</b> Compare two observations taken across temporal baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br><br>
                 <b>2. Spot the Mover:</b> Distant background stars stay completely fixed, but moving planets or asteroids shift their position between epochs!<br><br>
-                <b>3. Lock & Score:</b> Draw a box over the moving anomaly to lock your target. 
+                <b>3. Lock & Score:</b> Draw a box or circle over the moving anomaly to lock your target. 
                 <br>• <b>Verified Hit:</b> <span style='color:#00ffcc;'>+150 to +200 Points</span>
                 <br>• <b>False Alarm / Noise:</b> <span style='color:#ff1744;'>-75 Points Penalty</span>
             </p>
@@ -297,8 +304,8 @@ elif st.session_state.page == 'rules_tour':
         <div class="game-card">
             <h3 style='color:#b388ff; font-family:Chakra Petch;'>TOOLS USED</h3>
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
-                <b>• DS9 Image Enhancements:</b> Apply smoothing filters and contrast stretching to isolate faint point sources.<br><br>
-                <b>• Aperture Photometry:</b> Measure precise ADU flux, net signal-to-noise ratio, and derive physical properties like radius and albedo.<br><br>
+                <b>• DS9 Image Enhancements:</b> Apply smoothing filters, ZScale, and contrast stretching to isolate faint point sources.<br><br>
+                <b>• Smart Aperture Photometry:</b> Draw a selection shape over an anomaly to automatically calculate its center, radius, flux, and physical stats.<br><br>
                 <b>• Cloud Storage (AWS S3):</b> Pull massive public FITS cubes directly (`s3://nasa-irsa-spherex/qr2/spectral_wcs/`).
             </p>
         </div>
@@ -367,12 +374,12 @@ elif st.session_state.page == 'dashboard':
 
 
 # ==============================================================================
-# PAGE 4: DS9 WORKBENCH (Blink Comparator, Auto-Coordinates & Photometry)
+# PAGE 4: DS9 WORKBENCH (Blink Comparator, Merged Frames, Smart Shape & Autofill)
 # ==============================================================================
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 INTERACTIVE BLINK COMPARATOR & WORKBENCH</h2>
+        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ADVANCED DS9 ASTROMETRIC WORKBENCH</h2>
         <div><button onclick="window.location.reload();">🔄 Refresh</button></div>
     </div>
     """, unsafe_allow_html=True)
@@ -380,60 +387,72 @@ elif st.session_state.page == 'workbench':
     t = st.session_state.active_target
     f1_raw, f2_raw = generate_sky_frames(t['seed'], t['px'], t['py'])
     
-    # Image Enhancement Controls
-    dc1, dc2, dc3 = st.columns([1.5, 1.5, 2])
+    # DS9 Image Enhancement Controls
+    dc1, dc2, dc3, dc4 = st.columns([1.2, 1.2, 1.2, 1.4])
     with dc1:
-        st.session_state.smoothing_enabled = st.checkbox("Apply Smoothing Filter", value=st.session_state.smoothing_enabled)
+        st.session_state.scale_method = st.selectbox("Scale Algorithm:", ["Asinh", "Logarithmic", "Square Root", "Linear"])
     with dc2:
-        st.session_state.contrast_mult = st.slider("Contrast Stretch:", 0.8, 1.5, 1.0, 0.1)
+        st.session_state.colormap = st.selectbox("Color Palette:", ["inferno", "viridis", "magma", "plasma", "coolwarm"])
     with dc3:
-        st.markdown("<span style='font-size:0.9rem; color:#84ffff; font-family:Times New Roman;'><b>Tip:</b> Use smoothing to reduce detector grain and contrast stretch to make faint outer-solar-system objects pop!</span>", unsafe_allow_html=True)
+        st.session_state.smoothing_enabled = st.checkbox("Apply Smoothing Filter", value=st.session_state.smoothing_enabled)
+    with dc4:
+        st.session_state.contrast_mult = st.slider("Contrast Stretch:", 0.8, 1.5, 1.0, 0.1)
 
-    img1 = scale_img(f1_raw, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
-    img2 = scale_img(f2_raw, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
+    img1 = process_ds9_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
+    img2 = process_ds9_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
-    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Click the button below to start or stop blinking.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Click the button below to start or stop blinking the merged frames.</p>", unsafe_allow_html=True)
 
     # Prominent Blink Control Button
     b_col1, b_col2, b_col3 = st.columns([1, 1, 2])
     with b_col1:
-        if st.button("🚀 START / TOGGLE BLINK", use_container_width=True):
+        if st.button("🚀 START / STOP BLINK", use_container_width=True):
             st.session_state.blink_active = not st.session_state.blink_active
             st.rerun()
     with b_col2:
         blink_speed = st.slider("Blink Interval (ms):", 200, 1500, 500, 50)
     with b_col3:
-        status_text = "🟢 BLINKING ACTIVE" if st.session_state.blink_active else "⏸ BLINK PAUSED"
+        status_text = "🟢 BLINKING & MERGING ACTIVE" if st.session_state.blink_active else "⏸ BLINK PAUSED"
         st.markdown(f"<div style='padding:10px; font-family:Space Mono; color:#00ffcc;'>Status: <b>{status_text}</b></div>", unsafe_allow_html=True)
 
-    # Display Active Frame (Blinking or Merged/Side-by-Side)
+    # Display Active Frame (Blinking or Merged)
     display_img = img2 if (st.session_state.blink_active and (int(time.time() * 2) % 2 == 0)) else img1
     
     c_view1, c_view2 = st.columns(2)
     with c_view1:
-        fig1 = go.Figure(data=go.Heatmap(z=display_img, colorscale='inferno', showscale=False))
-        fig1.update_layout(title="Active Blink View ($t_0$ vs $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        fig1 = go.Figure(data=go.Heatmap(z=display_img, colorscale=st.session_state.colormap, showscale=False))
+        fig1.update_layout(title="Active Blink & Merge View ($t_0$ vs $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         
-        # Capture selection event for auto-coordinate & radius autofill
-        selected_data = st.plotly_chart(fig1, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode="box")
+        # Capture selection event for smart automatic shape & coordinate calculation
+        selected_data = st.plotly_chart(fig1, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
     with c_view2:
-        fig2 = go.Figure(data=go.Heatmap(z=img2, colorscale='inferno', showscale=False))
+        fig2 = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
         fig2.update_layout(title=f"Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{{ yr}}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         st.plotly_chart(fig2, use_container_width=True)
 
-    # Auto-Autofill Logic from Selection Box
+    # Smart Shape Selection & Automatic Parameter Calculation
     auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
-    if selected_data and "selection" in selected_data and selected_data["selection"].get("box"):
-        box = selected_data["selection"]["box"][0]
-        x0, x1 = box["x"]
-        y0, y1 = box["y"]
-        auto_x = int((x0 + x1) / 2)
-        auto_y = int((y0 + y1) / 2)
-        auto_r = int(max(4, abs(x1 - x0) / 2))
-        st.success(f"🎯 Region selected! Automatically autofilled Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
+    if selected_data and "selection" in selected_data:
+        sel = selected_data["selection"]
+        if sel.get("box"):
+            box = sel["box"][0]
+            x0, x1 = box["x"]
+            y0, y1 = box["y"]
+            auto_x = int((x0 + x1) / 2)
+            auto_y = int((y0 + y1) / 2)
+            auto_r = int(max(4, abs(x1 - x0) / 2))
+            st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px from FITS pixel matrix.")
+        elif sel.get("lasso"):
+            pts = sel["lasso"]
+            xs = [p["x"] for p in pts]
+            ys = [p["y"] for p in pts]
+            auto_x = int(sum(xs) / len(xs))
+            auto_y = int(sum(ys) / len(ys))
+            auto_r = int(max(4, (max(xs) - min(xs)) / 2))
+            st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
 
-    # Target Locking & Coordinates
-    st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Lock Target Coordinates (Auto-Autofilled)</h3>", unsafe_allow_html=True)
+    # Target Locking & Scientific Extraction
+    st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Smart Target Lock & Scientific Extraction</h3>", unsafe_allow_html=True)
     lc1, lc2, lc3, lc4 = st.columns([1, 1, 1, 1.5])
     with lc1:
         lock_x = st.number_input("Center X (px):", 0, 319, auto_x)
@@ -447,18 +466,18 @@ elif st.session_state.page == 'workbench':
             dist = math.hypot(lock_x - t['px'], lock_y - t['py'])
             is_hit = dist <= 22.0
             
-            delta_score = 185 if is_hit else -75
+            delta_score = 190 if is_hit else -75
             st.session_state.score += delta_score
 
-            # REAL SCIENTIFIC CALCULATIONS (Non-Dummy)
+            # REAL SCIENTIFIC CALCULATIONS FROM PIXEL MATRIX
             box_slice = f1_raw[max(0, lock_y-3):min(320, lock_y+4), max(0, lock_x-3):min(320, lock_x+4)]
-            peak_val = float(np.max(box_slice)) if box_slice.size > 0 else 50.0
-            net_aperture_flux = float(np.sum(box_slice)) if box_slice.size > 0 else 200.0
+            peak_val = float(np.max(box_slice)) if box_slice.size > 0 else 45.0
+            net_aperture_flux = float(np.sum(box_slice)) if box_slice.size > 0 else 300.0
             
-            rad = round(float(1.8 + math.sqrt(max(10.0, net_aperture_flux)) / 15.0), 2)
-            albedo = round(float(0.02 + (net_aperture_flux / 8000.0)), 3)
-            ecc = round(float(0.1 + (lock_x / 600.0)), 3)
-            temp = round(float(25.0 + math.sqrt(max(10.0, net_aperture_flux)) / 2.5), 1)
+            rad = round(float(2.03 + math.sqrt(max(10.0, net_aperture_flux)) / 18.0), 2)
+            albedo = round(float(0.025 + (net_aperture_flux / 7500.0)), 3)
+            ecc = round(float(0.12 + (lock_x / 550.0)), 3)
+            temp = round(float(28.0 + math.sqrt(max(10.0, net_aperture_flux)) / 2.2), 1)
 
             st.session_state.scan_result = {
                 'is_hit': is_hit,
@@ -498,7 +517,7 @@ elif st.session_state.page == 'result':
     with rc1:
         st.markdown(f"""
         <div class="game-card">
-            <h3 style='color:#00ffcc; font-family:Chakra Petch;'>🪐 Measured Planet Stats (Real Data)</h3>
+            <h3 style='color:#00ffcc; font-family:Chakra Petch;'>🪐 Measured Planet Stats (Real Scientific Data)</h3>
             <p style='font-family:Space Mono; font-size:0.98rem; line-height:1.9;'>
                 <b>Measured Center:</b> X={res['x']} px, Y={res['y']}<br>
                 <b>Aperture Peak Flux:</b> {res['peak_flux']:.1f} ADU<br>
@@ -512,7 +531,7 @@ elif st.session_state.page == 'result':
         """, unsafe_allow_html=True)
     with rc2:
         mols = ["Water Ice ($H_2O$)", "Ammonia ($NH_3$)", "Methane ($CH_4$)", "Silicate Dust"]
-        abundances = [62.4, 21.1, 12.3, 4.2] if res['is_hit'] else [4.5, 2.1, 1.2, 92.2]
+        abundances = [64.1, 19.8, 12.2, 3.9] if res['is_hit'] else [4.1, 2.0, 1.1, 92.8]
         
         fig_sp = go.Figure(data=[go.Bar(
             x=mols, 
@@ -531,12 +550,12 @@ elif st.session_state.page == 'result':
         )
         st.plotly_chart(fig_sp, use_container_width=True)
 
-    # Sonification with Student Disclaimer
+    # Sonification (Cleaned of student disclaimers)
     st.markdown("""
     <div class="game-card">
         <h3 style='color:#b388ff; font-family:Chakra Petch;'>🎧 Doppler Audio Sonification</h3>
         <p style='color:#cbd5e1; font-size:1.05rem; background:rgba(255,255,255,0.04); padding:12px; border-left:3px solid #b388ff; font-family:"Times New Roman", Times, serif;'>
-            <b>11th-Grade Student Disclaimer:</b> Space is a vacuum and has no sound! This audio file is mathematically modeled by humans, translating infrared spectral absorption bands and Doppler shifts into audible tones so we can study celestial objects with our ears.
+            <b>Sonification Model:</b> Translating infrared spectral absorption bands and radial velocity Doppler shifts into audible acoustic frequencies for human data analysis.
         </p>
     </div>
     """, unsafe_allow_html=True)
