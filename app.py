@@ -177,7 +177,7 @@ load_css()
 def get_time_str():
     return (datetime.utcnow() + timedelta(hours=5, minutes=30)).strftime("%d %b %Y | %I:%M %p IST")
 
-# --- Pure NumPy Image Smoothing (Zero Scipy Dependency) ---
+# --- Pure NumPy Image Smoothing ---
 def pure_numpy_smooth(img):
     padded = np.pad(img, 1, mode='edge')
     smoothed = (
@@ -187,7 +187,7 @@ def pure_numpy_smooth(img):
     ) / 9.0
     return smoothed
 
-# --- SPHEREx & Sky Data Generation Engine (Real Deterministic Physics) ---
+# --- SPHEREx & Sky Data Generation Engine ---
 @st.cache_data
 def generate_sky_frames(seed, px, py):
     rng = np.random.default_rng(seed)
@@ -204,7 +204,7 @@ def generate_sky_frames(seed, px, py):
     f1 = np.copy(bg) + rng.normal(0, 0.9, (N, N))
     f2 = np.copy(bg) + rng.normal(0, 0.9, (N, N))
 
-    # Moving Planet X candidate across baseline ($t_0$ to $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)
+    # Moving Planet X candidate across baseline ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)
     planet_flux = 195.0
     f1 += planet_flux * np.exp(-((xx - px)**2 + (yy - py)**2) / (2 * 2.2**2))
     
@@ -221,7 +221,7 @@ def scale_img(img, contrast=1.0, smooth=False):
 
 
 # ==============================================================================
-# PAGE 1: WELCOME SCREEN (Human-Authored, Gamified & Creative)
+# PAGE 1: WELCOME SCREEN
 # ==============================================================================
 if st.session_state.page == 'welcome':
     st.markdown("""
@@ -295,7 +295,7 @@ elif st.session_state.page == 'rules_tour':
     with col_r:
         st.markdown("""
         <div class="game-card">
-            <h3 style='color:#b388ff; font-family:Chakra Petch;'>🔭 Advanced DS9-Style Tools & AWS S3 Integration</h3>
+            <h3 style='color:#b388ff; font-family:Chakra Petch;'>TOOLS USED</h3>
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
                 <b>• DS9 Image Enhancements:</b> Apply smoothing filters and contrast stretching to isolate faint point sources.<br><br>
                 <b>• Aperture Photometry:</b> Measure precise ADU flux, net signal-to-noise ratio, and derive physical properties like radius and albedo.<br><br>
@@ -372,7 +372,7 @@ elif st.session_state.page == 'dashboard':
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 INTERACTIVE BLINK COMPARATOR & DS9 WORKBENCH</h2>
+        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 INTERACTIVE BLINK COMPARATOR & WORKBENCH</h2>
         <div><button onclick="window.location.reload();">🔄 Refresh</button></div>
     </div>
     """, unsafe_allow_html=True)
@@ -380,14 +380,14 @@ elif st.session_state.page == 'workbench':
     t = st.session_state.active_target
     f1_raw, f2_raw = generate_sky_frames(t['seed'], t['px'], t['py'])
     
-    # DS9 Image Enhancement Controls
+    # Image Enhancement Controls
     dc1, dc2, dc3 = st.columns([1.5, 1.5, 2])
     with dc1:
         st.session_state.smoothing_enabled = st.checkbox("Apply Smoothing Filter", value=st.session_state.smoothing_enabled)
     with dc2:
         st.session_state.contrast_mult = st.slider("Contrast Stretch:", 0.8, 1.5, 1.0, 0.1)
     with dc3:
-        st.markdown("<span style='font-size:0.9rem; color:#84ffff; font-family:Times New Roman;'><b>DS9 Tip:</b> Use smoothing to reduce detector grain and contrast stretch to make faint outer-solar-system objects pop!</span>", unsafe_allow_html=True)
+        st.markdown("<span style='font-size:0.9rem; color:#84ffff; font-family:Times New Roman;'><b>Tip:</b> Use smoothing to reduce detector grain and contrast stretch to make faint outer-solar-system objects pop!</span>", unsafe_allow_html=True)
 
     img1 = scale_img(f1_raw, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
     img2 = scale_img(f2_raw, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
@@ -406,13 +406,13 @@ elif st.session_state.page == 'workbench':
         status_text = "🟢 BLINKING ACTIVE" if st.session_state.blink_active else "⏸ BLINK PAUSED"
         st.markdown(f"<div style='padding:10px; font-family:Space Mono; color:#00ffcc;'>Status: <b>{status_text}</b></div>", unsafe_allow_html=True)
 
-    # Display Active Frame (Blinking or Side-by-Side)
+    # Display Active Frame (Blinking or Merged/Side-by-Side)
     display_img = img2 if (st.session_state.blink_active and (int(time.time() * 2) % 2 == 0)) else img1
     
     c_view1, c_view2 = st.columns(2)
     with c_view1:
         fig1 = go.Figure(data=go.Heatmap(z=display_img, colorscale='inferno', showscale=False))
-        fig1.update_layout(title="Active Blink View ($t_0$ vs $t_0 + \Delta t$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        fig1.update_layout(title="Active Blink View ($t_0$ vs $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         
         # Capture selection event for auto-coordinate & radius autofill
         selected_data = st.plotly_chart(fig1, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode="box")
@@ -477,7 +477,7 @@ elif st.session_state.page == 'workbench':
 
 
 # ==============================================================================
-# PAGE 5: RESULTS & SCIENTIFIC DEBRIEF (Real Data & Gorgeous Visuals)
+# PAGE 5: RESULTS & SCIENTIFIC DEBRIEF
 # ==============================================================================
 elif st.session_state.page == 'result':
     st.markdown("""
@@ -511,12 +511,8 @@ elif st.session_state.page == 'result':
         </div>
         """, unsafe_allow_html=True)
     with rc2:
-        # Real-data derived molecular spectrum
         mols = ["Water Ice ($H_2O$)", "Ammonia ($NH_3$)", "Methane ($CH_4$)", "Silicate Dust"]
-        if res['is_hit']:
-            abundances = [62.4, 21.1, 12.3, 4.2]
-        else:
-            abundances = [4.5, 2.1, 1.2, 92.2]
+        abundances = [62.4, 21.1, 12.3, 4.2] if res['is_hit'] else [4.5, 2.1, 1.2, 92.2]
         
         fig_sp = go.Figure(data=[go.Bar(
             x=mols, 
