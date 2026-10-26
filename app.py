@@ -15,6 +15,7 @@ import time
 import io
 import wave
 import struct
+import base64
 
 st.set_page_config(
     page_title="ExoMapper — The Planet X Hunter (NASA Space Apps 2026)",
@@ -223,8 +224,6 @@ def array_to_base64_png(arr):
     plt.close(fig)
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
-import base64
-
 if st.session_state.page == 'welcome':
     st.markdown("""
     <div class="nasa-header-box">
@@ -381,7 +380,6 @@ elif st.session_state.page == 'workbench':
 
     st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Use the interactive blink player below to seamlessly blend and blink both frames.</p>", unsafe_allow_html=True)
 
-    # High-Performance Client-Side JS Blink & Blend Engine
     b64_1 = array_to_base64_png(img1)
     b64_2 = array_to_base64_png(img2)
     
@@ -408,29 +406,29 @@ elif st.session_state.page == 'workbench':
         const btn = document.getElementById('blinkBtn');
         const status = document.getElementById('statusLabel');
 
-        function toggleBlink() {
+        function toggleBlink() {{
             blinking = !blinking;
-            if(blinking) {
+            if(blinking) {{
                 btn.innerText = "⏸ STOP BLINK";
                 status.innerText = "🟢 BLINKING ACTIVE";
-                timer = setInterval(() => {
+                timer = setInterval(() => {{
                     showEp2 = !showEp2;
                     img2El.style.opacity = showEp2 ? "1" : "0";
-                }, 500);
-            } else {
+                }}, 500);
+            }} else {{
                 btn.innerText = "▶ START BLINK";
                 status.innerText = "⏸ PAUSED";
                 clearInterval(timer);
-            }
-        }
+            }}
+        }}
 
-        function blendImages(val) {
+        function blendImages(val) {{
             blinking = false;
             clearInterval(timer);
             btn.innerText = "▶ START BLINK";
             status.innerText = "⏸ MANUAL BLEND";
             img2El.style.opacity = val / 100.0;
-        }
+        }}
     </script>
     """
     
@@ -586,4 +584,3 @@ elif st.session_state.page == 'result':
         st.rerun()
 
 st.markdown("<div style='text-align:center; font-family:Space Mono; color:#00e5ff; margin-top:40px; font-size:0.88rem;'>NASA Space Apps Challenge 2026 | Team ExoMapper (Shikshita Naryal & Ayan Agarwal)</div>", unsafe_allow_html=True)
-```eof
