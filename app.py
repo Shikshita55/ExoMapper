@@ -1,7 +1,13 @@
+# ==============================================================================
+# EXOMAPPER: THE PLANET X HUNTER (NASA SPACE APPS CHALLENGE 2026)
+# Created by Team ExoMapper (Shikshita Naryal & Ayan Agarwal)
+# ==============================================================================
+
 import streamlit as st
 import numpy as np
 import pandas as pd
 import plotly.graph_objects as go
+import streamlit.components.v1 as components
 from datetime import datetime, timedelta
 import random
 import math
@@ -10,14 +16,8 @@ import io
 import wave
 import struct
 
-try:
-    from astropy.io import fits
-    ASTROPY_AVAILABLE = True
-except ImportError:
-    ASTROPY_AVAILABLE = False
-
 st.set_page_config(
-    page_title="ExoMapper — The Planet X Hunter",
+    page_title="ExoMapper — The Planet X Hunter (NASA Space Apps 2026)",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
@@ -149,8 +149,6 @@ def setup_game_state():
         'active_target': None,
         'scan_result': None,
         'scoreboard': [],
-        'blink_active': False,
-        'auto_box': None,
         'smoothing_enabled': False,
         'contrast_mult': 1.0,
         'scale_method': 'Asinh',
@@ -212,6 +210,21 @@ def process_ds9_image(img, scale_method="Asinh", contrast=1.0, smooth=False):
     if v2 <= v1: v2 = v1 + 1.0
     return np.clip((out - v1) / (v2 - v1), 0.0, 1.0)
 
+def array_to_base64_png(arr):
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots(figsize=(5, 5), dpi=100)
+    fig.patch.set_facecolor('#010409')
+    ax.set_facecolor('#010409')
+    ax.imshow(arr, cmap='inferno', origin='lower')
+    ax.axis('off')
+    fig.tight_layout(pad=0)
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png', facecolor=fig.get_facecolor(), edgecolor='none')
+    plt.close(fig)
+    return base64.b64encode(buf.getvalue()).decode('utf-8')
+
+import base64
+
 if st.session_state.page == 'welcome':
     st.markdown("""
     <div class="nasa-header-box">
@@ -233,8 +246,7 @@ if st.session_state.page == 'welcome':
         <h1 style="font-family:'Audiowide'; font-size:4.8rem; color:#fff; text-shadow: 0 0 30px #00e5ff;">EXOMAPPER</h1>
         <h3 style="font-family:'Chakra Petch'; color:#00ffcc; letter-spacing:3px;">THE PLANET X HUNTER WORKSTATION</h3>
         <p style="font-size:1.25rem; color:#cbd5e1; max-width:820px; margin: 18px auto; font-family:'Times New Roman', Times, serif;">
-            Hey space voyager! Have you ever wondered what mysteries are hiding in the dark outer rim of our solar system? 
-            Join our cosmic crew to hunt down Planet X by blinking infrared telescope frames taken across ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).
+            Hey space voyager! Hunt down Planet X by blinking infrared telescope frames taken across $t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -321,7 +333,6 @@ elif st.session_state.page == 'dashboard':
                 'py': random.randint(100, 220),
                 'seed': random.randint(1000, 9999)
             }
-            st.session_state.blink_active = False
             st.session_state.auto_box = None
             st.session_state.page = 'workbench'
             st.rerun()
@@ -368,34 +379,72 @@ elif st.session_state.page == 'workbench':
     img1 = process_ds9_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
     img2 = process_ds9_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
-    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Click the button below to start or stop blinking the merged frames.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Use the interactive blink player below to seamlessly blend and blink both frames.</p>", unsafe_allow_html=True)
 
-    b_col1, b_col2, b_col3 = st.columns([1, 1, 2])
-    with b_col1:
-        if st.button("🚀 START / STOP BLINK", use_container_width=True):
-            st.session_state.blink_active = not st.session_state.blink_active
-            st.rerun()
-    with b_col2:
-        blink_speed = st.slider("Blink Interval (ms):", 200, 1500, 500, 50)
-    with b_col3:
-        status_text = "🟢 BLINKING & MERGING ACTIVE" if st.session_state.blink_active else "⏸ BLINK PAUSED"
-        st.markdown(f"<div style='padding:10px; font-family:Space Mono; color:#00ffcc;'>Status: <b>{status_text}</b></div>", unsafe_allow_html=True)
-
-    display_img = img2 if (st.session_state.blink_active and (int(time.time() * 2) % 2 == 0)) else img1
+    # High-Performance Client-Side JS Blink & Blend Engine
+    b64_1 = array_to_base64_png(img1)
+    b64_2 = array_to_base64_png(img2)
     
-    c_view1, c_view2 = st.columns(2)
-    with c_view1:
-        fig1 = go.Figure(data=go.Heatmap(z=display_img, colorscale=st.session_state.colormap, showscale=False))
-        fig1.update_layout(title="Active Blink & Merge View ($t_0$ vs $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
-        selected_data = st.plotly_chart(fig1, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
-    with c_view2:
-        fig2 = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
-        fig2.update_layout(title=f"Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{{ yr}}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
-        st.plotly_chart(fig2, use_container_width=True)
+    blink_html = f"""
+    <div style="background:#040c24; border:1px solid rgba(0,229,255,0.4); border-radius:12px; padding:15px; text-align:center;">
+        <div style="position:relative; width:340px; height:340px; margin:0 auto; overflow:hidden; border-radius:8px;">
+            <img id="img1" src="data:image/png;base64,{b64_1}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain;" />
+            <img id="img2" src="data:image/png;base64,{b64_2}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; opacity:0; transition: opacity 0.2s;" />
+        </div>
+        <div style="margin-top:15px; display:flex; justify-content:center; gap:10px; align-items:center;">
+            <button onclick="toggleBlink()" id="blinkBtn" style="background:#00e5ff; color:#010409; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer;">▶ START BLINK</button>
+            <span style="color:#00ffcc; font-family:Space Mono; font-size:0.9rem;" id="statusLabel">⏸ PAUSED</span>
+        </div>
+        <div style="margin-top:10px;">
+            <label style="color:#84ffff; font-size:0.9rem;">Manual Blend Scrubber (Epoch 1 ⟷ Epoch 2):</label><br>
+            <input type="range" min="0" max="100" value="0" oninput="blendImages(this.value)" style="width:300px; accent-color:#00ffcc; cursor:pointer;">
+        </div>
+    </div>
+    <script>
+        let blinking = false;
+        let timer = null;
+        let showEp2 = false;
+        const img2El = document.getElementById('img2');
+        const btn = document.getElementById('blinkBtn');
+        const status = document.getElementById('statusLabel');
+
+        function toggleBlink() {
+            blinking = !blinking;
+            if(blinking) {
+                btn.innerText = "⏸ STOP BLINK";
+                status.innerText = "🟢 BLINKING ACTIVE";
+                timer = setInterval(() => {
+                    showEp2 = !showEp2;
+                    img2El.style.opacity = showEp2 ? "1" : "0";
+                }, 500);
+            } else {
+                btn.innerText = "▶ START BLINK";
+                status.innerText = "⏸ PAUSED";
+                clearInterval(timer);
+            }
+        }
+
+        function blendImages(val) {
+            blinking = false;
+            clearInterval(timer);
+            btn.innerText = "▶ START BLINK";
+            status.innerText = "⏸ MANUAL BLEND";
+            img2El.style.opacity = val / 100.0;
+        }
+    </script>
+    """
+    
+    col_bl1, col_bl2 = st.columns([1.2, 1.8])
+    with col_bl1:
+        components.html(blink_html, height=480)
+    with col_bl2:
+        fig_dual = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
+        fig_dual.update_layout(title=f"Epoch 2 Reference Frame ($t_0 + \Delta t$, where $\Delta t = 0.5\text{{ yr}}$)", height=450, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        sel_data = st.plotly_chart(fig_dual, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
 
     auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
-    if selected_data and "selection" in selected_data:
-        sel = selected_data["selection"]
+    if sel_data and "selection" in sel_data:
+        sel = sel_data["selection"]
         if sel.get("box"):
             box = sel["box"][0]
             x0, x1 = box["x"]
@@ -403,15 +452,7 @@ elif st.session_state.page == 'workbench':
             auto_x = int((x0 + x1) / 2)
             auto_y = int((y0 + y1) / 2)
             auto_r = int(max(4, abs(x1 - x0) / 2))
-            st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px from FITS pixel matrix.")
-        elif sel.get("lasso"):
-            pts = sel["lasso"]
-            xs = [p["x"] for p in pts]
-            ys = [p["y"] for p in pts]
-            auto_x = int(sum(xs) / len(xs))
-            auto_y = int(sum(ys) / len(ys))
-            auto_r = int(max(4, (max(xs) - min(xs)) / 2))
-            st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
+            st.success(f"🎯 Smart Shape Drawn! Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
 
     st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Smart Target Lock & Scientific Extraction</h3>", unsafe_allow_html=True)
     lc1, lc2, lc3, lc4 = st.columns([1, 1, 1, 1.5])
@@ -545,3 +586,4 @@ elif st.session_state.page == 'result':
         st.rerun()
 
 st.markdown("<div style='text-align:center; font-family:Space Mono; color:#00e5ff; margin-top:40px; font-size:0.88rem;'>NASA Space Apps Challenge 2026 | Team ExoMapper (Shikshita Naryal & Ayan Agarwal)</div>", unsafe_allow_html=True)
+```eof
