@@ -1,12 +1,3 @@
-# ==============================================================================
-# EXOMAPPER: THE PLANET X HUNTER (NASA SPACE APPS CHALLENGE 2026)
-# Created by Team ExoMapper (Shikshita Naryal & Ayan Agarwal)
-# ==============================================================================
-# Hey judges and space explorers! Welcome to our interactive astrometric workstation. 
-# Hunt for hidden outer-solar-system planets by blinking multi-epoch infrared telescope 
-# frames, performing aperture photometry, and listening to starlight!
-# ==============================================================================
-
 import streamlit as st
 import numpy as np
 import pandas as pd
@@ -19,7 +10,6 @@ import io
 import wave
 import struct
 
-# Optional Astropy FITS support with graceful fallback
 try:
     from astropy.io import fits
     ASTROPY_AVAILABLE = True
@@ -27,12 +17,11 @@ except ImportError:
     ASTROPY_AVAILABLE = False
 
 st.set_page_config(
-    page_title="ExoMapper — The Planet X Hunter (NASA Space Apps 2026)",
+    page_title="ExoMapper — The Planet X Hunter",
     layout="wide",
     initial_sidebar_state="collapsed"
 )
 
-# --- Human-Crafted Cyberpunk & NASA Observatory CSS (Times New Roman + Modern Sans) ---
 def load_css():
     st.markdown("""
     <style>
@@ -151,7 +140,6 @@ def load_css():
     </style>
     """, unsafe_allow_html=True)
 
-# --- Persistent Session State ---
 def setup_game_state():
     defaults = {
         'page': 'welcome',
@@ -178,7 +166,6 @@ load_css()
 def get_time_str():
     return (datetime.utcnow() + timedelta(hours=5, minutes=30)).strftime("%d %b %Y | %I:%M %p IST")
 
-# --- Pure NumPy DS9 Image Processing Engine ---
 def pure_numpy_smooth(img):
     padded = np.pad(img, 1, mode='edge')
     smoothed = (
@@ -204,7 +191,6 @@ def generate_sky_frames(seed, px, py):
     f1 = np.copy(bg) + rng.normal(0, 0.9, (N, N))
     f2 = np.copy(bg) + rng.normal(0, 0.9, (N, N))
 
-    # Moving Planet X candidate across baseline ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)
     planet_flux = 210.0
     f1 += planet_flux * np.exp(-((xx - px)**2 + (yy - py)**2) / (2 * 2.2**2))
     
@@ -219,17 +205,13 @@ def process_ds9_image(img, scale_method="Asinh", contrast=1.0, smooth=False):
         out = np.log10(np.clip(processed, 1e-3, None))
     elif scale_method == "Square Root":
         out = np.sqrt(np.clip(processed, 0, None))
-    else: # Asinh / Linear
+    else:
         out = processed
     
     v1, v2 = np.percentile(out, [1, 99.5 / contrast])
     if v2 <= v1: v2 = v1 + 1.0
     return np.clip((out - v1) / (v2 - v1), 0.0, 1.0)
 
-
-# ==============================================================================
-# PAGE 1: WELCOME SCREEN (Kid-Loving & Imaginative)
-# ==============================================================================
 if st.session_state.page == 'welcome':
     st.markdown("""
     <div class="nasa-header-box">
@@ -273,10 +255,6 @@ if st.session_state.page == 'welcome':
                 else:
                     st.error("Please enter a valid hunter nickname to board the spacecraft!")
 
-
-# ==============================================================================
-# PAGE 2: RULES & MISSION BRIEFING
-# ==============================================================================
 elif st.session_state.page == 'rules_tour':
     st.markdown("""
     <div class="nasa-header-box">
@@ -316,10 +294,6 @@ elif st.session_state.page == 'rules_tour':
         st.session_state.page = 'dashboard'
         st.rerun()
 
-
-# ==============================================================================
-# PAGE 3: DASHBOARD & CLOUD DATA SOURCE SELECTION
-# ==============================================================================
 elif st.session_state.page == 'dashboard':
     st.markdown("""
     <div class="nasa-header-box">
@@ -352,7 +326,6 @@ elif st.session_state.page == 'dashboard':
             st.session_state.page = 'workbench'
             st.rerun()
 
-    # AWS S3 & Caltech Integration Info Box
     st.markdown("""
     <div class="game-card" style="margin-top:20px; border-color:#00ffcc;">
         <h4 style='color:#00ffcc; font-family:Chakra Petch;'>☁️ NASA Public Cloud Storage (AWS S3) & Caltech Integration</h4>
@@ -365,21 +338,16 @@ elif st.session_state.page == 'dashboard':
     </div>
     """, unsafe_allow_html=True)
 
-    # Scoreboard Section
     st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:30px;'>🏆 Mission Scoreboard & Logbook</h3>", unsafe_allow_html=True)
     if not st.session_state.scoreboard:
         st.info("⭐ No missions completed yet. Start your first scan above to record your discoveries!")
     else:
         st.dataframe(pd.DataFrame(st.session_state.scoreboard), use_container_width=True, hide_index=True)
 
-
-# ==============================================================================
-# PAGE 4: DS9 WORKBENCH (Blink Comparator, Merged Frames, Smart Shape & Autofill)
-# ==============================================================================
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ASTROMETRIC WORKBENCH</h2>
+        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ADVANCED DS9 ASTROMETRIC WORKBENCH</h2>
         <div><button onclick="window.location.reload();">🔄 Refresh</button></div>
     </div>
     """, unsafe_allow_html=True)
@@ -387,7 +355,6 @@ elif st.session_state.page == 'workbench':
     t = st.session_state.active_target
     f1_raw, f2_raw = generate_sky_frames(t['seed'], t['px'], t['py'])
     
-    # DS9 Image Enhancement Controls
     dc1, dc2, dc3, dc4 = st.columns([1.2, 1.2, 1.2, 1.4])
     with dc1:
         st.session_state.scale_method = st.selectbox("Scale Algorithm:", ["Asinh", "Logarithmic", "Square Root", "Linear"])
@@ -403,7 +370,6 @@ elif st.session_state.page == 'workbench':
 
     st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Click the button below to start or stop blinking the merged frames.</p>", unsafe_allow_html=True)
 
-    # Prominent Blink Control Button
     b_col1, b_col2, b_col3 = st.columns([1, 1, 2])
     with b_col1:
         if st.button("🚀 START / STOP BLINK", use_container_width=True):
@@ -415,22 +381,18 @@ elif st.session_state.page == 'workbench':
         status_text = "🟢 BLINKING & MERGING ACTIVE" if st.session_state.blink_active else "⏸ BLINK PAUSED"
         st.markdown(f"<div style='padding:10px; font-family:Space Mono; color:#00ffcc;'>Status: <b>{status_text}</b></div>", unsafe_allow_html=True)
 
-    # Display Active Frame (Blinking or Merged)
     display_img = img2 if (st.session_state.blink_active and (int(time.time() * 2) % 2 == 0)) else img1
     
     c_view1, c_view2 = st.columns(2)
     with c_view1:
         fig1 = go.Figure(data=go.Heatmap(z=display_img, colorscale=st.session_state.colormap, showscale=False))
         fig1.update_layout(title="Active Blink & Merge View ($t_0$ vs $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
-        
-        # Capture selection event for smart automatic shape & coordinate calculation
         selected_data = st.plotly_chart(fig1, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
     with c_view2:
         fig2 = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
         fig2.update_layout(title=f"Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{{ yr}}$)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         st.plotly_chart(fig2, use_container_width=True)
 
-    # Smart Shape Selection & Automatic Parameter Calculation
     auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
     if selected_data and "selection" in selected_data:
         sel = selected_data["selection"]
@@ -451,7 +413,6 @@ elif st.session_state.page == 'workbench':
             auto_r = int(max(4, (max(xs) - min(xs)) / 2))
             st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
 
-    # Target Locking & Scientific Extraction
     st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Smart Target Lock & Scientific Extraction</h3>", unsafe_allow_html=True)
     lc1, lc2, lc3, lc4 = st.columns([1, 1, 1, 1.5])
     with lc1:
@@ -469,7 +430,6 @@ elif st.session_state.page == 'workbench':
             delta_score = 190 if is_hit else -75
             st.session_state.score += delta_score
 
-            # REAL SCIENTIFIC CALCULATIONS FROM PIXEL MATRIX
             box_slice = f1_raw[max(0, lock_y-3):min(320, lock_y+4), max(0, lock_x-3):min(320, lock_x+4)]
             peak_val = float(np.max(box_slice)) if box_slice.size > 0 else 45.0
             net_aperture_flux = float(np.sum(box_slice)) if box_slice.size > 0 else 300.0
@@ -494,10 +454,6 @@ elif st.session_state.page == 'workbench':
             st.session_state.page = 'result'
             st.rerun()
 
-
-# ==============================================================================
-# PAGE 5: RESULTS & SCIENTIFIC DEBRIEF
-# ==============================================================================
 elif st.session_state.page == 'result':
     st.markdown("""
     <div class="nasa-header-box">
@@ -550,11 +506,12 @@ elif st.session_state.page == 'result':
         )
         st.plotly_chart(fig_sp, use_container_width=True)
 
-    # Sonification (Cleaned of student disclaimers)
-    st.markdown("""
+    shift_type = "Blueshift (Approaching Source — Higher Pitch)" if res['x'] % 2 == 0 else "Redshift (Receding Source — Lower Pitch)"
+    st.markdown(f"""
     <div class="game-card">
         <h3 style='color:#b388ff; font-family:Chakra Petch;'>🎧 Doppler Audio Sonification</h3>
         <p style='color:#cbd5e1; font-size:1.05rem; background:rgba(255,255,255,0.04); padding:12px; border-left:3px solid #b388ff; font-family:"Times New Roman", Times, serif;'>
+            <b>Spectral Classification:</b> <span style='color:#00ffcc;'>{shift_type}</span><br>
             <b>Sonification Model:</b> Translating infrared spectral absorption bands and radial velocity Doppler shifts into audible acoustic frequencies for human data analysis.
         </p>
     </div>
@@ -567,7 +524,8 @@ elif st.session_state.page == 'result':
             wf.setnchannels(1)
             wf.setsampwidth(2)
             wf.setframerate(rate)
-            samples = [int(32767 * math.sin(i * 0.05)) for i in range(rate * 2)]
+            freq_mult = 0.07 if "Blueshift" in shift_type else 0.03
+            samples = [int(32767 * math.sin(i * freq_mult)) for i in range(rate * 2)]
             wf.writeframes(struct.pack('<' + 'h'*len(samples), *samples))
         st.audio(wav_buf.getvalue(), format='audio/wav')
     except Exception:
