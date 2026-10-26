@@ -16,6 +16,7 @@ import io
 import wave
 import struct
 import base64
+from PIL import Image
 
 st.set_page_config(
     page_title="ExoMapper — The Planet X Hunter (NASA Space Apps 2026)",
@@ -211,17 +212,32 @@ def process_ds9_image(img, scale_method="Asinh", contrast=1.0, smooth=False):
     if v2 <= v1: v2 = v1 + 1.0
     return np.clip((out - v1) / (v2 - v1), 0.0, 1.0)
 
+COLORMAP_STOPS = {
+    "inferno": [(0.0, 0, 0, 4), (0.25, 87, 16, 110), (0.5, 188, 55, 84), (0.75, 249, 142, 9), (1.0, 252, 255, 164)],
+    "viridis": [(0.0, 68, 1, 84), (0.25, 59, 82, 139), (0.5, 33, 145, 140), (0.75, 94, 201, 98), (1.0, 253, 231, 37)],
+    "magma": [(0.0, 0, 0, 4), (0.25, 81, 18, 124), (0.5, 183, 55, 121), (0.75, 251, 136, 97), (1.0, 252, 253, 191)],
+    "plasma": [(0.0, 13, 8, 135), (0.25, 126, 3, 168), (0.5, 204, 71, 120), (0.75, 248, 149, 64), (1.0, 240, 249, 33)],
+    "coolwarm": [(0.0, 59, 76, 192), (0.25, 141, 176, 254), (0.5, 221, 221, 221), (0.75, 244, 154, 123), (1.0, 180, 4, 38)]
+}
+
+def apply_colormap_rgb(norm_img, cmap_name="inferno"):
+    stops = COLORMAP_STOPS.get(cmap_name, COLORMAP_STOPS["inferno"])
+    pos = np.array([s[0] for s in stops], dtype=np.float64)
+    r_lut = np.array([s[1] for s in stops], dtype=np.float64)
+    g_lut = np.array([s[2] for s in stops], dtype=np.float64)
+    b_lut = np.array([s[3] for s in stops], dtype=np.float64)
+
+    flat = np.clip(norm_img.ravel(), 0.0, 1.0)
+    r = np.interp(flat, pos, r_lut).astype(np.uint8)
+    g = np.interp(flat, pos, g_lut).astype(np.uint8)
+    b = np.interp(flat, pos, b_lut).astype(np.uint8)
+    return np.stack([r, g, b], axis=-1).reshape(norm_img.shape[0], norm_img.shape[1], 3)
+
 def array_to_base64_png(arr):
-    import matplotlib.pyplot as plt
-    fig, ax = plt.subplots(figsize=(5, 5), dpi=100)
-    fig.patch.set_facecolor('#010409')
-    ax.set_facecolor('#010409')
-    ax.imshow(arr, cmap='inferno', origin='lower')
-    ax.axis('off')
-    fig.tight_layout(pad=0)
+    rgb = apply_colormap_rgb(np.flipud(arr), cmap_name=st.session_state.get('colormap', 'inferno'))
+    pil_img = Image.fromarray(rgb, mode="RGB").resize((400, 400), resample=Image.Resampling.NEAREST)
     buf = io.BytesIO()
-    fig.savefig(buf, format='png', facecolor=fig.get_facecolor(), edgecolor='none')
-    plt.close(fig)
+    pil_img.save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
 if st.session_state.page == 'welcome':
@@ -406,29 +422,29 @@ elif st.session_state.page == 'workbench':
         const btn = document.getElementById('blinkBtn');
         const status = document.getElementById('statusLabel');
 
-        function toggleBlink() {{
+        function toggleBlink() {
             blinking = !blinking;
-            if(blinking) {{
+            if(blinking) {
                 btn.innerText = "⏸ STOP BLINK";
                 status.innerText = "🟢 BLINKING ACTIVE";
-                timer = setInterval(() => {{
+                timer = setInterval(() => {
                     showEp2 = !showEp2;
                     img2El.style.opacity = showEp2 ? "1" : "0";
-                }}, 500);
-            }} else {{
+                }, 500);
+            } else {
                 btn.innerText = "▶ START BLINK";
                 status.innerText = "⏸ PAUSED";
                 clearInterval(timer);
-            }}
-        }}
+            }
+        }
 
-        function blendImages(val) {{
+        function blendImages(val) {
             blinking = false;
             clearInterval(timer);
             btn.innerText = "▶ START BLINK";
             status.innerText = "⏸ MANUAL BLEND";
             img2El.style.opacity = val / 100.0;
-        }}
+        }
     </script>
     """
     
