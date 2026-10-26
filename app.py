@@ -379,7 +379,7 @@ elif st.session_state.page == 'dashboard':
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ADVANCED DS9 ASTROMETRIC WORKBENCH</h2>
+        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ASTROMETRIC WORKBENCH</h2>
         <div><button onclick="window.location.reload();">🔄 Refresh</button></div>
     </div>
     """, unsafe_allow_html=True)
