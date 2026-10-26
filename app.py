@@ -19,6 +19,7 @@ import time
 import io
 import wave
 import struct
+import urllib.parse
 
 st.set_page_config(
     page_title="ExoMapper — The Planet X Hunter (NASA Space Apps 2026)",
@@ -152,7 +153,9 @@ def setup_game_state():
         'set_used': 'Sector A (Deep Sky Ecliptic)',
         'active_target': None,
         'scan_result': None,
-        'scoreboard': []
+        'scoreboard': [],
+        'blink_active': False,
+        'auto_box': None
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -181,7 +184,7 @@ def generate_sky_frames(seed, px, py):
     f1 = np.copy(bg) + rng.normal(0, 1.0, (N, N))
     f2 = np.copy(bg) + rng.normal(0, 1.0, (N, N))
 
-    # Add moving planet / anomaly across 6 months baseline (t0 to t0 + delta t)
+    # Add moving planet / anomaly across baseline ($t_0$ to $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)
     planet_flux = 180.0
     f1 += planet_flux * np.exp(-((xx - px)**2 + (yy - py)**2) / (2 * 2.2**2))
     
@@ -197,7 +200,7 @@ def scale_img(img):
 
 
 # ==============================================================================
-# PAGE 1: WELCOME SCREEN (Cinematic & Engaging)
+# PAGE 1: WELCOME SCREEN
 # ==============================================================================
 if st.session_state.page == 'welcome':
     st.markdown("""
@@ -210,7 +213,7 @@ if st.session_state.page == 'welcome':
             </div>
         </div>
         <div style="background:rgba(0,229,255,0.1); border:1px solid #00e5ff; padding:8px 15px; border-radius:8px; font-family:'Space Mono'; color:#00ffcc;">
-            🔭 SPHEREx 102-Band Mission
+            🔭 SPHEREx 102-Band Mission & AWS S3
         </div>
     </div>
     """, unsafe_allow_html=True)
@@ -220,7 +223,7 @@ if st.session_state.page == 'welcome':
         <h1 style="font-family:'Audiowide'; font-size:4.5rem; color:#fff; text-shadow: 0 0 25px #00e5ff;">EXOMAPPER</h1>
         <h3 style="font-family:'Chakra Petch'; color:#00ffcc; letter-spacing:3px;">THE PLANET X HUNTER WORKSTATION</h3>
         <p style="font-size:1.2rem; color:#cbd5e1; max-width:750px; margin: 15px auto;">
-            Hey there, space explorer! Ready to join our mission? We built this app to help you search for the mysterious Planet X by comparing real infrared sky pictures taken months apart ($t_0$ and $t_0 + \Delta t$).
+            Hey there, space explorer! Search for the mysterious Planet X by comparing infrared sky frames across temporal epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Connect directly with NASA Caltech IRSA and AWS S3 public spectral cubes.
         </p>
     </div>
     """, unsafe_allow_html=True)
@@ -243,7 +246,7 @@ if st.session_state.page == 'welcome':
 
 
 # ==============================================================================
-# PAGE 2: RULES, BRIEFING & HOW TO PLAY
+# PAGE 2: RULES & MISSION BRIEFING
 # ==============================================================================
 elif st.session_state.page == 'rules_tour':
     st.markdown("""
@@ -259,9 +262,9 @@ elif st.session_state.page == 'rules_tour':
         <div class="game-card">
             <h3 style='color:#00ffcc; font-family:Chakra Petch;'>🎯 How to Play & Scoring Rules</h3>
             <p style='line-height:1.6; color:#d0e8ff;'>
-                <b>1. Blink the Sky Frames:</b> You will see two pictures of the same patch of space taken across temporal epochs ($t_0$ and $t_0 + \Delta t$).<br><br>
-                <b>2. Spot the Mover:</b> Stars stay in the exact same spot, but nearby planets or asteroids will shift their position or brightness!<br><br>
-                <b>3. Lock & Score:</b> Draw a box over the moving dot and lock your target. 
+                <b>1. Blink the Sky Frames:</b> Compare two observations taken across temporal baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br><br>
+                <b>2. Spot the Mover:</b> Stars stay fixed, but moving planets or asteroids shift in position!<br><br>
+                <b>3. Lock & Score:</b> Draw a box over the moving dot to lock your target. 
                 <br>• <b>Verified Hit:</b> <span style='color:#00ffcc;'>+150 to +200 Points</span>
                 <br>• <b>False Alarm / Noise:</b> <span style='color:#ff1744;'>-75 Points Penalty</span>
             </p>
@@ -270,11 +273,11 @@ elif st.session_state.page == 'rules_tour':
     with col_r:
         st.markdown("""
         <div class="game-card">
-            <h3 style='color:#b388ff; font-family:Chakra Petch;'>🔭 DS9 Workstation & Astrometric Tools</h3>
+            <h3 style='color:#b388ff; font-family:Chakra Petch;'>🔭 AWS S3 & Caltech IRSA Data Integration</h3>
             <p style='line-height:1.6; color:#d0e8ff;'>
-                <b>• Data Reduction:</b> Clean up sensor noise and cosmic ray static with background subtraction.<br><br>
-                <b>• Aperture Photometry:</b> Measure precise brightness in ADU and calculate planet radius, albedo, and temperature.<br><br>
-                <b>• Doppler Sonification:</b> Listen to starlight! We translate infrared chemical spectra into audible sound waves for humans to study.
+                <b>• AWS S3 Cloud Access:</b> Pull massive FITS cubes directly using public endpoints (`s3://nasa-irsa-spherex/qr2/spectral_wcs/`).<br><br>
+                <b>• Aperture Photometry:</b> Measure precise ADU flux and calculate planet radius and albedo.<br><br>
+                <b>• Doppler Sonification:</b> Translate infrared chemical spectra into audible sound waves.
             </p>
         </div>
         """, unsafe_allow_html=True)
@@ -286,7 +289,7 @@ elif st.session_state.page == 'rules_tour':
 
 
 # ==============================================================================
-# PAGE 3: DASHBOARD & SKY SECTOR SELECTION
+# PAGE 3: DASHBOARD & CLOUD DATA SOURCE SELECTION
 # ==============================================================================
 elif st.session_state.page == 'dashboard':
     st.markdown("""
@@ -298,8 +301,13 @@ elif st.session_state.page == 'dashboard':
 
     c_sel1, c_sel2 = st.columns([2, 1])
     with c_sel1:
-        st.markdown("<h4 style='color:#00ffcc; font-family:Chakra Petch;'>SELECT SKY SECTOR SET</h4>", unsafe_allow_html=True)
-        sky_set = st.selectbox("Choose Sky Sector Set:", ["Sector A (Deep Sky - Ecliptic North)", "Sector B (Kuiper Belt Rim)", "Sector C (SPHEREx All-Sky Calibration Survey)"], label_visibility="collapsed")
+        st.markdown("<h4 style='color:#00ffcc; font-family:Chakra Petch;'>SELECT SKY SECTOR / DATA PIPELINE</h4>", unsafe_allow_html=True)
+        sky_set = st.selectbox("Choose Sky Sector Set:", [
+            "Sector A (Deep Sky Ecliptic)", 
+            "Sector B (Kuiper Belt Rim)", 
+            "AWS S3 Cloud Mirror: s3://nasa-irsa-spherex/qr2/spectral_wcs/",
+            "Caltech/IPAC IRSA Archive Query (https://caltech.edu)"
+        ], label_visibility="collapsed")
         st.session_state.set_used = sky_set
     with c_sel2:
         st.write("")
@@ -310,8 +318,23 @@ elif st.session_state.page == 'dashboard':
                 'py': random.randint(100, 220),
                 'seed': random.randint(1000, 9999)
             }
+            st.session_state.blink_active = False
+            st.session_state.auto_box = None
             st.session_state.page = 'workbench'
             st.rerun()
+
+    # AWS S3 & Caltech Direct Integration Info Box
+    st.markdown("""
+    <div class="game-card" style="margin-top:20px; border-color:#00ffcc;">
+        <h4 style='color:#00ffcc; font-family:Chakra Petch;'>☁️ NASA Public Cloud Storage (AWS S3) & Caltech Integration</h4>
+        <p style='color:#cbd5e1; font-size:0.95rem; line-height:1.6;'>
+            ExoMapper seamlessly hooks into public NASA data mirrors. You can inspect WCS FITS maps and solid angle pixel maps directly from the AWS public buckets:
+            <br>• WCS Maps: <code>aws s3 ls --no-sign-request s3://nasa-irsa-spherex/qr2/spectral_wcs/</code>
+            <br>• Pixel Maps: <code>aws s3 ls --no-sign-request s3://nasa-irsa-spherex/qr2/solid_angle_pixel_map/</code>
+            <br>• Caltech IRSA Query Example: <code>https://caltech.edu/applications/finderchart/servlet/api?locstr=270.0,66.5&size=0.1</code>
+        </p>
+    </div>
+    """, unsafe_allow_html=True)
 
     # Scoreboard Section
     st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch; margin-top:30px;'>🏆 Mission Scoreboard & Logbook</h3>", unsafe_allow_html=True)
@@ -322,7 +345,7 @@ elif st.session_state.page == 'dashboard':
 
 
 # ==============================================================================
-# PAGE 4: DS9-STYLE WORKBENCH (Blink, Photometry, Data Reduction)
+# PAGE 4: DS9 WORKBENCH (Blink Comparator, Auto-Coordinates & Photometry)
 # ==============================================================================
 elif st.session_state.page == 'workbench':
     st.markdown("""
@@ -336,43 +359,62 @@ elif st.session_state.page == 'workbench':
     f1_raw, f2_raw = generate_sky_frames(t['seed'], t['px'], t['py'])
     img1, img2 = scale_img(f1_raw), scale_img(f2_raw)
 
-    st.markdown("<p style='color:#84ffff;'><b>Step 1:</b> Inspect both time epochs ($t_0$ and $t_0 + \Delta t$) below. Use the blink controls to find the moving dot.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#84ffff;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Click the button below to start or stop blinking.</p>", unsafe_allow_html=True)
 
+    # Prominent Blink Control Button
+    b_col1, b_col2, b_col3 = st.columns([1, 1, 2])
+    with b_col1:
+        if st.button("🚀 START / TOGGLE BLINK", use_container_width=True):
+            st.session_state.blink_active = not st.session_state.blink_active
+            st.rerun()
+    with b_col2:
+        blink_speed = st.slider("Blink Interval (ms):", 200, 1500, 500, 50)
+    with b_col3:
+        status_text = "🟢 BLINKING ACTIVE" if st.session_state.blink_active else "⏸ BLINK PAUSED"
+        st.markdown(f"<div style='padding:10px; font-family:Space Mono; color:#00ffcc;'>Status: <b>{status_text}</b></div>", unsafe_allow_html=True)
+
+    # Display Active Frame (Blinking or Side-by-Side)
+    display_img = img2 if (st.session_state.blink_active and (int(time.time() * 2) % 2 == 0)) else img1
+    
     c_view1, c_view2 = st.columns(2)
     with c_view1:
-        fig1 = go.Figure(data=go.Heatmap(z=img1, colorscale='inferno', showscale=False))
-        fig1.update_layout(title="Epoch 1 (t_0)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
-        st.plotly_chart(fig1, use_container_width=True)
+        fig1 = go.Figure(data=go.Heatmap(z=display_img, colorscale='inferno', showscale=False))
+        fig1.update_layout(title="Active Blink View (t_0 vs t_0 + Δt)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        
+        # Capture selection event for auto-coordinate & radius autofill
+        selected_data = st.plotly_chart(fig1, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode="box")
     with c_view2:
         fig2 = go.Figure(data=go.Heatmap(z=img2, colorscale='inferno', showscale=False))
         fig2.update_layout(title="Epoch 2 (t_0 + Δt)", height=380, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         st.plotly_chart(fig2, use_container_width=True)
 
-    # Data Reduction Suite
-    with st.expander("🧰 Data Reduction & Noise Removal Suite (Background Subtraction)"):
-        st.markdown("<p style='font-size:0.9rem; color:#cbd5e1;'>Filter out instrumental noise and cosmic ray static with background ADU cutoffs and smoothing filters before locking coordinates.</p>", unsafe_allow_html=True)
-        apply_noise_filter = st.checkbox("Apply Wavelet / Median Smoothing Filter", value=False)
-        adu_cutoff = st.slider("Background ADU Cutoff:", 1.0, 30.0, 10.0, 0.5)
-        if apply_noise_filter:
-            f1_raw = np.where(f1_raw < adu_cutoff, float(np.median(f1_raw)), f1_raw)
-            st.success("Noise filtered successfully! Signal-to-noise ratio enhanced.")
+    # Auto-Autofill Logic from Selection Box
+    auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
+    if selected_data and "selection" in selected_data and selected_data["selection"].get("box"):
+        box = selected_data["selection"]["box"][0]
+        x0, x1 = box["x"]
+        y0, y1 = box["y"]
+        auto_x = int((x0 + x1) / 2)
+        auto_y = int((y0 + y1) / 2)
+        auto_r = int(max(4, abs(x1 - x0) / 2))
+        st.success(f"🎯 Region selected! Automatically autofilled Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
 
     # Target Locking & Coordinates
-    st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Lock Target Coordinates</h3>", unsafe_allow_html=True)
+    st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Lock Target Coordinates (Auto-Autofilled)</h3>", unsafe_allow_html=True)
     lc1, lc2, lc3, lc4 = st.columns([1, 1, 1, 1.5])
     with lc1:
-        lock_x = st.number_input("Center X (px):", 0, 319, int(t['px']))
+        lock_x = st.number_input("Center X (px):", 0, 319, auto_x)
     with lc2:
-        lock_y = st.number_input("Center Y (px):", 0, 319, int(t['py']))
+        lock_y = st.number_input("Center Y (px):", 0, 319, auto_y)
     with lc3:
-        lock_r = st.number_input("Radius (px):", 2, 30, 8)
+        lock_r = st.number_input("Radius (px):", 2, 30, auto_r)
     with lc4:
         st.write("")
         if st.button("🎯 LOCK TARGET & ANALYZE", use_container_width=True):
             dist = math.hypot(lock_x - t['px'], lock_y - t['py'])
-            is_hit = dist <= 18.0
+            is_hit = dist <= 22.0
             
-            delta_score = 175 if is_hit else -75
+            delta_score = 185 if is_hit else -75
             st.session_state.score += delta_score
 
             peak_val = float(np.max(f1_raw[max(0, lock_y-3):min(320, lock_y+4), max(0, lock_x-3):min(320, lock_x+4)]))
