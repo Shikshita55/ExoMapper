@@ -249,7 +249,7 @@ def array_to_base64_png(arr):
     pil_img.save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
-# PAGE 1: WELCOME SCREEN (Clean & Minimalist)
+# PAGE 1: WELCOME SCREEN
 if st.session_state.page == 'welcome':
     st.markdown("""
     <div class="nasa-header-box">
@@ -270,11 +270,14 @@ if st.session_state.page == 'welcome':
     <div style="text-align:center; padding: 25px 0;">
         <h1 style="font-family:'Audiowide'; font-size:4.8rem; color:#fff; text-shadow: 0 0 30px #00e5ff;">EXOMAPPER</h1>
         <h3 style="font-family:'Chakra Petch'; color:#00ffcc; letter-spacing:3px;">THE PLANET X HUNTER WORKSTATION</h3>
-        <p style="font-size:1.25rem; color:#cbd5e1; max-width:820px; margin: 18px auto; font-family:'Times New Roman', Times, serif;">
-            Hey space voyager! Hunt down Planet X by blinking infrared telescope frames taken across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).
-        </p>
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown(
+        "Hey space voyager! Hunt down Planet X by blinking infrared telescope frames taken across baseline epochs "
+        "($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).",
+        unsafe_allow_html=False
+    )
 
     c1, c2, c3 = st.columns([1, 1.5, 1])
     with c2:
@@ -343,15 +346,16 @@ elif st.session_state.page == 'rules_tour':
         st.markdown("""
         <div class="game-card">
             <h3 style='color:#00ffcc; font-family:Chakra Petch;'>🎯 How to Play & Scoring Matrix</h3>
-            <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
-                <b>1. Blink the Sky Frames:</b> Compare observations across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br><br>
-                <b>2. Spot the Mover:</b> Background stars remain fixed, while moving outer solar system planets or asteroids shift positions.<br><br>
-                <b>3. Lock & Score:</b> Draw a box or shape over the anomaly to lock your target. 
-                <br>• <b>Verified Hit:</b> <span style='color:#00ffcc;'>+150 to +200 Points</span>
-                <br>• <b>False Alarm:</b> <span style='color:#ff1744;'>-75 Points Penalty</span>
-            </p>
         </div>
         """, unsafe_allow_html=True)
+        st.markdown(
+            "**1. Blink the Sky Frames:** Compare observations across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br>"
+            "**2. Spot the Mover:** Background stars remain fixed, while moving outer solar system planets or asteroids shift positions.<br>"
+            "**3. Lock & Score:** Draw a box or shape over the anomaly to lock your target.<br>"
+            "• **Verified Hit:** +150 to +200 Points<br>"
+            "• **False Alarm:** -75 Points Penalty",
+            unsafe_allow_html=True
+        )
     with col_r:
         st.markdown("""
         <div class="game-card">
@@ -386,7 +390,7 @@ elif st.session_state.page == 'dashboard':
             "Sector B (Kuiper Belt Rim)", 
             "AWS S3 Cloud Mirror: s3://nasa-irsa-spherex/qr2/spectral_wcs/",
             "Caltech/IPAC IRSA Archive Query (https://caltech.edu)",
-            "Custom Upload & Pipeline Add"
+            "Custom Multi-Epoch FITS Upload"
         ], label_visibility="collapsed")
         st.session_state.set_used = sky_set
     with c_sel2:
@@ -402,18 +406,22 @@ elif st.session_state.page == 'dashboard':
             st.session_state.page = 'workbench'
             st.rerun()
 
-    if st.session_state.set_used == "Custom Upload & Pipeline Add":
+    if st.session_state.set_used == "Custom Multi-Epoch FITS Upload":
         st.markdown("""
         <div class="game-card" style="border-color:#38bdf8; margin-top:15px;">
-            <h4 style='color:#38bdf8; font-family:Chakra Petch;'>📤 Custom FITS / Image Ingestion Pipeline</h4>
-            <p style='color:#cbd5e1; font-size:0.95rem;'>Upload your custom Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) observation files (.fits, .npy, .png) for multi-epoch analysis.</p>
+            <h4 style='color:#38bdf8; font-family:Chakra Petch;'>📤 Multi-Epoch FITS / Observation Ingestion</h4>
         </div>
         """, unsafe_allow_html=True)
-        up1, up2 = st.columns(2)
-        with up1:
-            st.file_uploader("Upload Epoch 1 File ($t_0$)", type=["fits", "npy", "png", "jpg"], key="cust_ep1")
-        with up2:
-            st.file_uploader("Upload Epoch 2 File ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", type=["fits", "npy", "png", "jpg"], key="cust_ep2")
+        st.markdown("Configure and upload multiple observation epochs ($t_0, t_1, t_2, \dots$) for advanced multi-frame analysis.")
+        
+        num_epochs = st.selectbox("Select Number of Epoch Frames to Upload:", [2, 3, 4, 6, 8, 9, "Custom"])
+        if num_epochs == "Custom":
+            num_epochs = st.number_input("Enter number of epochs:", min_value=2, max_value=20, value=4)
+        
+        cols = st.columns(min(3, int(num_epochs)))
+        for i in range(int(num_epochs)):
+            with cols[i % len(cols)]:
+                st.file_uploader(f"Upload Epoch {i+1} File ($t_{i}$)", type=["fits", "npy", "png", "jpg"], key=f"cust_ep_{i}")
 
     st.markdown("""
     <div class="game-card" style="margin-top:20px; border-color:#00ffcc;">
@@ -458,7 +466,11 @@ elif st.session_state.page == 'workbench':
     img1 = process_ds9_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
     img2 = process_ds9_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
-    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Use the interactive blink player below to seamlessly blend and blink both frames.</p>", unsafe_allow_html=True)
+    st.markdown(
+        "**Step 1:** Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). "
+        "Use the interactive blink player below to seamlessly blend and blink both frames.",
+        unsafe_allow_html=False
+    )
 
     b64_1 = array_to_base64_png(img1)
     b64_2 = array_to_base64_png(img2)
@@ -606,7 +618,7 @@ elif st.session_state.page == 'result':
         </div>
         """, unsafe_allow_html=True)
     with rc2:
-        mols = ["Water Ice (H2O)", "Ammonia (NH3)", "Methane (CH4)", "Silicate Dust"]
+        mols = ["Water Ice ($H_2O$)", "Ammonia ($NH_3$)", "Methane ($CH_4$)", "Silicate Dust"]
         abundances = [64.1, 19.8, 12.2, 3.9] if res['is_hit'] else [4.1, 2.0, 1.1, 92.8]
         
         fig_sp = go.Figure(data=[go.Bar(
