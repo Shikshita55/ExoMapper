@@ -208,7 +208,7 @@ def generate_sky_frames(seed, px, py):
 
     return np.clip(f1, 1, None), np.clip(f2, 1, None)
 
-def process_ds9_image(img, scale_method="Asinh", contrast=1.0, smooth=False):
+def process_image(img, scale_method="Asinh", contrast=1.0, smooth=False):
     processed = pure_numpy_smooth(img) if smooth else img
     if scale_method == "Logarithmic":
         out = np.log10(np.clip(processed, 1e-3, None))
@@ -312,7 +312,6 @@ elif st.session_state.page == 'rules_tour':
     </div>
     """ % st.session_state.username, unsafe_allow_html=True)
 
-    # Crew Manifest Section (3 Subcolumns)
     st.markdown("<h4 style='color:#00ffcc; font-family:Chakra Petch; text-align:center; margin-bottom:15px;'>CREW MANIFEST & CONTRIBUTORS</h4>", unsafe_allow_html=True)
     cc1, cc2, cc3 = st.columns(3)
     with cc1:
@@ -361,7 +360,7 @@ elif st.session_state.page == 'rules_tour':
         <div class="game-card">
             <h3 style='color:#b388ff; font-family:Chakra Petch;'>TOOLS USED</h3>
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
-                <b>• DS9 Image Enhancements:</b> Apply smoothing filters, ZScale, and contrast stretching.<br><br>
+                <b>• Image Enhancements:</b> Apply smoothing filters, ZScale, and contrast stretching.<br><br>
                 <b>• Smart Aperture Photometry:</b> Draw a shape to automatically calculate center coordinates, radius, flux, and physical stats.<br><br>
                 <b>• Cloud Storage (AWS S3):</b> Pull massive public FITS cubes directly (`s3://nasa-irsa-spherex/qr2/spectral_wcs/`).
             </p>
@@ -441,11 +440,11 @@ elif st.session_state.page == 'dashboard':
     else:
         st.dataframe(pd.DataFrame(st.session_state.scoreboard), use_container_width=True, hide_index=True)
 
-# PAGE 4: DS9 WORKBENCH
+# PAGE 4: ASTROMETRIC WORKBENCH
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ADVANCED DS9 ASTROMETRIC WORKBENCH</h2>
+        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ASTROMETRIC OBSERVATORY WORKBENCH</h2>
         <div><button onclick="window.location.reload();">🔄 Refresh</button></div>
     </div>
     """, unsafe_allow_html=True)
@@ -463,12 +462,12 @@ elif st.session_state.page == 'workbench':
     with dc4:
         st.session_state.contrast_mult = st.slider("Contrast Stretch:", 0.8, 1.5, 1.0, 0.1)
 
-    img1 = process_ds9_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
-    img2 = process_ds9_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
+    img1 = process_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
+    img2 = process_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
     st.markdown(
-        "**Step 1:** Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). "
-        "Use the interactive blink player below to seamlessly blend and blink both frames.",
+        "**Step 1:** Compare Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) side-by-side. "
+        "Use the active Blink & Merge Player below to mix and blink both frames, or pause to draw shapes for target analysis.",
         unsafe_allow_html=False
     )
 
@@ -477,17 +476,17 @@ elif st.session_state.page == 'workbench':
     
     blink_html = f"""
     <div style="background:#040c24; border:1px solid rgba(0,229,255,0.4); border-radius:12px; padding:15px; text-align:center;">
-        <div style="position:relative; width:340px; height:340px; margin:0 auto; overflow:hidden; border-radius:8px;">
+        <div style="position:relative; width:300px; height:300px; margin:0 auto; overflow:hidden; border-radius:8px;">
             <img id="img1" src="data:image/png;base64,{b64_1}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain;" />
             <img id="img2" src="data:image/png;base64,{b64_2}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; opacity:0; transition: opacity 0.2s;" />
         </div>
-        <div style="margin-top:15px; display:flex; justify-content:center; gap:10px; align-items:center;">
-            <button onclick="toggleBlink()" id="blinkBtn" style="background:#00e5ff; color:#010409; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer;">▶ START BLINK</button>
-            <span style="color:#00ffcc; font-family:Space Mono; font-size:0.9rem;" id="statusLabel">⏸ PAUSED</span>
+        <div style="margin-top:12px; display:flex; justify-content:center; gap:8px; align-items:center;">
+            <button onclick="toggleBlink()" id="blinkBtn" style="background:#00e5ff; color:#010409; border:none; padding:7px 14px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;">▶ START BLINK</button>
+            <span style="color:#00ffcc; font-family:Space Mono; font-size:0.85rem;" id="statusLabel">⏸ PAUSED</span>
         </div>
-        <div style="margin-top:10px;">
-            <label style="color:#84ffff; font-size:0.9rem;">Manual Blend Scrubber (Epoch 1 ⟷ Epoch 2):</label><br>
-            <input type="range" min="0" max="100" value="0" oninput="blendImages(this.value)" style="width:300px; accent-color:#00ffcc; cursor:pointer;">
+        <div style="margin-top:8px;">
+            <label style="color:#84ffff; font-size:0.8rem;">Blend Scrubber:</label><br>
+            <input type="range" min="0" max="100" value="0" oninput="blendImages(this.value)" style="width:260px; accent-color:#00ffcc; cursor:pointer;">
         </div>
     </div>
     <script>
@@ -524,13 +523,17 @@ elif st.session_state.page == 'workbench':
     </script>
     """
     
-    col_bl1, col_bl2 = st.columns([1.2, 1.8])
-    with col_bl1:
-        components.html(blink_html, height=480)
-    with col_bl2:
-        fig_dual = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
-        fig_dual.update_layout(title="Epoch 2 Reference Frame ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=450, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
-        sel_data = st.plotly_chart(fig_dual, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
+    col_view1, col_view2, col_view3 = st.columns(3)
+    with col_view1:
+        fig_ep1 = go.Figure(data=go.Heatmap(z=img1, colorscale=st.session_state.colormap, showscale=False))
+        fig_ep1.update_layout(title="Epoch 1 ($t_0$)", height=340, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        st.plotly_chart(fig_ep1, use_container_width=True)
+    with col_view2:
+        components.html(blink_html, height=410)
+    with col_view3:
+        fig_ep2 = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
+        fig_ep2.update_layout(title="Epoch 2 ($t_0 + \Delta t$)", height=340, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        sel_data = st.plotly_chart(fig_ep2, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
 
     auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
     if sel_data and "selection" in sel_data:
@@ -542,9 +545,8 @@ elif st.session_state.page == 'workbench':
             auto_x = int((x0 + x1) / 2)
             auto_y = int((y0 + y1) / 2)
             auto_r = int(max(4, abs(x1 - x0) / 2))
-            st.success(f"🎯 Smart Shape Drawn! Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
+            st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
 
-    # Safely clamp inputs within valid range to prevent StreamlitValueAboveMaxError
     safe_auto_x = int(min(max(0, auto_x), 319))
     safe_auto_y = int(min(max(0, auto_y), 319))
     safe_auto_r = int(min(max(2, auto_r), 150))
