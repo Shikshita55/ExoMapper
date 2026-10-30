@@ -277,8 +277,8 @@ if st.session_state.page == 'welcome':
     """, unsafe_allow_html=True)
     
     st.markdown(
-        "Hey space voyager! Hunt down Planet X by blinking infrared telescope frames taken across baseline epochs "
-        "($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).",
+        r"Hey space voyager! Hunt down Planet X by blinking infrared telescope frames taken across baseline epochs "
+        r"($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).",
         unsafe_allow_html=False
     )
 
@@ -351,11 +351,11 @@ elif st.session_state.page == 'rules_tour':
         </div>
         """, unsafe_allow_html=True)
         st.markdown(
-            "**1. Blink the Sky Frames:** Compare observations across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br>"
-            "**2. Spot the Mover:** Background stars remain fixed, while moving outer solar system planets or asteroids shift positions.<br>"
-            "**3. Lock & Score:** Use geometric drawing tools (Circle, Rectangle, Square, Oval, Star) over the anomaly to lock your target.<br>"
-            "• **Verified Hit:** +150 to +200 Points<br>"
-            "• **False Alarm:** -75 Points Penalty",
+            r"**1. Blink the Sky Frames:** Compare observations across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br>"
+            r"**2. Spot the Mover:** Background stars remain fixed, while moving outer solar system planets or asteroids shift positions.<br>"
+            r"**3. Lock & Score:** Use geometric drawing tools (Circle, Rectangle, Square, Oval, Star) over the anomaly to lock your target.<br>"
+            r"• **Verified Hit:** +150 to +200 Points<br>"
+            r"• **False Alarm:** -75 Points Penalty",
             unsafe_allow_html=True
         )
     with col_r:
@@ -419,7 +419,7 @@ elif st.session_state.page == 'dashboard':
             <h4 style='color:#38bdf8; font-family:Chakra Petch;'>📤 Multi-Epoch FITS / Observation Ingestion</h4>
         </div>
         """, unsafe_allow_html=True)
-        st.markdown("Configure and upload multiple observation epochs ($t_0, t_1, t_2, \dots$) for advanced multi-frame analysis.")
+        st.markdown(r"Configure and upload multiple observation epochs ($t_0, t_1, t_2, \dots$) for advanced multi-frame analysis.")
         
         num_epochs = st.selectbox("Select Number of Epoch Frames to Upload:", [2, 3, 4, 6, 8, 9, "Custom"])
         if num_epochs == "Custom":
@@ -428,7 +428,7 @@ elif st.session_state.page == 'dashboard':
         cols = st.columns(min(3, int(num_epochs)))
         for i in range(int(num_epochs)):
             with cols[i % len(cols)]:
-                st.file_uploader(f"Upload Epoch {i+1} File ($t_{i}$)", type=["fits", "npy", "png", "jpg"], key=f"cust_ep_{i}")
+                st.file_uploader(r"Upload Epoch %d File ($t_{%d}$)" % (i+1, i), type=["fits", "npy", "png", "jpg"], key=f"cust_ep_{i}")
 
     st.markdown("""
     <div class="game-card" style="margin-top:20px; border-color:#00ffcc;">
@@ -479,8 +479,8 @@ elif st.session_state.page == 'workbench':
     img2 = process_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
     st.markdown(
-        f"**Step 1:** Compare Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) side-by-side. "
-        f"Active drawing tool: **{draw_shape}**. Use the Blink & Blend Player below to inspect movement, pause, and draw your shape.",
+        r"**Step 1:** Compare Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) side-by-side. "
+        r"Active drawing tool: **%s**. Use the Blink & Blend Player below to inspect movement, pause, and draw your shape." % draw_shape,
         unsafe_allow_html=False
     )
 
@@ -545,7 +545,7 @@ elif st.session_state.page == 'workbench':
         components.html(blink_html, height=390)
     with col_view3:
         fig_ep2 = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
-        fig_ep2.update_layout(title=f"Epoch 2 ($t_0 + \Delta t$) [{draw_shape}]", height=330, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        fig_ep2.update_layout(title=r"Epoch 2 ($t_0 + \Delta t$) [%s]" % draw_shape, height=330, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         sel_data = st.plotly_chart(fig_ep2, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
 
     if sel_data and "selection" in sel_data:
@@ -639,7 +639,7 @@ elif st.session_state.page == 'result':
         </div>
         """, unsafe_allow_html=True)
     with rc2:
-        mols = ["Water Ice ($H_2O$)", "Ammonia ($NH_3$)", "Methane ($CH_4$)", "Silicate Dust"]
+        mols = [r"Water Ice ($H_2O$)", r"Ammonia ($NH_3$)", r"Methane ($CH_4$)", "Silicate Dust"]
         abundances = [64.1, 19.8, 12.2, 3.9] if res['is_hit'] else [4.1, 2.0, 1.1, 92.8]
         
         fig_sp = go.Figure(data=[go.Bar(
