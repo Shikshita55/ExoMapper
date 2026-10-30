@@ -249,14 +249,15 @@ def array_to_base64_png(arr):
     pil_img.save(buf, format="PNG")
     return base64.b64encode(buf.getvalue()).decode('utf-8')
 
+# PAGE 1: WELCOME SCREEN (Clean & Minimalist)
 if st.session_state.page == 'welcome':
     st.markdown("""
     <div class="nasa-header-box">
         <div style="display:flex; align-items:center; gap:15px;">
-            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="55">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="60">
             <div>
-                <h2 style="margin:0; font-family:'Audiowide'; color:#ffffff; font-size:1.35rem;">NASA SPACE APPS CHALLENGE 2026</h2>
-                <p style="margin:0; color:#00e5ff; font-family:'Chakra Petch'; font-size:0.95rem;">TEAM EXOMAPPER</p>
+                <h2 style="margin:0; font-family:'Audiowide'; color:#ffffff;">NASA SPACE APPS CHALLENGE 2026</h2>
+                <p style="margin:0; color:#00e5ff; font-family:'Chakra Petch';">TEAM EXOMAPPER</p>
             </div>
         </div>
         <div style="background:rgba(0,229,255,0.1); border:1px solid #00e5ff; padding:8px 15px; border-radius:8px; font-family:'Space Mono'; color:#00ffcc;">
@@ -266,41 +267,15 @@ if st.session_state.page == 'welcome':
     """, unsafe_allow_html=True)
 
     st.markdown("""
-    <div style="text-align:center; padding: 10px 0 20px 0;">
-        <h1 style="font-family:'Audiowide'; font-size:4.2rem; color:#fff; text-shadow: 0 0 30px #00e5ff; margin-bottom:5px;">EXOMAPPER</h1>
+    <div style="text-align:center; padding: 25px 0;">
+        <h1 style="font-family:'Audiowide'; font-size:4.8rem; color:#fff; text-shadow: 0 0 30px #00e5ff;">EXOMAPPER</h1>
         <h3 style="font-family:'Chakra Petch'; color:#00ffcc; letter-spacing:3px;">THE PLANET X HUNTER WORKSTATION</h3>
+        <p style="font-size:1.25rem; color:#cbd5e1; max-width:820px; margin: 18px auto; font-family:'Times New Roman', Times, serif;">
+            Hey space voyager! Hunt down Planet X by blinking infrared telescope frames taken across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).
+        </p>
     </div>
     """, unsafe_allow_html=True)
 
-    # Crew Manifest Section (3 Subcolumns)
-    st.markdown("<h4 style='color:#00ffcc; font-family:Chakra Petch; text-align:center; margin-bottom:15px;'>CREW MANIFEST & CONTRIBUTORS</h4>", unsafe_allow_html=True)
-    cc1, cc2, cc3 = st.columns(3)
-    with cc1:
-        st.markdown("""
-        <div class="crew-card">
-            <h4 style="color:#00e5ff; margin-bottom:4px; font-family:Chakra Petch;">Ayan Agarwal</h4>
-            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:8px;">11th Grade Student</p>
-            <p style="color:#cbd5e1; font-size:0.95rem;">Code Architecture, UI Design, & Astrometric Pipeline Specialist.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with cc2:
-        st.markdown("""
-        <div class="crew-card">
-            <h4 style="color:#00ffcc; margin-bottom:4px; font-family:Chakra Petch;">Mahesh Nayak</h4>
-            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:8px;">M.Sc. Physics Learner</p>
-            <p style="color:#cbd5e1; font-size:0.95rem;">Astrophysics research contributor working with NASA TESS data, physical simulations, and data visualization.</p>
-        </div>
-        """, unsafe_allow_html=True)
-    with cc3:
-        st.markdown("""
-        <div class="crew-card">
-            <h4 style="color:#00ffcc; margin-bottom:4px; font-family:Chakra Petch;">Shikshita Naryal</h4>
-            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:8px;">(Team Owner)</p>
-            <p style="color:#cbd5e1; font-size:0.95rem;">Lead Developer & Project Architect driving science goals and overall mission coordination.</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-    st.write("")
     c1, c2, c3 = st.columns([1, 1.5, 1])
     with c2:
         with st.form("login_form"):
@@ -317,21 +292,59 @@ if st.session_state.page == 'welcome':
                 else:
                     st.error("Please enter a valid hunter nickname to board the spacecraft!")
 
+# PAGE 2: MISSION BRIEFING & CREW MANIFEST
 elif st.session_state.page == 'rules_tour':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">📖 MISSION BRIEFING & HOW TO PLAY</h2>
-        <p style="margin:0; color:#fff; font-family:'Chakra Petch';">Commander: <b>%s</b></p>
+        <div style="display:flex; align-items:center; gap:15px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="55">
+            <div>
+                <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff; font-size:1.35rem;">NASA SPACE APPS CHALLENGE 2026</h2>
+                <p style="margin:0; color:#fff; font-family:'Chakra Petch'; font-size:0.95rem;">TEAM EXOMAPPER | Commander: <b>%s</b></p>
+            </div>
+        </div>
+        <div style="background:rgba(0,229,255,0.1); border:1px solid #00e5ff; padding:8px 15px; border-radius:8px; font-family:'Space Mono'; color:#00ffcc;">
+            MISSION BRIEFING & CREW
+        </div>
     </div>
     """ % st.session_state.username, unsafe_allow_html=True)
 
+    # Crew Manifest Section (3 Subcolumns)
+    st.markdown("<h4 style='color:#00ffcc; font-family:Chakra Petch; text-align:center; margin-bottom:15px;'>CREW MANIFEST & CONTRIBUTORS</h4>", unsafe_allow_html=True)
+    cc1, cc2, cc3 = st.columns(3)
+    with cc1:
+        st.markdown("""
+        <div class="crew-card">
+            <h4 style="color:#00e5ff; margin-bottom:4px; font-family:Chakra Petch;">Ayan Agarwal</h4>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:8px;">11th Grade Student</p>
+            <p style="color:#cbd5e1; font-size:0.95rem;">Code Architecture, UI Design, & Astrometric Pipeline Specialist.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with cc2:
+        st.markdown("""
+        <div class="crew-card">
+            <h4 style="color:#00e5ff; margin-bottom:4px; font-family:Chakra Petch;">Mahesh Nayak</h4>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:8px;">M.Sc. Physics Learner</p>
+            <p style="color:#cbd5e1; font-size:0.95rem;">Astrophysics research contributor working with NASA TESS data, physical simulations, and data visualization.</p>
+        </div>
+        """, unsafe_allow_html=True)
+    with cc3:
+        st.markdown("""
+        <div class="crew-card">
+            <h4 style="color:#00e5ff; margin-bottom:4px; font-family:Chakra Petch;">Shikshita Naryal</h4>
+            <p style="color:#94a3b8; font-size:0.9rem; margin-bottom:8px;">(Team Owner)</p>
+            <p style="color:#cbd5e1; font-size:0.95rem;">Lead Developer & Project Architect driving science goals and overall mission coordination.</p>
+        </div>
+        """, unsafe_allow_html=True)
+
+    st.write("")
     col_l, col_r = st.columns(2)
     with col_l:
         st.markdown("""
         <div class="game-card">
             <h3 style='color:#00ffcc; font-family:Chakra Petch;'>🎯 How to Play & Scoring Matrix</h3>
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
-                <b>1. Blink the Sky Frames:</b> Compare observations across baseline epochs (Epoch 1 at time $t_0$ and Epoch 2 at time $t_0 + 6\text{ months}$).<br><br>
+                <b>1. Blink the Sky Frames:</b> Compare observations across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br><br>
                 <b>2. Spot the Mover:</b> Background stars remain fixed, while moving outer solar system planets or asteroids shift positions.<br><br>
                 <b>3. Lock & Score:</b> Draw a box or shape over the anomaly to lock your target. 
                 <br>• <b>Verified Hit:</b> <span style='color:#00ffcc;'>+150 to +200 Points</span>
@@ -356,6 +369,7 @@ elif st.session_state.page == 'rules_tour':
         st.session_state.page = 'dashboard'
         st.rerun()
 
+# PAGE 3: DASHBOARD & CLOUD DATA SOURCE SELECTION
 elif st.session_state.page == 'dashboard':
     st.markdown("""
     <div class="nasa-header-box">
@@ -388,19 +402,18 @@ elif st.session_state.page == 'dashboard':
             st.session_state.page = 'workbench'
             st.rerun()
 
-    # If Custom Upload is selected, show file uploaders
     if st.session_state.set_used == "Custom Upload & Pipeline Add":
         st.markdown("""
         <div class="game-card" style="border-color:#38bdf8; margin-top:15px;">
             <h4 style='color:#38bdf8; font-family:Chakra Petch;'>📤 Custom FITS / Image Ingestion Pipeline</h4>
-            <p style='color:#cbd5e1; font-size:0.95rem;'>Upload your custom Epoch 1 and Epoch 2 observation files (.fits, .npy, .png) for multi-epoch analysis.</p>
+            <p style='color:#cbd5e1; font-size:0.95rem;'>Upload your custom Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) observation files (.fits, .npy, .png) for multi-epoch analysis.</p>
         </div>
         """, unsafe_allow_html=True)
         up1, up2 = st.columns(2)
         with up1:
             st.file_uploader("Upload Epoch 1 File ($t_0$)", type=["fits", "npy", "png", "jpg"], key="cust_ep1")
         with up2:
-            st.file_uploader("Upload Epoch 2 File ($t_0 + 6\text{ mo}$)", type=["fits", "npy", "png", "jpg"], key="cust_ep2")
+            st.file_uploader("Upload Epoch 2 File ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", type=["fits", "npy", "png", "jpg"], key="cust_ep2")
 
     st.markdown("""
     <div class="game-card" style="margin-top:20px; border-color:#00ffcc;">
@@ -420,6 +433,7 @@ elif st.session_state.page == 'dashboard':
     else:
         st.dataframe(pd.DataFrame(st.session_state.scoreboard), use_container_width=True, hide_index=True)
 
+# PAGE 4: DS9 WORKBENCH
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
@@ -444,7 +458,7 @@ elif st.session_state.page == 'workbench':
     img1 = process_ds9_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
     img2 = process_ds9_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
-    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + 6\text{ months}$). Use the interactive blink player below to seamlessly blend and blink both frames.</p>", unsafe_allow_html=True)
+    st.markdown("<p style='color:#84ffff; font-family:Times New Roman;'><b>Step 1:</b> Inspect both baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$). Use the interactive blink player below to seamlessly blend and blink both frames.</p>", unsafe_allow_html=True)
 
     b64_1 = array_to_base64_png(img1)
     b64_2 = array_to_base64_png(img2)
@@ -503,7 +517,7 @@ elif st.session_state.page == 'workbench':
         components.html(blink_html, height=480)
     with col_bl2:
         fig_dual = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
-        fig_dual.update_layout(title="Epoch 2 Reference Frame ($t_0 + 6\text{ months}$)", height=450, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        fig_dual.update_layout(title="Epoch 2 Reference Frame ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$)", height=450, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         sel_data = st.plotly_chart(fig_dual, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
 
     auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
@@ -559,6 +573,7 @@ elif st.session_state.page == 'workbench':
             st.session_state.page = 'result'
             st.rerun()
 
+# PAGE 5: RESULTS & SCIENTIFIC DEBRIEF
 elif st.session_state.page == 'result':
     st.markdown("""
     <div class="nasa-header-box">
