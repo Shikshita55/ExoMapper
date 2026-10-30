@@ -163,7 +163,10 @@ def setup_game_state():
         'smoothing_enabled': False,
         'contrast_mult': 1.0,
         'scale_method': 'Asinh',
-        'colormap': 'inferno'
+        'colormap': 'inferno',
+        'detected_x': 0,
+        'detected_y': 0,
+        'detected_r': 0
     }
     for k, v in defaults.items():
         if k not in st.session_state:
@@ -350,7 +353,7 @@ elif st.session_state.page == 'rules_tour':
         st.markdown(
             "**1. Blink the Sky Frames:** Compare observations across baseline epochs ($t_0$ and $t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$).<br>"
             "**2. Spot the Mover:** Background stars remain fixed, while moving outer solar system planets or asteroids shift positions.<br>"
-            "**3. Lock & Score:** Draw a box or shape over the anomaly to lock your target.<br>"
+            "**3. Lock & Score:** Use geometric drawing tools (Circle, Rectangle, Square, Oval, Star) over the anomaly to lock your target.<br>"
             "• **Verified Hit:** +150 to +200 Points<br>"
             "• **False Alarm:** -75 Points Penalty",
             unsafe_allow_html=True
@@ -361,7 +364,7 @@ elif st.session_state.page == 'rules_tour':
             <h3 style='color:#b388ff; font-family:Chakra Petch;'>TOOLS USED</h3>
             <p style='line-height:1.7; color:#d0e8ff; font-family:"Times New Roman", Times, serif;'>
                 <b>• Image Enhancements:</b> Apply smoothing filters, ZScale, and contrast stretching.<br><br>
-                <b>• Smart Aperture Photometry:</b> Draw a shape to automatically calculate center coordinates, radius, flux, and physical stats.<br><br>
+                <b>• Smart Aperture Photometry:</b> Select using custom shapes to automatically compute center coordinates, radius, flux, and physical stats.<br><br>
                 <b>• Cloud Storage (AWS S3):</b> Pull massive public FITS cubes directly (`s3://nasa-irsa-spherex/qr2/spectral_wcs/`).
             </p>
         </div>
@@ -376,7 +379,10 @@ elif st.session_state.page == 'rules_tour':
 elif st.session_state.page == 'dashboard':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🛰️ OBSERVATORY COMMAND DECK</h2>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="45">
+            <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff; font-size:1.5rem;">OBSERVATORY COMMAND DECK</h2>
+        </div>
         <div style="font-family:'Space Mono'; color:#00ffcc;">Hunter: <b>%s</b> | Score: <b>%d Pts</b></div>
     </div>
     """ % (st.session_state.username, st.session_state.score), unsafe_allow_html=True)
@@ -401,7 +407,9 @@ elif st.session_state.page == 'dashboard':
                 'py': random.randint(100, 220),
                 'seed': random.randint(1000, 9999)
             }
-            st.session_state.auto_box = None
+            st.session_state.detected_x = 0
+            st.session_state.detected_y = 0
+            st.session_state.detected_r = 0
             st.session_state.page = 'workbench'
             st.rerun()
 
@@ -444,7 +452,10 @@ elif st.session_state.page == 'dashboard':
 elif st.session_state.page == 'workbench':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">🔭 ASTROMETRIC OBSERVATORY WORKBENCH</h2>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="45">
+            <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff; font-size:1.5rem;">ASTROMETRIC OBSERVATORY WORKBENCH</h2>
+        </div>
         <div><button onclick="window.location.reload();">🔄 Refresh</button></div>
     </div>
     """, unsafe_allow_html=True)
@@ -452,22 +463,24 @@ elif st.session_state.page == 'workbench':
     t = st.session_state.active_target
     f1_raw, f2_raw = generate_sky_frames(t['seed'], t['px'], t['py'])
     
-    dc1, dc2, dc3, dc4 = st.columns([1.2, 1.2, 1.2, 1.4])
+    dc1, dc2, dc3, dc4, dc5 = st.columns([1.1, 1.1, 1.1, 1.1, 1.2])
     with dc1:
         st.session_state.scale_method = st.selectbox("Scale Algorithm:", ["Asinh", "Logarithmic", "Square Root", "Linear"])
     with dc2:
         st.session_state.colormap = st.selectbox("Color Palette:", ["inferno", "viridis", "magma", "plasma", "coolwarm"])
     with dc3:
-        st.session_state.smoothing_enabled = st.checkbox("Apply Smoothing Filter", value=st.session_state.smoothing_enabled)
+        draw_shape = st.selectbox("Drawing Shape:", ["Circle", "Rectangle / Box", "Square", "Oval", "Star"])
     with dc4:
-        st.session_state.contrast_mult = st.slider("Contrast Stretch:", 0.8, 1.5, 1.0, 0.1)
+        st.session_state.smoothing_enabled = st.checkbox("Smoothing", value=st.session_state.smoothing_enabled)
+    with dc5:
+        st.session_state.contrast_mult = st.slider("Contrast:", 0.8, 1.5, 1.0, 0.1)
 
     img1 = process_image(f1_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
     img2 = process_image(f2_raw, scale_method=st.session_state.scale_method, contrast=st.session_state.contrast_mult, smooth=st.session_state.smoothing_enabled)
 
     st.markdown(
-        "**Step 1:** Compare Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) side-by-side. "
-        "Use the active Blink & Merge Player below to mix and blink both frames, or pause to draw shapes for target analysis.",
+        f"**Step 1:** Compare Epoch 1 ($t_0$) and Epoch 2 ($t_0 + \Delta t$, where $\Delta t = 0.5\text{ yr}$) side-by-side. "
+        f"Active drawing tool: **{draw_shape}**. Use the Blink & Blend Player below to inspect movement, pause, and draw your shape.",
         unsafe_allow_html=False
     )
 
@@ -476,17 +489,17 @@ elif st.session_state.page == 'workbench':
     
     blink_html = f"""
     <div style="background:#040c24; border:1px solid rgba(0,229,255,0.4); border-radius:12px; padding:15px; text-align:center;">
-        <div style="position:relative; width:300px; height:300px; margin:0 auto; overflow:hidden; border-radius:8px;">
+        <div style="position:relative; width:290px; height:290px; margin:0 auto; overflow:hidden; border-radius:8px;">
             <img id="img1" src="data:image/png;base64,{b64_1}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain;" />
             <img id="img2" src="data:image/png;base64,{b64_2}" style="position:absolute; top:0; left:0; width:100%; height:100%; object-fit:contain; opacity:0; transition: opacity 0.2s;" />
         </div>
-        <div style="margin-top:12px; display:flex; justify-content:center; gap:8px; align-items:center;">
-            <button onclick="toggleBlink()" id="blinkBtn" style="background:#00e5ff; color:#010409; border:none; padding:7px 14px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.85rem;">▶ START BLINK</button>
-            <span style="color:#00ffcc; font-family:Space Mono; font-size:0.85rem;" id="statusLabel">⏸ PAUSED</span>
+        <div style="margin-top:10px; display:flex; justify-content:center; gap:8px; align-items:center;">
+            <button onclick="toggleBlink()" id="blinkBtn" style="background:#00e5ff; color:#010409; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:0.8rem;">▶ START BLINK</button>
+            <span style="color:#00ffcc; font-family:Space Mono; font-size:0.8rem;" id="statusLabel">⏸ PAUSED</span>
         </div>
-        <div style="margin-top:8px;">
-            <label style="color:#84ffff; font-size:0.8rem;">Blend Scrubber:</label><br>
-            <input type="range" min="0" max="100" value="0" oninput="blendImages(this.value)" style="width:260px; accent-color:#00ffcc; cursor:pointer;">
+        <div style="margin-top:6px;">
+            <label style="color:#84ffff; font-size:0.75rem;">Blend Scrubber:</label><br>
+            <input type="range" min="0" max="100" value="0" oninput="blendImages(this.value)" style="width:240px; accent-color:#00ffcc; cursor:pointer;">
         </div>
     </div>
     <script>
@@ -526,42 +539,40 @@ elif st.session_state.page == 'workbench':
     col_view1, col_view2, col_view3 = st.columns(3)
     with col_view1:
         fig_ep1 = go.Figure(data=go.Heatmap(z=img1, colorscale=st.session_state.colormap, showscale=False))
-        fig_ep1.update_layout(title="Epoch 1 ($t_0$)", height=340, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        fig_ep1.update_layout(title="Epoch 1 ($t_0$)", height=330, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         st.plotly_chart(fig_ep1, use_container_width=True)
     with col_view2:
-        components.html(blink_html, height=410)
+        components.html(blink_html, height=390)
     with col_view3:
         fig_ep2 = go.Figure(data=go.Heatmap(z=img2, colorscale=st.session_state.colormap, showscale=False))
-        fig_ep2.update_layout(title="Epoch 2 ($t_0 + \Delta t$)", height=340, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
+        fig_ep2.update_layout(title=f"Epoch 2 ($t_0 + \Delta t$) [{draw_shape}]", height=330, margin=dict(l=0,r=0,t=30,b=0), paper_bgcolor="#010409", plot_bgcolor="#010409", font=dict(color="#fff"))
         sel_data = st.plotly_chart(fig_ep2, use_container_width=True, key="workbench_chart", on_select="rerun", selection_mode=("box", "lasso"))
 
-    auto_x, auto_y, auto_r = int(t['px']), int(t['py']), 8
     if sel_data and "selection" in sel_data:
         sel = sel_data["selection"]
         if sel.get("box"):
             box = sel["box"][0]
             x0, x1 = box["x"]
             y0, y1 = box["y"]
-            auto_x = int((x0 + x1) / 2)
-            auto_y = int((y0 + y1) / 2)
-            auto_r = int(max(4, abs(x1 - x0) / 2))
-            st.success(f"🎯 Smart Shape Drawn! Automatically calculated Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
-
-    safe_auto_x = int(min(max(0, auto_x), 319))
-    safe_auto_y = int(min(max(0, auto_y), 319))
-    safe_auto_r = int(min(max(2, auto_r), 150))
+            st.session_state.detected_x = int((x0 + x1) / 2)
+            st.session_state.detected_y = int((y0 + y1) / 2)
+            st.session_state.detected_r = int(max(4, abs(x1 - x0) / 2))
+            st.success(f"🎯 [{draw_shape}] drawn! Target center ({st.session_state.detected_x}, {st.session_state.detected_y}) and radius {st.session_state.detected_r} px automatically filled.")
 
     st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Smart Target Lock & Scientific Extraction</h3>", unsafe_allow_html=True)
     lc1, lc2, lc3, lc4 = st.columns([1, 1, 1, 1.5])
     with lc1:
-        lock_x = st.number_input("Center X (px):", 0, 319, safe_auto_x)
+        lock_x = st.number_input("Center X (px):", 0, 319, st.session_state.detected_x)
     with lc2:
-        lock_y = st.number_input("Center Y (px):", 0, 319, safe_auto_y)
+        lock_y = st.number_input("Center Y (px):", 0, 319, st.session_state.detected_y)
     with lc3:
-        lock_r = st.number_input("Radius (px):", 2, 150, safe_auto_r)
+        lock_r = st.number_input("Radius (px):", 0, 150, st.session_state.detected_r)
     with lc4:
         st.write("")
         if st.button("🎯 LOCK TARGET & ANALYZE", use_container_width=True):
+            if lock_x == 0 and lock_y == 0:
+                lock_x, lock_y, lock_r = t['px'], t['py'], 8
+
             dist = math.hypot(lock_x - t['px'], lock_y - t['py'])
             is_hit = dist <= 22.0
             
@@ -596,7 +607,10 @@ elif st.session_state.page == 'workbench':
 elif st.session_state.page == 'result':
     st.markdown("""
     <div class="nasa-header-box">
-        <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff;">📊 MISSION ANALYSIS & SCIENTIFIC DEBRIEF</h2>
+        <div style="display:flex; align-items:center; gap:12px;">
+            <img src="https://upload.wikimedia.org/wikipedia/commons/e/e5/NASA_logo.svg" width="45">
+            <h2 style="margin:0; font-family:'Audiowide'; color:#00e5ff; font-size:1.5rem;">MISSION ANALYSIS & SCIENTIFIC DEBRIEF</h2>
+        </div>
         <div style="font-family:'Space Mono'; color:#00ffcc;">Hunter: <b>%s</b> | Total Score: <b>%d Pts</b></div>
     </div>
     """ % (st.session_state.username, st.session_state.score), unsafe_allow_html=True)
