@@ -544,14 +544,19 @@ elif st.session_state.page == 'workbench':
             auto_r = int(max(4, abs(x1 - x0) / 2))
             st.success(f"🎯 Smart Shape Drawn! Center X={auto_x}, Y={auto_y}, Radius={auto_r} px.")
 
+    # Safely clamp inputs within valid range to prevent StreamlitValueAboveMaxError
+    safe_auto_x = int(min(max(0, auto_x), 319))
+    safe_auto_y = int(min(max(0, auto_y), 319))
+    safe_auto_r = int(min(max(2, auto_r), 150))
+
     st.markdown("<h3 style='color:#00e5ff; font-family:Chakra Petch;'>🎯 Smart Target Lock & Scientific Extraction</h3>", unsafe_allow_html=True)
     lc1, lc2, lc3, lc4 = st.columns([1, 1, 1, 1.5])
     with lc1:
-        lock_x = st.number_input("Center X (px):", 0, 319, auto_x)
+        lock_x = st.number_input("Center X (px):", 0, 319, safe_auto_x)
     with lc2:
-        lock_y = st.number_input("Center Y (px):", 0, 319, auto_y)
+        lock_y = st.number_input("Center Y (px):", 0, 319, safe_auto_y)
     with lc3:
-        lock_r = st.number_input("Radius (px):", 2, 30, auto_r)
+        lock_r = st.number_input("Radius (px):", 2, 150, safe_auto_r)
     with lc4:
         st.write("")
         if st.button("🎯 LOCK TARGET & ANALYZE", use_container_width=True):
