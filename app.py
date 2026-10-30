@@ -665,7 +665,8 @@ elif st.session_state.page == 'result':
         <h3 style='color:#b388ff; font-family:Chakra Petch;'>🎧 Doppler Audio Sonification</h3>
         <p style='color:#cbd5e1; font-size:1.05rem; background:rgba(255,255,255,0.04); padding:12px; border-left:3px solid #b388ff; font-family:"Times New Roman", Times, serif;'>
             <b>Spectral Classification:</b> <span style='color:#00ffcc;'>{shift_type}</span><br>
-            <b>Sonification Model:</b> Translating infrared spectral absorption bands and radial velocity Doppler shifts into audible acoustic frequencies for human data analysis.
+            <b>Sonification Model:</b> Translating infrared spectral absorption bands and radial velocity Doppler shifts into audible acoustic frequencies for human data analysis.<br><br>
+            <span style='font-size:0.85rem; color:#94a3b8; font-style:italic;'><b>Scientific Disclaimer:</b> This audio sonification is an algorithmic data-to-sound translation model mapping FITS pixel radial velocities and spectroscopic indices to frequency modulation for exploratory data analysis and accessibility purposes.</span>
         </p>
     </div>
     """, unsafe_allow_html=True)
