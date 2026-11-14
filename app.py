@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER ELITE: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
 # NASA Space Apps Challenge 2026 — Advanced Category & Global Award Contender
-# Coded by Shikshita, Ayan & Mahesh (Team ExoMapper)
+# Coded by Shikshita Naryal, Ayan Agarwal & Mahesh Nayak (Team ExoMapper)
 # ==============================================================================
 
 import base64
@@ -182,7 +182,6 @@ def apply_custom_space_styling():
 
 ARCSEC_PER_PIXEL = 6.2
 
-# Practice Mode Preloaded Examples
 practiceSkyScenarios = {
     "Practice 1: Easy Moving Object (Planet X Candidate)": {
         "desc": "A clear moving trans-Neptunian object shifting diagonally across epochs.",
@@ -701,7 +700,6 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
     </html>
     """
 
-# Session state initialization
 if "page_step" not in st.session_state:
     st.session_state.page_step = "welcome"
 if "explorerName" not in st.session_state:
@@ -723,7 +721,7 @@ if "score_table" not in st.session_state:
 if "saved_scores" not in st.session_state:
     st.session_state.saved_scores = {}
 
-# Page 1: Welcome Screen Login
+# Page 1: Welcome Screen
 def show_welcome_screen():
     logo_uri = get_nasa_logo_svg()
     st.write("")
@@ -747,8 +745,7 @@ def show_welcome_screen():
         username_input = st.text_input(
             "Enter Your Space Explorer Name",
             value=st.session_state.explorerName,
-            placeholder="Type your name or team callsign...",
-            help="Enter your explorer username. Your scores and discoveries will be saved during this session!"
+            placeholder="Type your name or team callsign..."
         )
         if st.button("🚀 Launch Observatory", use_container_width=True):
             cleaned_name = username_input.strip()
@@ -757,8 +754,7 @@ def show_welcome_screen():
             else:
                 st.session_state.explorerName = cleaned_name
                 st.session_state.total_score = st.session_state.saved_scores.get(cleaned_name, 0)
-                st.session_state.last_result = None
-                st.session_state.page_step = "game"  # Make Blink/Hub the Main Screen immediately per team suggestion!
+                st.session_state.page_step = "manual"
                 st.rerun()
 
 # Page 2: Mission Manual & Practice Mode
@@ -788,12 +784,11 @@ def show_manual_screen():
             st.session_state.page_step = "welcome"
             st.rerun()
 
-    # Practice Mode Selection per Teammate Suggestion
     render_html_snippet("""
     <div class="space-panel" style="border: 2px solid #34d399; background: linear-gradient(145deg, rgba(10, 30, 45, 0.95), rgba(4, 12, 25, 0.98));">
         <div style="color:#34d399; font-weight:900; font-size:18px; margin-bottom:8px;">🎯 Practice Sky Mode (Safe Demo Sandbox)</div>
         <p style="font-size:13.5px; color:#ffffff; margin:0 0 12px 0; line-height:1.5;">
-            Since live SPHEREx data can be complex, test your skills using these 3 pre-loaded training examples before scanning the live sectors:
+            Test your skills using these 3 pre-loaded training examples before scanning live sectors:
         </p>
     </div>
     """)
@@ -965,7 +960,6 @@ def show_game_screen():
         with nr:
             st.session_state.r_pick = st.number_input("Radius (px)", 8, 60, int(st.session_state.r_pick))
 
-        # Scientific Verification Checklist per teammate suggestion
         st.write("---")
         st.markdown("### 🔬 Scientific Verification Checklist")
         check_dir = st.checkbox("Did it move in same direction across epochs?")
@@ -1046,7 +1040,6 @@ def show_game_screen():
             </div>
             """)
             
-            # Clarified Audio Feature per teammate note ("Hear the Candidate: Stronger signal = clearer sound")
             st.write("🔊 **Hear the Candidate** (Stronger signal = clearer sound)")
             audio_bytes = generate_doppler_audio(
                 freq_hz=float(res["freq"]),
