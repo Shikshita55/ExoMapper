@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER ELITE: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
 # NASA Space Apps Challenge 2026 — Advanced Category & Global Award Contender
-# Coded by Shikshita Naryal, Ayan Agarwal & Mahesh Nayak (Team ExoMapper)
+# Coded by Team ExoMapper
 # ==============================================================================
 
 import base64
@@ -732,7 +732,7 @@ def show_welcome_screen():
         <div class="space-panel" style="text-align:center; padding:32px 26px;">
             <img src="{logo_uri}" alt="NASA Logo" style="width:110px; height:auto; margin-bottom:12px; filter: drop-shadow(0 4px 14px rgba(56,189,248,0.5));"/>
             <div>
-                <span class="space-tag">NASA SPACE APPS CHALLENGE 2026 • TEAM EXOMAPPER</span>
+                <span class="space-tag">NASA SPACE APPS CHALLENGE 2026 // TEAM EXOMAPPER</span>
             </div>
             <h1 style="margin:8px 0 4px 0; font-size:32px; font-weight:900; color:#ffffff;">
                 ExoMapper: The Hunt for Planet X
