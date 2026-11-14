@@ -545,68 +545,68 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         let selectedRadius = {mr};
         let isDragging = false;
         
-        function computeRaDec(px, py) {
+        function computeRaDec(px, py) {{
             const dxArc = (150.0 - px) * 6.2;
             const dyArc = (150.0 - py) * 6.2;
             const cosD = Math.max(0.1, Math.abs(Math.cos(decCenter * Math.PI / 180.0)));
             const ra = ((raCenter + (dxArc / 3600.0) / cosD) % 360.0 + 360.0) % 360.0;
             const dec = Math.max(-89.99, Math.min(89.99, decCenter + (dyArc / 3600.0)));
-            return `RA: ${ra.toFixed(4)} deg | Dec: ${dec >= 0 ? '+' : ''}${dec.toFixed(4)} deg`;
-        }
-        function updateParentInputs(x, y, r) {
-            try {
+            return `RA: ${{ra.toFixed(4)}} deg | Dec: ${{dec >= 0 ? '+' : ''}}${{dec.toFixed(4)}} deg`;
+        }}
+        function updateParentInputs(x, y, r) {{
+            try {{
                 const doc = window.parent.document;
                 const inputs = doc.querySelectorAll('input[type="number"]');
-                if (inputs.length >= 3) {
-                    inputs[0].value = x; inputs[0].dispatchEvent(new Event('input', { bubbles: true }));
-                    inputs[1].value = y; inputs[1].dispatchEvent(new Event('input', { bubbles: true }));
-                    inputs[2].value = r; inputs[2].dispatchEvent(new Event('input', { bubbles: true }));
-                }
-            } catch(err) {}
-        }
-        function refreshLabels() {
-            pixelInfo.textContent = `Area: X=${selectedX}, Y=${selectedY} | Size=${selectedRadius}px`;
+                if (inputs.length >= 3) {{
+                    inputs[0].value = x; inputs[0].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    inputs[1].value = y; inputs[1].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    inputs[2].value = r; inputs[2].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }} catch(err) {{}}
+        }}
+        function refreshLabels() {{
+            pixelInfo.textContent = `Area: X=${{selectedX}}, Y=${{selectedY}} | Size=${{selectedRadius}}px`;
             radecInfo.textContent = computeRaDec(selectedX, selectedY);
-        }
-        function redrawCanvas() {
+        }}
+        function redrawCanvas() {{
             ctx.clearRect(0, 0, 460, 460);
-            if (currentMode === "Subtraction Map (Image B - Image A)") {
+            if (currentMode === "Subtraction Map (Image B - Image A)") {{
                 ctx.drawImage(imgSub, 0, 0, 460, 460);
                 frameInfo.textContent = "Subtraction Map Active";
-            } else if (currentMode === "Pause on Image A") {
+            }} else if (currentMode === "Pause on Image A") {{
                 ctx.drawImage(imgA, 0, 0, 460, 460);
                 frameInfo.textContent = "Paused A: " + labelA;
-            } else if (currentMode === "Pause on Image B") {
+            }} else if (currentMode === "Pause on Image B") {{
                 ctx.drawImage(imgB, 0, 0, 460, 460);
                 frameInfo.textContent = "Paused B: " + labelB;
-            } else {
-                if (currentFrame === 1) {
+            }} else {{
+                if (currentFrame === 1) {{
                     ctx.drawImage(imgA, 0, 0, 460, 460);
                     frameInfo.textContent = (pausedState ? "Paused A: " : "Blinking A: ") + labelA;
-                } else {
+                }} else {{
                     ctx.drawImage(imgB, 0, 0, 460, 460);
                     frameInfo.textContent = (pausedState ? "Paused B: " : "Blinking B: ") + labelB;
-                }
-            }
+                }}
+            }}
             ctx.strokeStyle = "rgba(56, 189, 248, 0.15)";
             ctx.lineWidth = 1;
-            for (let g = 57; g < 460; g += 57) {
+            for (let g = 57; g < 460; g += 57) {{
                 ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, 460); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(0, g); ctx.lineTo(460, g); ctx.stroke();
-            }
+            }}
             const cx = selectedX * canvasScale;
             const cy = selectedY * canvasScale;
             const cr = selectedRadius * canvasScale;
             ctx.strokeStyle = "#facc15";
             ctx.lineWidth = 2.5;
             ctx.beginPath();
-            if (currentShape === "Draw Circle") {
+            if (currentShape === "Draw Circle") {{
                 ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-            } else if (currentShape === "Draw Square") {
+            }} else if (currentShape === "Draw Square") {{
                 ctx.rect(cx - cr, cy - cr, cr * 2, cr * 2);
-            } else {
+            }} else {{
                 ctx.rect(cx - cr * 1.35, cy - cr * 0.85, cr * 2.7, cr * 1.7);
-            }
+            }}
             ctx.stroke();
             ctx.strokeStyle = "#f43f5e";
             ctx.lineWidth = 1.5;
@@ -614,77 +614,77 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
             ctx.moveTo(cx, cy - 8); ctx.lineTo(cx, cy + 8);
             ctx.stroke();
-        }
-        document.getElementById('btnManualFlip').addEventListener('click', () => {
+        }}
+        document.getElementById('btnManualFlip').addEventListener('click', () => {{
             pausedState = true;
             currentFrame = (currentFrame === 1) ? 2 : 1;
             redrawCanvas();
-        });
-        document.getElementById('btnPauseResume').addEventListener('click', () => {
+        }});
+        document.getElementById('btnPauseResume').addEventListener('click', () => {{
             pausedState = !pausedState;
             redrawCanvas();
         });
-        document.getElementById('btnShowSub').addEventListener('click', () => {
+        document.getElementById('btnShowSub').addEventListener('click', () => {{
             currentMode = (currentMode === "Subtraction Map (Image B - Image A)") ? "Auto Blink Images" : "Subtraction Map (Image B - Image A)";
             redrawCanvas();
         });
 
-        function getClientPos(e) {
+        function getClientPos(e) {{
             const rect = canvas.getBoundingClientRect();
             const clientX = e.touches ? e.touches[0].clientX : e.clientX;
             const clientY = e.touches ? e.touches[0].clientY : e.clientY;
             canvasScale = canvas.width / rect.width;
-            return {
+            return {{
                 x: Math.max(0, Math.min(300, Math.round((clientX - rect.left) * canvasScale))),
                 y: Math.max(0, Math.min(300, Math.round((clientY - rect.top) * canvasScale)))
-            };
-        }
+            }};
+        }}
 
-        canvas.addEventListener('mousedown', (e) => {
+        canvas.addEventListener('mousedown', (e) => {{
             const pt = getClientPos(e);
             selectedX = pt.x; selectedY = pt.y;
             isDragging = true;
             refreshLabels(); redrawCanvas();
-        });
-        canvas.addEventListener('mousemove', (e) => {
+        }});
+        canvas.addEventListener('mousemove', (e) => {{
             if (!isDragging) return;
             const pt = getClientPos(e);
             const dist = Math.round(Math.hypot(pt.x - selectedX, pt.y - selectedY));
             selectedRadius = Math.max(8, Math.min(60, dist));
             refreshLabels(); redrawCanvas();
-        });
-        window.addEventListener('mouseup', () => {
-            if (isDragging) { isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }
+        }});
+        window.addEventListener('mouseup', () => {{
+            if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
         });
 
-        canvas.addEventListener('touchstart', (e) => {
+        canvas.addEventListener('touchstart', (e) => {{
             const pt = getClientPos(e);
             selectedX = pt.x; selectedY = pt.y;
             isDragging = true;
             refreshLabels(); redrawCanvas();
             e.preventDefault();
-        }, { passive: false });
-        canvas.addEventListener('touchmove', (e) => {
+        }}, {{ passive: false }});
+        canvas.addEventListener('touchmove', (e) => {{
             if (!isDragging) return;
             const pt = getClientPos(e);
             const dist = Math.round(Math.hypot(pt.x - selectedX, pt.y - selectedY));
             selectedRadius = Math.max(8, Math.min(60, dist));
             refreshLabels(); redrawCanvas();
             e.preventDefault();
-        }, { passive: false });
-        window.addEventListener('touchend', () => {
-            if (isDragging) { isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }
+        }}, {{ passive: false }});
+        window.addEventListener('touchend', () => {{
+            if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
         });
 
         refreshLabels();
         imgA.onload = redrawCanvas;
         imgB.onload = redrawCanvas;
-        setInterval(() => {
-            if (!pausedState && currentMode === "Auto Blink Images") {
+        setInterval(() => {{
+            if (!pausedState && currentMode === "Auto Blink Images") {{
                 currentFrame = (currentFrame === 1) ? 2 : 1;
                 redrawCanvas();
-            }
-        }, blinkInterval);
+            }}
+        }}, blinkInterval);
         </script>
     </body>
     </html>
