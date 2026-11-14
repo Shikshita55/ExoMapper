@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
 # NASA Space Apps Challenge 2026 — Advanced Category & Global Award Contender
-# Coded by Shikshita Naryal, Ayaan Agarwal & Mahesh Nayak (Team ExoMapper)
+# Coded by Shikshita Naryal, Ayaaan Agarwal & Mahesh Nayak (Team ExoMapper)
 # ==============================================================================
 
 import base64
@@ -551,7 +551,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             const cosD = Math.max(0.1, Math.abs(Math.cos(decCenter * Math.PI / 180.0)));
             const ra = ((raCenter + (dxArc / 3600.0) / cosD) % 360.0 + 360.0) % 360.0;
             const dec = Math.max(-89.99, Math.min(89.99, decCenter + (dyArc / 3600.0)));
-            return `RA: ${{ra.toFixed(4)}} deg | Dec: ${{dec >= 0 ? '+' : ''}}${{dec.toFixed(4)}} deg`;
+            return "RA: " + ra.toFixed(4) + " deg | Dec: " + (dec >= 0 ? "+" : "") + dec.toFixed(4) + " deg";
         }}
         function updateParentInputs(x, y, r) {{
             try {{
@@ -565,7 +565,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             }} catch(err) {{}}
         }}
         function refreshLabels() {{
-            pixelInfo.textContent = `Area: X=${{selectedX}}, Y=${{selectedY}} | Size=${{selectedRadius}}px`;
+            pixelInfo.textContent = "Area: X=" + selectedX + ", Y=" + selectedY + " | Size=" + selectedRadius + "px";
             radecInfo.textContent = computeRaDec(selectedX, selectedY);
         }}
         function redrawCanvas() {{
