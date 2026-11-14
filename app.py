@@ -32,139 +32,148 @@ def get_nasa_logo_svg():
     svg_data = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="110" height="92">'
         '<defs><radialGradient id="nb" cx="38%" cy="32%" r="68%">'
-        '<stop offset="0%" stop-color="#1b56b3"/><stop offset="55%" stop-color="#0b3d91"/>'
-        '<stop offset="100%" stop-color="#061f4a"/></radialGradient></defs>'
-        '<circle cx="118" cy="100" r="82" fill="url(#nb)" stroke="#8cb8ff" stroke-width="1.5" stroke-opacity="0.45"/>'
-        '<g fill="#ffffff"><circle cx="72" cy="48" r="1.7"/><circle cx="88" cy="36" r="1.2"/>'
-        '<circle cx="105" cy="46" r="1.5"/><circle cx="145" cy="42" r="1.8"/><circle cx="164" cy="56" r="1.3"/>'
-        '<circle cx="155" cy="72" r="1.4"/><circle cx="62" cy="132" r="1.6"/><circle cx="78" cy="148" r="1.2"/>'
-        '<circle cx="96" cy="162" r="1.7"/><circle cx="148" cy="154" r="1.5"/><circle cx="168" cy="136" r="1.3"/>'
-        '<circle cx="132" cy="166" r="1.2"/></g>'
-        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.6" '
+        '<stop offset="0%" stop-color="#1e40af"/><stop offset="55%" stop-color="#1d4ed8"/>'
+        '<stop offset="100%" stop-color="#0f172a"/></radialGradient></defs>'
+        '<circle cx="118" cy="100" r="82" fill="url(#nb)" stroke="#60a5fa" stroke-width="2" stroke-opacity="0.6"/>'
+        '<g fill="#ffffff"><circle cx="72" cy="48" r="1.8"/><circle cx="88" cy="36" r="1.4"/>'
+        '<circle cx="105" cy="46" r="1.6"/><circle cx="145" cy="42" r="1.9"/><circle cx="164" cy="56" r="1.4"/>'
+        '<circle cx="155" cy="72" r="1.5"/><circle cx="62" cy="132" r="1.7"/><circle cx="78" cy="148" r="1.3"/>'
+        '<circle cx="96" cy="162" r="1.8"/><circle cx="148" cy="154" r="1.6"/><circle cx="168" cy="136" r="1.4"/>'
+        '<circle cx="132" cy="166" r="1.3"/></g>'
+        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.8" '
         'stroke-dasharray="180 65" transform="rotate(-24 118 102)"/>'
-        '<path d="M 30 136 Q 112 96 172 34 L 142 104 Q 176 74 214 60 Q 162 84 126 128 L 154 58 Q 104 106 30 136 Z" fill="#fc3d21"/>'
+        '<path d="M 30 136 Q 112 96 172 34 L 142 104 Q 176 74 214 60 Q 162 84 126 128 L 154 58 Q 104 106 30 136 Z" fill="#ff453a"/>'
         '<text x="118" y="113" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-weight="900" font-size="44" letter-spacing="3">NASA</text>'
-        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.6" '
+        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.8" '
         'stroke-dasharray="55 200" stroke-dashoffset="-195" transform="rotate(-24 118 102)"/>'
-        '<circle cx="184" cy="73" r="3.6" fill="#ffffff"/></svg>'
+        '<circle cx="184" cy="73" r="3.8" fill="#ffffff"/></svg>'
     )
     encoded_svg = base64.b64encode(svg_data.encode("utf-8")).decode("utf-8")
     return "data:image/svg+xml;base64," + encoded_svg
 
-# High-immersion dynamic deep space styling with floating celestial celebration animations
+# Eye-catching cinematic deep space styling with high contrast crystal-white text for global judges
 def apply_custom_space_styling():
     stylesheet = """
     <style>
     @keyframes starfieldDrift {
         from { background-position: 0px 0px, 0px 0px; }
-        to { background-position: 1400px 800px, -1000px 1100px; }
+        to { background-position: 1500px 900px, -1100px 1200px; }
     }
     @keyframes floatAnimation {
         0% { transform: translateY(0px) rotate(0deg); }
-        50% { transform: translateY(-12px) rotate(4deg); }
+        50% { transform: translateY(-10px) rotate(3deg); }
         100% { transform: translateY(0px) rotate(0deg); }
     }
-    @keyframes pulseGlow {
-        0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.25); }
-        50% { box-shadow: 0 0 35px rgba(244, 63, 94, 0.4); }
+    @keyframes borderGlow {
+        0%, 100% { box-shadow: 0 0 22px rgba(56, 189, 248, 0.3); border-color: rgba(56, 189, 248, 0.5); }
+        50% { box-shadow: 0 0 40px rgba(244, 63, 94, 0.5); border-color: rgba(244, 63, 94, 0.8); }
     }
     html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-        background-color: #02040a !important;
-        color: #f8fafc !important;
+        background-color: #010309 !important;
+        color: #ffffff !important;
         font-family: 'Segoe UI', Tahoma, sans-serif;
     }
     .stApp {
         background-image:
-            radial-gradient(2px 2px at 25px 45px, #ffffff, rgba(0,0,0,0)),
-            radial-gradient(1.8px 1.8px at 160px 130px, #38bdf8, rgba(0,0,0,0)),
-            radial-gradient(2.2px 2.2px at 320px 260px, #facc15, rgba(0,0,0,0)),
-            radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.22) 0%, transparent 45%),
-            radial-gradient(circle at 85% 85%, rgba(244, 63, 94, 0.15) 0%, transparent 45%);
-        background-size: 550px 450px, 480px 520px, 650px 580px, 100% 100%, 100% 100%;
-        animation: starfieldDrift 90s linear infinite;
+            radial-gradient(2.2px 2.2px at 30px 50px, #ffffff, rgba(0,0,0,0)),
+            radial-gradient(2px 2px at 180px 140px, #38bdf8, rgba(0,0,0,0)),
+            radial-gradient(2.5px 2.5px at 350px 280px, #facc15, rgba(0,0,0,0)),
+            radial-gradient(circle at 18% 18%, rgba(2, 132, 199, 0.32) 0%, transparent 50%),
+            radial-gradient(circle at 82% 82%, rgba(225, 29, 72, 0.22) 0%, transparent 50%);
+        background-size: 600px 500px, 520px 480px, 700px 620px, 100% 100%, 100% 100%;
+        animation: starfieldDrift 80s linear infinite;
         background-attachment: fixed;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #040817 0%, #07112d 100%) !important;
-        border-right: 1px solid rgba(56, 189, 248, 0.25) !important;
+        background: linear-gradient(180deg, #030712 0%, #06112e 100%) !important;
+        border-right: 1px solid rgba(56, 189, 248, 0.35) !important;
+    }
+    /* Ensure all text labels and descriptions are bright white/high-contrast */
+    label, .stMarkdown p, .stRadio label, .stCheckbox label, span, p, div {
+        color: #ffffff !important;
     }
     .stTextInput input, .stNumberInput input, .stSelectbox div[role="button"] {
-        background-color: #081128 !important;
-        color: #ffffff !important;
-        border: 1.5px solid #1e3a8a !important;
-        border-radius: 10px !important;
-        font-weight: 600 !important;
-    }
-    .stButton > button, .stDownloadButton > button {
-        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        background-color: #0b132b !important;
         color: #ffffff !important;
         border: 1.5px solid #38bdf8 !important;
         border-radius: 10px !important;
         font-weight: 700 !important;
-        padding: 0.55rem 1.1rem !important;
-        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3) !important;
+    }
+    .stTextInput input::placeholder {
+        color: #93c5fd !important;
+        opacity: 0.9 !important;
+    }
+    .stButton > button, .stDownloadButton > button {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
+        color: #ffffff !important;
+        border: 2px solid #38bdf8 !important;
+        border-radius: 10px !important;
+        font-weight: 800 !important;
+        padding: 0.6rem 1.2rem !important;
+        box-shadow: 0 4px 20px rgba(56, 189, 248, 0.4) !important;
     }
     .stButton > button:hover {
         background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
         border-color: #facc15 !important;
     }
     .space-panel {
-        background: linear-gradient(145deg, rgba(10, 17, 38, 0.95), rgba(5, 10, 22, 0.98));
-        border: 1.5px solid rgba(56, 189, 248, 0.35);
-        border-radius: 14px;
-        padding: 18px 20px;
-        margin-bottom: 14px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
-        animation: pulseGlow 6s infinite ease-in-out;
+        background: linear-gradient(145deg, rgba(11, 20, 45, 0.96), rgba(5, 11, 28, 0.99));
+        border: 2px solid rgba(56, 189, 248, 0.4);
+        border-radius: 16px;
+        padding: 20px 22px;
+        margin-bottom: 16px;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.8);
+        animation: borderGlow 6s infinite ease-in-out;
     }
     .space-tag {
         display: inline-block;
         background: #f43f5e;
         color: #ffffff;
-        font-weight: 800;
-        font-size: 11.5px;
-        padding: 4px 14px;
+        font-weight: 900;
+        font-size: 12px;
+        padding: 5px 16px;
         border-radius: 99px;
-        letter-spacing: 1px;
-        margin-bottom: 8px;
+        letter-spacing: 1.2px;
+        margin-bottom: 10px;
+        box-shadow: 0 0 15px rgba(244, 63, 94, 0.5);
     }
     .floating-celebration {
         animation: floatAnimation 3s ease-in-out infinite;
         display: inline-block;
-        font-size: 28px;
+        font-size: 32px;
     }
     .badge-sim {
         display: inline-block;
-        background: rgba(250, 204, 21, 0.18);
-        border: 1px solid #facc15;
+        background: rgba(250, 204, 21, 0.2);
+        border: 1.5px solid #facc15;
         color: #facc15;
-        font-weight: 800;
-        font-size: 11.5px;
-        padding: 4px 12px;
+        font-weight: 900;
+        font-size: 12px;
+        padding: 5px 14px;
         border-radius: 99px;
     }
     .badge-real {
         display: inline-block;
-        background: rgba(52, 211, 153, 0.18);
-        border: 1px solid #34d399;
+        background: rgba(52, 211, 153, 0.2);
+        border: 1.5px solid #34d399;
         color: #34d399;
-        font-weight: 800;
-        font-size: 11.5px;
-        padding: 4px 12px;
+        font-weight: 900;
+        font-size: 12px;
+        padding: 5px 14px;
         border-radius: 99px;
     }
     .resource-link {
         display: inline-block;
         margin-top: 6px;
         margin-right: 6px;
-        padding: 6px 12px;
-        background: rgba(14, 116, 144, 0.65);
-        border: 1px solid #38bdf8;
+        padding: 6px 14px;
+        background: rgba(14, 116, 144, 0.75);
+        border: 1.5px solid #38bdf8;
         border-radius: 8px;
-        color: #38bdf8 !important;
+        color: #ffffff !important;
         text-decoration: none !important;
-        font-size: 12.5px;
-        font-weight: 700;
+        font-size: 13px;
+        font-weight: 800;
     }
     .resource-link:hover {
         background: #f43f5e;
@@ -177,7 +186,7 @@ def apply_custom_space_styling():
 
 ARCSEC_PER_PIXEL = 6.2
 
-# Astronomy sector datasets prepared by Mahesh & Shikshita
+# Preloaded astronomy sector datasets with multi-epoch parameters
 celestialSectors = {
     "Sector 1: Orion Outer Rim (Deep Infrared Survey)": {
         "seed": 104,
@@ -353,6 +362,19 @@ celestialSectors = {
         ]
     }
 }
+
+# Pre-built downloadable archive database for searchable FITS & Infrared Archive lookup
+def get_preloaded_archive_dataframe():
+    data = [
+        {"Dataset_ID": "SPX-DR1-074", "Survey": "SPHEREx Level-2 All-Sky", "Target": "WISE 0855-0714", "RA_J2000": "08h 55m 10.8s", "Dec_J2000": "-07d 14m 42s", "Wavelength": "4.52 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-DR1-089", "Survey": "SPHEREx Level-2 All-Sky", "Target": "Barnard's Star", "RA_J2000": "17h 57m 48.5s", "Dec_J2000": "+04d 41m 36s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "WISE-PSD-220", "Survey": "WISE All-Sky Source Catalog", "Target": "Epsilon Indi Ba/Bb", "RA_J2000": "22h 04m 10.5s", "Dec_J2000": "-56d 46m 57s", "Wavelength": "4.60 um", "Format": "CSV/FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-ORION-104", "Survey": "SPHEREx Deep Survey", "Target": "Orion Outer Rim (Sector 1)", "RA_J2000": "05h 35m 12.0s", "Dec_J2000": "-05d 23m 27s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-TAURUS-209", "Survey": "SPHEREx Kuiper Corridor", "Target": "Taurus Corridor (Sector 2)", "RA_J2000": "04h 35m 55.0s", "Dec_J2000": "+16d 30m 33s", "Wavelength": "3.40 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-CYGNUS-317", "Survey": "SPHEREx Ecliptic Deep Field", "Target": "Cygnus Field (Sector 3)", "RA_J2000": "20h 22m 13.0s", "Dec_J2000": "+40d 15m 24s", "Wavelength": "4.10 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-CARINA-422", "Survey": "SPHEREx High-Density Field", "Target": "Carina Field (Sector 4)", "RA_J2000": "10h 45m 03.6s", "Dec_J2000": "-59d 41m 03s", "Wavelength": "3.90 um", "Format": "FITS", "Status": "Calibrated & Ready"}
+    ]
+    return pd.DataFrame(data)
 
 # Astrometric coordinate math
 def calculate_sky_coordinates(px, py, ra_center, dec_center):
@@ -622,7 +644,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             margin: 0;
             padding: 6px;
             background: #02040a;
-            color: #f8fafc;
+            color: #ffffff;
             font-family: 'Segoe UI', Arial, sans-serif;
             text-align: center;
         }}
@@ -695,7 +717,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             </div>
             <div class="status-row" style="margin-top:5px;">
                 <span id="radecInfo" class="tag-green">J2000 RA / Dec</span>
-                <span style="color:#93c5fd; font-size:11px;">Drag mouse on image to draw & auto-fill values</span>
+                <span style="color:#ffffff; font-size:11px;">Drag mouse on image to draw & auto-fill values</span>
             </div>
         </div>
         <script>
@@ -877,11 +899,6 @@ def show_welcome_screen():
     with col2:
         render_html_snippet(f"""
         <div class="space-panel" style="text-align:center; padding:32px 26px;">
-            <div style="margin-bottom:12px;">
-                <span class="floating-celebration">🪐</span>
-                <span class="floating-celebration" style="animation-delay: 0.5s;">🚀</span>
-                <span class="floating-celebration" style="animation-delay: 1s;">✨</span>
-            </div>
             <img src="{logo_uri}" alt="NASA Logo" style="width:110px; height:auto; margin-bottom:12px; filter: drop-shadow(0 4px 14px rgba(56,189,248,0.5));"/>
             <div>
                 <span class="space-tag">NASA SPACE APPS CHALLENGE 2026 • TEAM EXOMAPPER</span>
@@ -889,7 +906,7 @@ def show_welcome_screen():
             <h1 style="margin:8px 0 4px 0; font-size:32px; font-weight:900; color:#ffffff;">
                 ExoMapper: The Hunt for Planet X
             </h1>
-            <p style="font-size:14px; color:#94a3b8; margin-top:6px;">
+            <p style="font-size:14px; color:#ffffff; margin-top:6px;">
                 Interactive SPHEREx Astrometric Observatory by Shikshita, Ayan &amp; Mahesh
             </p>
         </div>
@@ -929,7 +946,7 @@ def show_manual_screen():
         """)
     with col_b:
         st.write("")
-        if st.button("🎮 Launch Workbench ➔", use_container_width=True):
+        if st.button("🎮 Launch Hub ➔", use_container_width=True):
             st.session_state.page_step = "game"
             st.rerun()
     with col_c:
@@ -941,74 +958,50 @@ def show_manual_screen():
     render_html_snippet("""
     <div class="space-panel" style="border: 2px solid #facc15; background: linear-gradient(145deg, rgba(15, 28, 65, 0.95), rgba(5, 10, 25, 0.98));">
         <div style="color:#facc15; font-weight:900; font-size:18px; margin-bottom:8px;">🏆 Scoring & Marks Mechanics in ExoMapper</div>
-        <p style="font-size:13.5px; color:#cbd5e1; margin:0 0 12px 0; line-height:1.5;">
+        <p style="font-size:13.5px; color:#ffffff; margin:0 0 12px 0; line-height:1.5;">
             Our interactive discovery engine uses a rigorous scoring algorithm to reward valid scientific findings and penalize false alarms:
         </p>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
-            <div style="background:rgba(52,211,153,0.1); border:1px solid #34d399; border-radius:8px; padding:10px;">
-                <div style="color:#34d399; font-weight:800; font-size:13.5px;">➕ Positive Discovery (Addition)</div>
-                <div style="font-size:11.5px; color:#94a3b8;"><b>+120 to +150 pts:</b> Awarded for correctly locating unconfirmed Planet X candidates, trans-Neptunian objects, or brown dwarfs using multi-epoch blinking.</div>
+            <div style="background:rgba(52,211,153,0.15); border:1px solid #34d399; border-radius:8px; padding:10px;">
+                <div style="color:#34d399; font-weight:900; font-size:13.5px;">➕ Positive Discovery (Addition)</div>
+                <div style="font-size:11.5px; color:#ffffff;"><b>+120 to +150 pts:</b> Awarded for correctly locating unconfirmed Planet X candidates, trans-Neptunian objects, or brown dwarfs using multi-epoch blinking.</div>
             </div>
-            <div style="background:rgba(244,63,94,0.1); border:1px solid #f43f5e; border-radius:8px; padding:10px;">
-                <div style="color:#f87171; font-weight:800; font-size:13.5px;">➖ False Alarm (Subtraction)</div>
-                <div style="font-size:11.5px; color:#94a3b8;"><b>-20 pts:</b> Deducted when selecting stationary background stars or sensor noise, encouraging careful astrometric validation.</div>
+            <div style="background:rgba(244,63,94,0.15); border:1px solid #f43f5e; border-radius:8px; padding:10px;">
+                <div style="color:#f87171; font-weight:900; font-size:13.5px;">➖ False Alarm (Subtraction)</div>
+                <div style="font-size:11.5px; color:#ffffff;"><b>-20 pts:</b> Deducted when selecting stationary background stars or sensor noise, encouraging careful astrometric validation.</div>
             </div>
-            <div style="background:rgba(56,189,248,0.1); border:1px solid #38bdf8; border-radius:8px; padding:10px;">
-                <div style="color:#38bdf8; font-weight:800; font-size:13.5px;">⚡ Event Scrubber (Bonus)</div>
-                <div style="font-size:11.5px; color:#94a3b8;"><b>+50 pts:</b> Awarded for engaging the bitmask tile filter during simulated solar proton storms.</div>
+            <div style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:8px; padding:10px;">
+                <div style="color:#38bdf8; font-weight:900; font-size:13.5px;">⚡ Event Scrubber (Bonus)</div>
+                <div style="font-size:11.5px; color:#ffffff;"><b>+50 pts:</b> Awarded for engaging the bitmask tile filter during simulated solar proton storms.</div>
             </div>
         </div>
     </div>
     """)
 
-    c1, c2, c3 = st.columns(3)
-    with c1:
-        render_html_snippet("""
-        <div class="space-panel">
-            <div style="color:#facc15; font-weight:800; font-size:15px; margin-bottom:6px;">🪐 About Planet X</div>
-            <p style="font-size:13px; line-height:1.5; color:#cbd5e1; margin:0;">
-                Distant trans-Neptunian objects orbit hundreds of astronomical units from the Sun. By comparing sky passes taken months apart, hidden worlds reveal themselves through subtle proper motion.
-            </p>
-            <a class="resource-link" href="https://science.nasa.gov/solar-system/planet-x/" target="_blank">🔗 NASA Planet X</a>
-        </div>
-        """)
-    with c2:
-        render_html_snippet("""
-        <div class="space-panel">
-            <div style="color:#38bdf8; font-weight:800; font-size:15px; margin-bottom:6px;">🛰️ About SPHEREx</div>
-            <p style="font-size:13px; line-height:1.5; color:#cbd5e1; margin:0;">
-                NASA's SPHEREx mission surveys the entire sky in 102 near-infrared bands. ExoMapper allows you to blink passes and analyze multi-band spectra instantly.
-            </p>
-            <a class="resource-link" href="https://science.nasa.gov/mission/spherex/" target="_blank">🔗 NASA SPHEREx</a>
-        </div>
-        """)
-    with c3:
-        render_html_snippet("""
-        <div class="space-panel">
-            <div style="color:#f87171; font-weight:800; font-size:15px; margin-bottom:6px;">🚀 Open NASA Data</div>
-            <p style="font-size:13px; line-height:1.5; color:#cbd5e1; margin:0;">
-                All observations in this workbench utilize open NASA FITS data structures, enabling citizen scientists worldwide to contribute to real astrophysical discoveries.
-            </p>
-            <a class="resource-link" href="https://www.nasa.gov/" target="_blank">🔗 Official NASA Portal</a>
-        </div>
-        """)
-
+    # SEARCHABLE & FILTERABLE NASA FITS ARCHIVE DATABASE BUILT DIRECTLY IN APP
     render_html_snippet("""
     <div class="space-panel">
-        <div style="color:#34d399; font-weight:800; font-size:16px; margin-bottom:6px;">📂 Direct NASA FITS & Infrared Archive Links (Actual Resources)</div>
-        <p style="font-size:13px; color:#cbd5e1; margin:0 0 8px 0;">
-            Download calibrated FITS files or query the NASA/IPAC Infrared Science Archive directly for your project submission references:
+        <div style="color:#34d399; font-weight:900; font-size:18px; margin-bottom:6px;">📂 Pre-Loaded NASA SPHEREx & WISE Archive Database</div>
+        <p style="font-size:13.5px; color:#ffffff; margin:0 0 10px 0;">
+            Search, filter, and inspect pre-downloaded NASA FITS datasets and infrared archives right here inside the app before executing your scan:
         </p>
-        <a class="resource-link" href="https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W18_1B/l2b-v27-2026-196/1/level2_2025W18_1B_0074_2D1_spx_l2b-v27-2026-196.fits" target="_blank">⬇️ SPHEREx Level-2 FITS File</a>
-        <a class="resource-link" href="https://irsa.ipac.caltech.edu/ibe/cutouts.html" target="_blank">🛰️ NASA/IPAC IRSA Cutouts Server</a>
-        <a class="resource-link" href="https://skyview.gsfc.nasa.gov/cgi-bin/images?Survey=digitized+sky+survey&position=14.5,36.5&Return=FITS" target="_blank">⬇️ NASA SkyView FITS Cutout</a>
-        <a class="resource-link" href="https://irsa.ipac.caltech.edu/" target="_blank">🌌 IRSA Portal</a>
     </div>
     """)
     
+    archive_df = get_preloaded_archive_dataframe()
+    search_query = st.text_input("🔍 Search Archive Datasets (Filter by Target, Survey, or ID)", "", placeholder="Type 'Orion', 'WISE', or 'FITS'...")
+    if search_query:
+        filtered_df = archive_df[
+            archive_df.astype(str).apply(lambda row: row.str.contains(search_query, case=False).any(), axis=1)
+        ]
+    else:
+        filtered_df = archive_df
+        
+    st.dataframe(filtered_df, use_container_width=True, hide_index=True)
+    
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
     with col_btn2:
-        if st.button("🚀 Launch Workbench Now", use_container_width=True):
+        if st.button("🚀 Launch Observatory Hub", use_container_width=True):
             st.session_state.page_step = "game"
             st.rerun()
 
@@ -1022,14 +1015,14 @@ def show_game_screen():
             <div style="display:flex; align-items:center; gap:14px;">
                 <img src="{logo_uri}" alt="NASA Logo" style="width:60px; height:auto;"/>
                 <div>
-                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER WORKBENCH • ACTIVE MISSION</span>
+                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER HUB • ACTIVE MISSION</span>
                     <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:21px; font-weight:900;">
                         Explorer: {st.session_state.explorerName} 🪐 Planet X Survey
                     </h2>
                 </div>
             </div>
             <div style="text-align:right; background:#081128; border:1.5px solid #38bdf8; border-radius:10px; padding:6px 14px;">
-                <div style="font-size:11px; color:#93c5fd; font-weight:700;">TOTAL SCORE</div>
+                <div style="font-size:11px; color:#93c5fd; font-weight:800;">TOTAL SCORE</div>
                 <div style="font-size:20px; color:#facc15; font-weight:900;">{st.session_state.total_score} pts</div>
             </div>
         </div>
@@ -1048,8 +1041,8 @@ def show_game_screen():
     with st.sidebar:
         render_html_snippet("""
         <div class="space-panel" style="padding:12px 14px;">
-            <div style="color:#38bdf8; font-weight:800; font-size:15px;">🔭 Observatory Settings</div>
-            <div style="font-size:12px; color:#94a3b8;">Adjust color palettes, brightness, and contrast.</div>
+            <div style="color:#38bdf8; font-weight:900; font-size:15px;">🔭 Observatory Settings</div>
+            <div style="font-size:12px; color:#ffffff;">Adjust color palettes, brightness, and contrast.</div>
         </div>
         """)
         color_theme = st.selectbox("Sky Color Theme", ["Deep Space Cyan", "Infrared Heat (SPHEREx)", "Emerald Nebula"])
@@ -1059,8 +1052,8 @@ def show_game_screen():
         clean_flag = st.checkbox("✨ Apply Dark & Bias Clean", value=False)
         render_html_snippet("""
         <div class="space-panel" style="padding:12px 14px; margin-top:10px;">
-            <div style="color:#facc15; font-weight:800; font-size:13.5px;">🏆 Global Award Contender</div>
-            <div style="font-size:11.5px; color:#94a3b8;">Optimized for Science, Data & Technology.</div>
+            <div style="color:#facc15; font-weight:900; font-size:13.5px;">🏆 Global Award Contender</div>
+            <div style="font-size:11.5px; color:#ffffff;">Optimized for Science, Data & Technology.</div>
         </div>
         """)
 
@@ -1165,10 +1158,10 @@ def show_game_screen():
     render_html_snippet(f"""
     <div class="space-panel" style="padding:10px 16px;">
         <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
-            <span style="font-weight:800; font-size:14px; color:#ffffff;">📍 Field Center: RA {center_ra_str} | Dec {center_dec_str} ({sector_info['constellation']})</span>
+            <span style="font-weight:900; font-size:14px; color:#ffffff;">📍 Field Center: RA {center_ra_str} | Dec {center_dec_str} ({sector_info['constellation']})</span>
             {pill_html}
         </div>
-        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; font-size:12px; color:#93c5fd; margin-top:4px;">
+        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; font-size:12px; color:#ffffff; margin-top:4px;">
             <span>🖼️ <b>Image A:</b> {label_a}</span>
             <span>🖼️ <b>Image B:</b> {label_b}</span>
             <span>🌈 <b>Band:</b> {sector_info['band']}</span>
@@ -1213,8 +1206,8 @@ def show_game_screen():
     with col_right:
         render_html_snippet("""
         <div class="space-panel" style="padding:14px 16px;">
-            <div style="color:#facc15; font-weight:800; font-size:15px; margin-bottom:4px;">🎯 Automatic & Manual Area Selection</div>
-            <p style="font-size:12.5px; color:#cbd5e1; margin:0;">
+            <div style="color:#facc15; font-weight:900; font-size:15px; margin-bottom:4px;">🎯 Automatic & Manual Area Selection</div>
+            <p style="font-size:12.5px; color:#ffffff; margin:0;">
                 <b>Auto-Fill Selection:</b> Click and drag your mouse directly on the sky image above to automatically calculate and fill in Pixel X, Pixel Y, and Radius (px) below!
             </p>
         </div>
@@ -1260,7 +1253,7 @@ def show_game_screen():
             st.session_state.x_pick, st.session_state.y_pick, sector_info["ra_center"], sector_info["dec_center"]
         )
         render_html_snippet(f"""
-        <div style="background:#070f26; border:1px solid rgba(52, 211, 153, 0.4); border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:12px; color:#d1fae5;">
+        <div style="background:#070f26; border:1.5px solid rgba(52, 211, 153, 0.5); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px; color:#ffffff;">
             🧭 <b>Selected Sky Coordinates (J2000):</b><br/>
             • <b>RA:</b> {current_ra_str}<br/>
             • <b>Dec:</b> {current_dec_str}
@@ -1305,34 +1298,34 @@ def show_game_screen():
             badge_color = "#34d399" if is_success else "#f43f5e"
             score_tag = f"+{res['points']} pts" if is_success else f"{res['points']} pts"
             
-            # Floating celebration effect for successful anomaly finds
+            # Celebratory or motivating message banner displayed cleanly inside the result panel without full-screen fading
             if is_success:
                 render_html_snippet("""
-                <div style="text-align:center; padding: 4px 0;">
+                <div style="background:rgba(52, 211, 153, 0.15); border:1.5px solid #34d399; border-radius:10px; text-align:center; padding: 10px; margin-bottom:10px;">
                     <span class="floating-celebration">🪐</span>
                     <span class="floating-celebration" style="animation-delay: 0.3s;">🚀</span>
                     <span class="floating-celebration" style="animation-delay: 0.6s;">🌟</span>
-                    <span style="color:#34d399; font-weight:800; font-size:14px; margin-left:8px;">SUCCESS! Anomaly Discovered!</span>
+                    <span style="color:#34d399; font-weight:900; font-size:15px; margin-left:8px;">SUCCESS! Anomaly Discovered!</span>
                 </div>
                 """)
             else:
                 render_html_snippet("""
-                <div style="text-align:center; padding: 4px 0; color:#f43f5e; font-weight:700; font-size:13px;">
+                <div style="background:rgba(244, 63, 94, 0.15); border:1.5px solid #f43f5e; border-radius:10px; text-align:center; padding: 10px; margin-bottom:10px; color:#f87171; font-weight:800; font-size:14px;">
                     💫 Better luck next time! Keep scanning the star fields. (-20 pts)
                 </div>
                 """)
 
             render_html_snippet(f"""
-            <div class="space-panel" style="border-color:{badge_color}; padding:14px 16px;">
+            <div class="space-panel" style="border-color:{badge_color}; padding:16px 18px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <span style="font-weight:900; font-size:15px; color:{badge_color};">{res['title']}</span>
-                    <span class="space-tag" style="background:{badge_color}; color:#02040a; margin-bottom:0;">{score_tag}</span>
+                    <span style="font-weight:900; font-size:16px; color:{badge_color};">{res['title']}</span>
+                    <span class="space-tag" style="background:{badge_color}; color:#010309; margin-bottom:0;">{score_tag}</span>
                 </div>
-                <div style="margin-top:6px; padding:4px 10px; background:rgba(250, 204, 21, 0.12); border-left:3px solid #facc15; font-size:11.5px; color:#facc15; font-weight:700;">
+                <div style="margin-top:8px; padding:6px 12px; background:rgba(250, 204, 21, 0.15); border-left:4px solid #facc15; font-size:12.5px; color:#facc15; font-weight:800;">
                     📋 Status: {res['status']}
                 </div>
-                <p style="font-size:12.5px; color:#f8fafc; margin:8px 0;">{res['note']}</p>
-                <div style="font-size:12px; color:#93c5fd; line-height:1.5;">
+                <p style="font-size:13.5px; color:#ffffff; margin:10px 0;">{res['note']}</p>
+                <div style="font-size:12.5px; color:#ffffff; line-height:1.6;">
                     • <b>Sky Coords:</b> RA {res['ra_str']} | Dec {res['dec_str']}<br/>
                     • <b>Epochs:</b> {res['date_a']} -> {res['date_b']}<br/>
                     • <b>Brightness:</b> {res['flux_text']}<br/>
@@ -1350,9 +1343,9 @@ def show_game_screen():
 
     st.write("")
     render_html_snippet("""
-    <div class="space-panel" style="padding:14px 18px;">
-        <div style="color:#facc15; font-weight:900; font-size:17px;">🏆 Live Explorer Scoreboard & Discovery Log</div>
-        <div style="font-size:12.5px; color:#94a3b8;">Tracks your verified discoveries and false alarms in real time.</div>
+    <div class="space-panel" style="padding:16px 20px;">
+        <div style="color:#facc15; font-weight:900; font-size:18px;">🏆 Live Explorer Scoreboard & Discovery Log</div>
+        <div style="font-size:13px; color:#ffffff;">Tracks your verified discoveries and false alarms in real time.</div>
     </div>
     """)
     if len(st.session_state.score_table) == 0:
