@@ -907,9 +907,9 @@ def show_manual_screen():
         <div class="ui-panel" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
             <img src="{logo_uri}" alt="NASA Logo" style="width:70px; height:auto;"/>
             <div>
-                <span class="ui-tag" style="margin-bottom:4px;">MISSION BRIEFING & USER MANUAL</span>
+                <span class="ui-tag" style="margin-bottom:4px;">MISSION BRIEFING & SUBMISSION COMPLIANCE CHECKLIST</span>
                 <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:22px; font-weight:900;">
-                    Commander {st.session_state.explorerName} 🪐 Ready for Astrometric Survey
+                    Commander {st.session_state.explorerName} 🪐 Anti-Disqualification Guide
                 </h2>
             </div>
         </div>
@@ -925,24 +925,40 @@ def show_manual_screen():
             st.session_state.page_step = "welcome"
             st.rerun()
 
+    # Official NASA Space Apps Submission Compliance & Anti-Disqualification Banner
+    render_html_snippet("""
+    <div class="ui-panel" style="border: 2px solid #ef4444; background: linear-gradient(145deg, rgba(30, 10, 15, 0.95), rgba(10, 5, 8, 0.98));">
+        <div style="color:#f87171; font-weight:900; font-size:18px; margin-bottom:8px;">⚠️ CRITICAL: How to Avoid Disqualification & Win Global Awards</div>
+        <p style="font-size:13.5px; color:#cbd5e1; margin:0 0 10px 0; line-height:1.5;">
+            To ensure Team ExoMapper (Shikshita, Ayan, Mahesh) advances to Global Judging and competes for the 10 Global Awards (Best Use of Science, Data, Technology), adhere strictly to these official NASA rules:
+        </p>
+        <ul style="font-size:13px; color:#cbd5e1; line-height:1.6; margin:0 0 12px 20px; padding:0;">
+            <li><b>Deadline:</b> Submit your project on your team page before Sunday, November 15 at 11:59 p.m. local time.</li>
+            <li><b>Team Members:</b> All teammates must be registered for the exact same Local Event and appear on the Members tab.</li>
+            <li><b>Demo Requirement:</b> Include either a 7-slide presentation or a 30-second video demo (with English subtitles if speaking another language).</li>
+            <li><b>Original Work & References:</b> Check the confirmation box confirming original work and listing all external data sources (SPHEREx, WISE, Astropy) in the references.</li>
+        </ul>
+    </div>
+    """)
+
     render_html_snippet("""
     <div class="ui-panel" style="border: 2px solid #fde047; background: linear-gradient(145deg, rgba(15, 28, 65, 0.95), rgba(5, 10, 25, 0.98));">
-        <div style="color:#fde047; font-weight:900; font-size:18px; margin-bottom:8px;">🏆 NASA Space Apps 2026 Global Awards Target</div>
+        <div style="color:#fde047; font-weight:900; font-size:18px; margin-bottom:8px;">🏆 Scoring & Marks Mechanics in ExoMapper</div>
         <p style="font-size:13.5px; color:#cbd5e1; margin:0 0 12px 0; line-height:1.5;">
-            ExoMapper is engineered to excel in <b>Best Use of Science</b>, <b>Best Use of Data</b>, and <b>Best Use of Technology</b> by combining rigorous multi-epoch astrometric calculations with intuitive interactive controls.
+            Our interactive discovery engine uses a rigorous scoring algorithm to reward valid scientific findings and penalize false alarms:
         </p>
         <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
-            <div style="background:rgba(6,182,212,0.1); border:1px solid #06b6d4; border-radius:8px; padding:10px;">
-                <div style="color:#67e8f9; font-weight:800; font-size:13.5px;">🔬 Best Use of Science</div>
-                <div style="font-size:11.5px; color:#94a3b8;">Parallax shift formulas, proper motion vectors, and 102-band infrared spectroscopy.</div>
-            </div>
-            <div style="background:rgba(253,224,71,0.1); border:1px solid #fde047; border-radius:8px; padding:10px;">
-                <div style="color:#fde047; font-weight:800; font-size:13.5px;">📊 Best Use of Data</div>
-                <div style="font-size:11.5px; color:#94a3b8;">Direct ingestion of NASA SPHEREx DR1 FITS files, WISE catalogs, and custom CSV star logs.</div>
-            </div>
             <div style="background:rgba(52,211,153,0.1); border:1px solid #34d399; border-radius:8px; padding:10px;">
-                <div style="color:#34d399; font-weight:800; font-size:13.5px;">⚡ Best Use of Technology</div>
-                <div style="font-size:11.5px; color:#94a3b8;">Interactive HTML5 canvas selection, automated AI scanning, and Doppler audio sonification.</div>
+                <div style="color:#34d399; font-weight:800; font-size:13.5px;">➕ Positive Discovery (Addition)</div>
+                <div style="font-size:11.5px; color:#94a3b8;"><b>+120 to +150 pts:</b> Awarded for correctly locating unconfirmed Planet X candidates, trans-Neptunian objects, or brown dwarfs using multi-epoch blinking.</div>
+            </div>
+            <div style="background:rgba(239,68,68,0.1); border:1px solid #ef4444; border-radius:8px; padding:10px;">
+                <div style="color:#f87171; font-weight:800; font-size:13.5px;">➖ False Alarm (Subtraction)</div>
+                <div style="font-size:11.5px; color:#94a3b8;"><b>-20 pts:</b> Deducted when selecting stationary background stars or sensor noise, encouraging careful astrometric validation.</div>
+            </div>
+            <div style="background:rgba(6,182,212,0.1); border:1px solid #06b6d4; border-radius:8px; padding:10px;">
+                <div style="color:#67e8f9; font-weight:800; font-size:13.5px;">⚡ Event Scrubber (Bonus)</div>
+                <div style="font-size:11.5px; color:#94a3b8;"><b>+50 pts:</b> Awarded for engaging the bitmask tile filter during simulated solar proton storms.</div>
             </div>
         </div>
     </div>
@@ -982,9 +998,9 @@ def show_manual_screen():
 
     render_html_snippet("""
     <div class="ui-panel">
-        <div style="color:#34d399; font-weight:800; font-size:16px; margin-bottom:6px;">📂 Direct NASA FITS & Infrared Archive Links</div>
+        <div style="color:#34d399; font-weight:800; font-size:16px; margin-bottom:6px;">📂 Direct NASA FITS & Infrared Archive Links (Actual Resources)</div>
         <p style="font-size:13px; color:#cbd5e1; margin:0 0 8px 0;">
-            Download calibrated FITS files or query the NASA/IPAC Infrared Science Archive directly:
+            Download calibrated FITS files or query the NASA/IPAC Infrared Science Archive directly for your project submission references:
         </p>
         <a class="resource-link" href="https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W18_1B/l2b-v27-2026-196/1/level2_2025W18_1B_0074_2D1_spx_l2b-v27-2026-196.fits" target="_blank">⬇️ SPHEREx Level-2 FITS File</a>
         <a class="resource-link" href="https://irsa.ipac.caltech.edu/ibe/cutouts.html" target="_blank">🛰️ NASA/IPAC IRSA Cutouts Server</a>
