@@ -634,7 +634,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         document.getElementById('btnShowSub').addEventListener('click', () => {{
             currentMode = (currentMode === "Subtraction Map (Image B - Image A)") ? "Auto Blink Images" : "Subtraction Map (Image B - Image A)";
             redrawCanvas();
-        });
+        }});
 
         function getClientPos(e) {{
             const rect = canvas.getBoundingClientRect();
