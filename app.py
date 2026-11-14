@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
 # NASA Space Apps Challenge 2026 — Team ExoMapper
-# Coded by Team ExoMapper
+# Coded by Shikshita Naryal, Ayan Agarwal & Mahesh Nayak
 # ==============================================================================
 
 import base64
