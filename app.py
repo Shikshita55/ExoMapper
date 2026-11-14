@@ -662,7 +662,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         }});
         window.addEventListener('mouseup', () => {{
             if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
-        });
+        }});
 
         canvas.addEventListener('touchstart', (e) => {{
             const pt = getClientPos(e);
@@ -681,7 +681,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         }}, {{ passive: false }});
         window.addEventListener('touchend', () => {{
             if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
-        });
+        }});
 
         refreshLabels();
         imgA.onload = redrawCanvas;
