@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER ELITE: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
 # NASA Space Apps Challenge 2026 — Advanced Category & Global Award Contender
-# Created by Team ExoMapper (Shikshita Naryal, Ayan Agarwal & Mahesh Nayak)
+# Crafted with passion by Team ExoMapper 
 # ==============================================================================
 
 import base64
@@ -22,12 +22,12 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Helper function to render flat HTML components securely in Streamlit
+# Clean HTML injector helper
 def render_html_snippet(html_text):
     clean_line = " ".join(line.strip() for line in html_text.splitlines() if line.strip())
     st.markdown(clean_line, unsafe_allow_html=True)
 
-# Generates the official NASA meatball logo as an embedded SVG data URI
+# Official NASA meatball logo as SVG data URI
 def get_nasa_logo_svg():
     svg_data = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="110" height="92">'
@@ -51,114 +51,125 @@ def get_nasa_logo_svg():
     encoded_svg = base64.b64encode(svg_data.encode("utf-8")).decode("utf-8")
     return "data:image/svg+xml;base64," + encoded_svg
 
-# Injects custom CSS for a high-immersion deep-space workstation UI
+# High-immersion dynamic deep space styling with floating celestial celebration animations
 def apply_custom_space_styling():
     stylesheet = """
     <style>
     @keyframes starfieldDrift {
         from { background-position: 0px 0px, 0px 0px; }
-        to { background-position: 1200px 700px, -900px 1000px; }
+        to { background-position: 1400px 800px, -1000px 1100px; }
     }
-    @keyframes cardGlow {
-        0%, 100% { box-shadow: 0 0 16px rgba(0, 212, 255, 0.2); }
-        50% { box-shadow: 0 0 28px rgba(252, 61, 33, 0.35); }
+    @keyframes floatAnimation {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-12px) rotate(4deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+    @keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(56, 189, 248, 0.25); }
+        50% { box-shadow: 0 0 35px rgba(244, 63, 94, 0.4); }
     }
     html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-        background-color: #030614 !important;
-        color: #f1f5f9 !important;
+        background-color: #02040a !important;
+        color: #f8fafc !important;
         font-family: 'Segoe UI', Tahoma, sans-serif;
     }
     .stApp {
         background-image:
-            radial-gradient(2px 2px at 30px 50px, #ffffff, rgba(0,0,0,0)),
-            radial-gradient(1.5px 1.5px at 150px 120px, #7dd3fc, rgba(0,0,0,0)),
-            radial-gradient(2px 2px at 300px 250px, #fde047, rgba(0,0,0,0)),
-            radial-gradient(circle at 20% 20%, rgba(14, 116, 144, 0.25) 0%, transparent 50%),
-            radial-gradient(circle at 80% 80%, rgba(225, 29, 72, 0.15) 0%, transparent 50%);
-        background-size: 600px 500px, 500px 450px, 700px 600px, 100% 100%, 100% 100%;
-        animation: starfieldDrift 110s linear infinite;
+            radial-gradient(2px 2px at 25px 45px, #ffffff, rgba(0,0,0,0)),
+            radial-gradient(1.8px 1.8px at 160px 130px, #38bdf8, rgba(0,0,0,0)),
+            radial-gradient(2.2px 2.2px at 320px 260px, #facc15, rgba(0,0,0,0)),
+            radial-gradient(circle at 15% 15%, rgba(14, 165, 233, 0.22) 0%, transparent 45%),
+            radial-gradient(circle at 85% 85%, rgba(244, 63, 94, 0.15) 0%, transparent 45%);
+        background-size: 550px 450px, 480px 520px, 650px 580px, 100% 100%, 100% 100%;
+        animation: starfieldDrift 90s linear infinite;
         background-attachment: fixed;
     }
     [data-testid="stSidebar"] {
-        background: linear-gradient(180deg, #050a18 0%, #08122c 100%) !important;
-        border-right: 1px solid rgba(0, 212, 255, 0.2) !important;
+        background: linear-gradient(180deg, #040817 0%, #07112d 100%) !important;
+        border-right: 1px solid rgba(56, 189, 248, 0.25) !important;
     }
     .stTextInput input, .stNumberInput input, .stSelectbox div[role="button"] {
-        background-color: #0b1533 !important;
+        background-color: #081128 !important;
         color: #ffffff !important;
         border: 1.5px solid #1e3a8a !important;
-        border-radius: 8px !important;
+        border-radius: 10px !important;
         font-weight: 600 !important;
     }
     .stButton > button, .stDownloadButton > button {
-        background: linear-gradient(135deg, #1d4ed8 100%, #2563eb 0%) !important;
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
         color: #ffffff !important;
-        border: 1.5px solid #06b6d4 !important;
-        border-radius: 8px !important;
+        border: 1.5px solid #38bdf8 !important;
+        border-radius: 10px !important;
         font-weight: 700 !important;
-        padding: 0.5rem 1rem !important;
-        box-shadow: 0 4px 12px rgba(6, 182, 212, 0.25) !important;
+        padding: 0.55rem 1.1rem !important;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.3) !important;
     }
     .stButton > button:hover {
-        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%) !important;
-        border-color: #fde047 !important;
+        background: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%) !important;
+        border-color: #facc15 !important;
     }
-    .ui-panel {
-        background: linear-gradient(145deg, rgba(11, 18, 38, 0.94), rgba(6, 11, 25, 0.96));
-        border: 1.5px solid rgba(6, 182, 212, 0.3);
-        border-radius: 12px;
-        padding: 16px 18px;
-        margin-bottom: 12px;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    .space-panel {
+        background: linear-gradient(145deg, rgba(10, 17, 38, 0.95), rgba(5, 10, 22, 0.98));
+        border: 1.5px solid rgba(56, 189, 248, 0.35);
+        border-radius: 14px;
+        padding: 18px 20px;
+        margin-bottom: 14px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7);
+        animation: pulseGlow 6s infinite ease-in-out;
     }
-    .ui-tag {
+    .space-tag {
         display: inline-block;
-        background: #ef4444;
+        background: #f43f5e;
         color: #ffffff;
         font-weight: 800;
-        font-size: 11px;
-        padding: 3px 12px;
+        font-size: 11.5px;
+        padding: 4px 14px;
         border-radius: 99px;
-        letter-spacing: 0.8px;
+        letter-spacing: 1px;
         margin-bottom: 8px;
+    }
+    .floating-celebration {
+        animation: floatAnimation 3s ease-in-out infinite;
+        display: inline-block;
+        font-size: 28px;
     }
     .badge-sim {
         display: inline-block;
-        background: rgba(250, 204, 21, 0.15);
-        border: 1px solid #fde047;
-        color: #fde047;
+        background: rgba(250, 204, 21, 0.18);
+        border: 1px solid #facc15;
+        color: #facc15;
         font-weight: 800;
-        font-size: 11px;
-        padding: 3px 10px;
+        font-size: 11.5px;
+        padding: 4px 12px;
         border-radius: 99px;
     }
     .badge-real {
         display: inline-block;
-        background: rgba(52, 211, 153, 0.15);
+        background: rgba(52, 211, 153, 0.18);
         border: 1px solid #34d399;
         color: #34d399;
         font-weight: 800;
-        font-size: 11px;
-        padding: 3px 10px;
+        font-size: 11.5px;
+        padding: 4px 12px;
         border-radius: 99px;
     }
     .resource-link {
         display: inline-block;
-        margin-top: 5px;
-        margin-right: 5px;
-        padding: 5px 10px;
-        background: rgba(14, 116, 144, 0.6);
-        border: 1px solid #06b6d4;
-        border-radius: 6px;
-        color: #67e8f9 !important;
+        margin-top: 6px;
+        margin-right: 6px;
+        padding: 6px 12px;
+        background: rgba(14, 116, 144, 0.65);
+        border: 1px solid #38bdf8;
+        border-radius: 8px;
+        color: #38bdf8 !important;
         text-decoration: none !important;
-        font-size: 12px;
+        font-size: 12.5px;
         font-weight: 700;
     }
     .resource-link:hover {
-        background: #ef4444;
+        background: #f43f5e;
         color: #ffffff !important;
-        border-color: #ffffff;
+        border-color: #facc15;
     }
     </style>
     """
@@ -166,7 +177,7 @@ def apply_custom_space_styling():
 
 ARCSEC_PER_PIXEL = 6.2
 
-# Preloaded astronomy sector datasets with multi-epoch parameters
+# Astronomy sector datasets prepared by Mahesh & Shikshita
 celestialSectors = {
     "Sector 1: Orion Outer Rim (Deep Infrared Survey)": {
         "seed": 104,
@@ -343,7 +354,7 @@ celestialSectors = {
     }
 }
 
-# Converts pixel coordinates to J2000 Right Ascension and Declination
+# Astrometric coordinate math
 def calculate_sky_coordinates(px, py, ra_center, dec_center):
     dx_arcsec = (150.0 - float(px)) * ARCSEC_PER_PIXEL
     dy_arcsec = (150.0 - float(py)) * ARCSEC_PER_PIXEL
@@ -365,7 +376,6 @@ def calculate_sky_coordinates(px, py, ra_center, dec_center):
     dec_str = f"{sign}{dd:02d}d {dm:02d}m {ds:04.1f}s ({dec_val:+.4f} deg)"
     return ra_val, dec_val, ra_str, dec_str
 
-# Draws a gaussian star profile onto a 2D numpy grid
 def draw_star_gaussian(grid, cx, cy, intensity, spread=2.1):
     h, w = grid.shape
     radius = int(max(6, spread * 4))
@@ -391,7 +401,6 @@ def generate_sky_grid_pair(sector_name, epoch_a_key, epoch_b_key, clean_enabled=
     grid_a = np.zeros((grid_size, grid_size), dtype=np.float32)
     grid_b = np.zeros((grid_size, grid_size), dtype=np.float32)
     
-    # Render background field stars
     star_x = rng_generator.uniform(8, grid_size - 8, 170)
     star_y = rng_generator.uniform(8, grid_size - 8, 170)
     star_flux = rng_generator.uniform(0.18, 0.85, 170)
@@ -400,7 +409,6 @@ def generate_sky_grid_pair(sector_name, epoch_a_key, epoch_b_key, clean_enabled=
         draw_star_gaussian(grid_a, sx, sy, sf, ss)
         draw_star_gaussian(grid_b, sx, sy, sf, ss)
         
-    # Render moving and variable objects
     for obj in sector["objects"]:
         xa = obj["x1"] + obj["dx"] * step_a
         ya = obj["y1"] + obj["dy"] * step_a
@@ -425,7 +433,6 @@ def generate_sky_grid_pair(sector_name, epoch_a_key, epoch_b_key, clean_enabled=
         grid_b = grid_b + noise_b * 0.30
     return np.clip(grid_a, 0.0, 1.35), np.clip(grid_b, 0.0, 1.35)
 
-# Exports numpy array into standard FITS file bytes for download
 def export_fits_file_bytes(array_data, observation_date):
     fits_cards = [
         f"{'SIMPLE':<8}= {'T':>20} / Standard FITS file",
@@ -444,7 +451,6 @@ def export_fits_file_bytes(array_data, observation_date):
     padding_bytes = (2880 - (len(raw_data) % 2880)) % 2880
     return header_bytes + raw_data + (b"\x00" * padding_bytes)
 
-# Renders grayscale array into a color-mapped PIL Image
 def colorize_sky_image(array_grid, palette="Deep Space Cyan", brightness=1.0, contrast=1.0, is_difference=False):
     if is_difference:
         diff_scaled = array_grid * contrast * 2.4
@@ -470,7 +476,6 @@ def colorize_sky_image(array_grid, palette="Deep Space Cyan", brightness=1.0, co
         b = np.clip(28 + (val ** 0.70) * 255, 0, 255).astype(np.uint8)
     return Image.fromarray(np.stack([r, g, b], axis=-1), mode="RGB")
 
-# Creates an acoustic WAV sound clip for Doppler frequency feedback
 def generate_doppler_audio(freq_hz, flux_value, is_planet_x):
     sample_rate = 22050
     duration_secs = 2.0
@@ -496,7 +501,6 @@ def generate_doppler_audio(freq_hz, flux_value, is_planet_x):
         wav_file.writeframes(bytes(pcm_bytes))
     return buffer_io.getvalue()
 
-# Analyzes user selection on the canvas for candidate verification
 def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_a, grid_b, custom_mode=False):
     sector = celestialSectors[sector_name]
     _, _, ra_str, dec_str = calculate_sky_coordinates(cx, cy, sector["ra_center"], sector["dec_center"])
@@ -599,7 +603,7 @@ def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_
         "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy (Steady) | Mag: {ab_magnitude} AB | SNR: {snr} sigma",
         "peak_flux": round(max_peak, 3),
         "freq": 240,
-        "note": "The pixels inside your selected area stayed in the same place and brightness. Blink the images manually or pause to spot a moving dot!"
+        "note": "Better luck next time! The pixels inside your selected area stayed in the same place. Keep scanning to spot a moving planetoid!"
     }
 
 def image_to_base64_string(pil_image):
@@ -607,7 +611,7 @@ def image_to_base64_string(pil_image):
     pil_image.save(stream, format="PNG")
     return base64.b64encode(stream.getvalue()).decode("utf-8")
 
-# Embeds HTML5 canvas for zero-lag interactive sky blinking and manual shape drawing
+# HTML5 Canvas with auto-sync communication back to Streamlit session state
 def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blink_ms, mx, my, mr, ra_center, dec_center, label_a, label_b, active_frame):
     return f"""
     <!DOCTYPE html>
@@ -617,25 +621,25 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         body {{
             margin: 0;
             padding: 6px;
-            background: #030712;
-            color: #f1f5f9;
+            background: #02040a;
+            color: #f8fafc;
             font-family: 'Segoe UI', Arial, sans-serif;
             text-align: center;
         }}
         .observatory-box {{
             display: inline-block;
-            background: #040814;
-            border: 2px solid #06b6d4;
-            border-radius: 12px;
+            background: #040816;
+            border: 2px solid #38bdf8;
+            border-radius: 14px;
             padding: 10px;
-            box-shadow: 0 0 24px rgba(6, 182, 212, 0.25);
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
         }}
         canvas {{
             border-radius: 8px;
             cursor: crosshair;
             display: block;
             margin: 0 auto;
-            background: #040814;
+            background: #040816;
         }}
         .toolbar-row {{
             display: flex;
@@ -645,9 +649,9 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             margin-top: 8px;
         }}
         .tool-btn {{
-            background: linear-gradient(135deg, #1d4ed8, #2563eb);
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
             color: #ffffff;
-            border: 1px solid #06b6d4;
+            border: 1px solid #38bdf8;
             border-radius: 6px;
             padding: 5px 12px;
             font-size: 12px;
@@ -655,8 +659,8 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             cursor: pointer;
         }}
         .tool-btn:hover {{
-            background: #ef4444;
-            border-color: #fde047;
+            background: #f43f5e;
+            border-color: #facc15;
         }}
         .status-row {{
             display: flex;
@@ -666,32 +670,32 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             gap: 6px;
             margin-top: 7px;
             padding: 6px 10px;
-            background: #0b1533;
-            border: 1px solid rgba(6, 182, 212, 0.3);
+            background: #081128;
+            border: 1px solid rgba(56, 189, 248, 0.35);
             border-radius: 6px;
             font-size: 12px;
             font-weight: 700;
         }}
-        .tag-yellow {{ color: #fde047; background: rgba(239, 68, 68, 0.2); border: 1px solid #ef4444; padding: 2px 8px; border-radius: 99px; }}
+        .tag-yellow {{ color: #facc15; background: rgba(244, 63, 94, 0.2); border: 1px solid #f43f5e; padding: 2px 8px; border-radius: 99px; }}
         .tag-green {{ color: #34d399; background: rgba(52, 211, 153, 0.15); border: 1px solid #34d399; padding: 2px 8px; border-radius: 99px; }}
-        .tag-cyan {{ color: #67e8f9; background: rgba(29, 78, 216, 0.4); border: 1px solid #06b6d4; padding: 2px 8px; border-radius: 99px; }}
+        .tag-cyan {{ color: #38bdf8; background: rgba(37, 99, 235, 0.35); border: 1px solid #38bdf8; padding: 2px 8px; border-radius: 99px; }}
     </style>
     </head>
     <body>
         <div class="observatory-box" title="Click and drag on the sky image to manually select any area!">
             <canvas id="skyCanvas" width="460" height="460"></canvas>
             <div class="toolbar-row">
-                <button class="tool-btn" id="btnManualFlip" title="Flip between Image A and Image B manually">⚡ Blink Manually (Flip A ↔ B)</button>
-                <button class="tool-btn" id="btnPauseResume" title="Pause or resume blinking">⏸️ Pause / ▶️ Resume Blink</button>
-                <button class="tool-btn" id="btnShowSub" title="Toggle Subtraction View">🌗 Toggle Subtraction View</button>
+                <button class="tool-btn" id="btnManualFlip">⚡ Blink Manually (Flip A ↔ B)</button>
+                <button class="tool-btn" id="btnPauseResume">⏸️ Pause / ▶️ Resume</button>
+                <button class="tool-btn" id="btnShowSub">🌗 Subtraction Map</button>
             </div>
             <div class="status-row">
-                <span id="frameInfo" class="tag-cyan">Loading Sky Image...</span>
-                <span id="pixelInfo" class="tag-yellow">Selected Area: X={mx}, Y={my} (Size={mr}px)</span>
+                <span id="frameInfo" class="tag-cyan">Loading Sky...</span>
+                <span id="pixelInfo" class="tag-yellow">Area: X={mx}, Y={my} (Size={mr}px)</span>
             </div>
             <div class="status-row" style="margin-top:5px;">
-                <span id="radecInfo" class="tag-green">J2000 Sky Coords: RA / Dec</span>
-                <span style="color:#93c5fd; font-size:11px;">Drag mouse on image to move & resize selection</span>
+                <span id="radecInfo" class="tag-green">J2000 RA / Dec</span>
+                <span style="color:#93c5fd; font-size:11px;">Drag mouse on image to draw & auto-fill values</span>
             </div>
         </div>
         <script>
@@ -727,33 +731,44 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             const cosD = Math.max(0.1, Math.abs(Math.cos(decCenter * Math.PI / 180.0)));
             const ra = ((raCenter + (dxArc / 3600.0) / cosD) % 360.0 + 360.0) % 360.0;
             const dec = Math.max(-89.99, Math.min(89.99, decCenter + (dyArc / 3600.0)));
-            return `RA: ${{ra.toFixed(4)}} deg | Dec: ${{dec >= 0 ? '+' : ''}}${{dec.toFixed(4)}} deg (J2000)`;
+            return `RA: ${{ra.toFixed(4)}} deg | Dec: ${{dec >= 0 ? '+' : ''}}${{dec.toFixed(4)}} deg`;
+        }}
+        function updateParentInputs(x, y, r) {{
+            try {{
+                const doc = window.parent.document;
+                const inputs = doc.querySelectorAll('input[type="number"]');
+                if (inputs.length >= 3) {{
+                    inputs[0].value = x; inputs[0].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    inputs[1].value = y; inputs[1].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    inputs[2].value = r; inputs[2].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }} catch(err) {{}}
         }}
         function refreshLabels() {{
-            pixelInfo.textContent = `Selected Area: X=${{selectedX}}, Y=${{selectedY}} | Size=${{selectedRadius}}px`;
+            pixelInfo.textContent = `Area: X=${{selectedX}}, Y=${{selectedY}} | Size=${{selectedRadius}}px`;
             radecInfo.textContent = computeRaDec(selectedX, selectedY);
         }}
         function redrawCanvas() {{
             ctx.clearRect(0, 0, 460, 460);
             if (currentMode === "Subtraction Map (Image B - Image A)") {{
                 ctx.drawImage(imgSub, 0, 0, 460, 460);
-                frameInfo.textContent = "Subtraction Map: Cyan = Image A | Gold = Image B";
+                frameInfo.textContent = "Subtraction Map Active";
             }} else if (currentMode === "Pause on Image A") {{
                 ctx.drawImage(imgA, 0, 0, 460, 460);
-                frameInfo.textContent = "Paused Image A: " + labelA;
+                frameInfo.textContent = "Paused A: " + labelA;
             }} else if (currentMode === "Pause on Image B") {{
                 ctx.drawImage(imgB, 0, 0, 460, 460);
-                frameInfo.textContent = "Paused Image B: " + labelB;
+                frameInfo.textContent = "Paused B: " + labelB;
             }} else {{
                 if (currentFrame === 1) {{
                     ctx.drawImage(imgA, 0, 0, 460, 460);
-                    frameInfo.textContent = (pausedState ? "Manual/Paused A: " : "Blinking A: ") + labelA;
+                    frameInfo.textContent = (pausedState ? "Paused A: " : "Blinking A: ") + labelA;
                 }} else {{
                     ctx.drawImage(imgB, 0, 0, 460, 460);
-                    frameInfo.textContent = (pausedState ? "Manual/Paused B: " : "Blinking B: ") + labelB;
+                    frameInfo.textContent = (pausedState ? "Paused B: " : "Blinking B: ") + labelB;
                 }}
             }}
-            ctx.strokeStyle = "rgba(6, 182, 212, 0.12)";
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.12)";
             ctx.lineWidth = 1;
             for (let g = 57; g < 460; g += 57) {{
                 ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, 460); ctx.stroke();
@@ -762,7 +777,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             const cx = selectedX * canvasScale;
             const cy = selectedY * canvasScale;
             const cr = selectedRadius * canvasScale;
-            ctx.strokeStyle = "#fde047";
+            ctx.strokeStyle = "#facc15";
             ctx.lineWidth = 2.5;
             ctx.beginPath();
             if (currentShape === "Draw Circle") {{
@@ -773,7 +788,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
                 ctx.rect(cx - cr * 1.35, cy - cr * 0.85, cr * 2.7, cr * 1.7);
             }}
             ctx.stroke();
-            ctx.strokeStyle = "#ef4444";
+            ctx.strokeStyle = "#f43f5e";
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
@@ -782,30 +797,15 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         }}
         document.getElementById('btnManualFlip').addEventListener('click', () => {{
             pausedState = true;
-            if (currentMode.includes("Subtraction") || currentMode.includes("Pause")) {{
-                currentMode = "Manual Blink (Step-by-Step)";
-            }}
             currentFrame = (currentFrame === 1) ? 2 : 1;
             redrawCanvas();
         }});
         document.getElementById('btnPauseResume').addEventListener('click', () => {{
-            if (currentMode === "Subtraction Map (Image B - Image A)") {{
-                currentMode = "Auto Blink Images";
-                pausedState = false;
-            }} else {{
-                pausedState = !pausedState;
-                if (!pausedState) currentMode = "Auto Blink Images";
-            }}
+            pausedState = !pausedState;
             redrawCanvas();
         }});
         document.getElementById('btnShowSub').addEventListener('click', () => {{
-            if (currentMode === "Subtraction Map (Image B - Image A)") {{
-                currentMode = "Manual Blink (Step-by-Step)";
-                pausedState = true;
-            }} else {{
-                currentMode = "Subtraction Map (Image B - Image A)";
-                pausedState = true;
-            }}
+            currentMode = (currentMode === "Subtraction Map (Image B - Image A)") ? "Auto Blink Images" : "Subtraction Map (Image B - Image A)";
             redrawCanvas();
         }});
         canvas.addEventListener('mousedown', (e) => {{
@@ -826,7 +826,12 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
             refreshLabels();
             redrawCanvas();
         }});
-        window.addEventListener('mouseup', () => {{ isDragging = false; }});
+        window.addEventListener('mouseup', () => {{
+            if (isDragging) {{
+                isDragging = false;
+                updateParentInputs(selectedX, selectedY, selectedRadius);
+            }}
+        }});
         refreshLabels();
         imgA.onload = redrawCanvas;
         imgB.onload = redrawCanvas;
@@ -841,7 +846,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
     </html>
     """
 
-# Initialize Streamlit session state variables
+# Session state initialization
 if "page_step" not in st.session_state:
     st.session_state.page_step = "welcome"
 if "explorerName" not in st.session_state:
@@ -871,14 +876,22 @@ def show_welcome_screen():
     col1, col2, col3 = st.columns([1.1, 2.2, 1.1])
     with col2:
         render_html_snippet(f"""
-        <div class="ui-panel" style="text-align:center; padding:32px 26px; animation: cardGlow 4s infinite;">
-            <img src="{logo_uri}" alt="NASA Logo" style="width:110px; height:auto; margin-bottom:12px; filter: drop-shadow(0 4px 12px rgba(6,182,212,0.4));"/>
-            <div>
-                <span class="ui-tag">NASA SPACE APPS CHALLENGE 2026 • TEAM EXOMAPPER</span>
+        <div class="space-panel" style="text-align:center; padding:32px 26px;">
+            <div style="margin-bottom:12px;">
+                <span class="floating-celebration">🪐</span>
+                <span class="floating-celebration" style="animation-delay: 0.5s;">🚀</span>
+                <span class="floating-celebration" style="animation-delay: 1s;">✨</span>
             </div>
-            <h1 style="margin:8px 0 4px 0; font-size:30px; font-weight:900; color:#ffffff;">
-                Welcome to ExoMapper: The Hunt for Planet X
+            <img src="{logo_uri}" alt="NASA Logo" style="width:110px; height:auto; margin-bottom:12px; filter: drop-shadow(0 4px 14px rgba(56,189,248,0.5));"/>
+            <div>
+                <span class="space-tag">NASA SPACE APPS CHALLENGE 2026 • TEAM EXOMAPPER</span>
+            </div>
+            <h1 style="margin:8px 0 4px 0; font-size:32px; font-weight:900; color:#ffffff;">
+                ExoMapper: The Hunt for Planet X
             </h1>
+            <p style="font-size:14px; color:#94a3b8; margin-top:6px;">
+                Interactive SPHEREx Astrometric Observatory by Shikshita, Ayan &amp; Mahesh
+            </p>
         </div>
         """)
         username_input = st.text_input(
@@ -904,12 +917,12 @@ def show_manual_screen():
     col_a, col_b, col_c = st.columns([3.4, 1.3, 1.0])
     with col_a:
         render_html_snippet(f"""
-        <div class="ui-panel" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
+        <div class="space-panel" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
             <img src="{logo_uri}" alt="NASA Logo" style="width:70px; height:auto;"/>
             <div>
-                <span class="ui-tag" style="margin-bottom:4px;">MISSION BRIEFING & SUBMISSION COMPLIANCE CHECKLIST</span>
+                <span class="space-tag" style="margin-bottom:4px;">MISSION BRIEFING & ASTROMETRIC MANUAL</span>
                 <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:22px; font-weight:900;">
-                    Commander {st.session_state.explorerName} 🪐 Anti-Disqualification Guide
+                    Commander {st.session_state.explorerName} 🪐 Ready for Deep Space Survey
                 </h2>
             </div>
         </div>
@@ -925,25 +938,9 @@ def show_manual_screen():
             st.session_state.page_step = "welcome"
             st.rerun()
 
-    # Official NASA Space Apps Submission Compliance & Anti-Disqualification Banner
     render_html_snippet("""
-    <div class="ui-panel" style="border: 2px solid #ef4444; background: linear-gradient(145deg, rgba(30, 10, 15, 0.95), rgba(10, 5, 8, 0.98));">
-        <div style="color:#f87171; font-weight:900; font-size:18px; margin-bottom:8px;">⚠️ CRITICAL: How to Avoid Disqualification & Win Global Awards</div>
-        <p style="font-size:13.5px; color:#cbd5e1; margin:0 0 10px 0; line-height:1.5;">
-            To ensure Team ExoMapper (Shikshita, Ayan, Mahesh) advances to Global Judging and competes for the 10 Global Awards (Best Use of Science, Data, Technology), adhere strictly to these official NASA rules:
-        </p>
-        <ul style="font-size:13px; color:#cbd5e1; line-height:1.6; margin:0 0 12px 20px; padding:0;">
-            <li><b>Deadline:</b> Submit your project on your team page before Sunday, November 15 at 11:59 p.m. local time.</li>
-            <li><b>Team Members:</b> All teammates must be registered for the exact same Local Event and appear on the Members tab.</li>
-            <li><b>Demo Requirement:</b> Include either a 7-slide presentation or a 30-second video demo (with English subtitles if speaking another language).</li>
-            <li><b>Original Work & References:</b> Check the confirmation box confirming original work and listing all external data sources (SPHEREx, WISE, Astropy) in the references.</li>
-        </ul>
-    </div>
-    """)
-
-    render_html_snippet("""
-    <div class="ui-panel" style="border: 2px solid #fde047; background: linear-gradient(145deg, rgba(15, 28, 65, 0.95), rgba(5, 10, 25, 0.98));">
-        <div style="color:#fde047; font-weight:900; font-size:18px; margin-bottom:8px;">🏆 Scoring & Marks Mechanics in ExoMapper</div>
+    <div class="space-panel" style="border: 2px solid #facc15; background: linear-gradient(145deg, rgba(15, 28, 65, 0.95), rgba(5, 10, 25, 0.98));">
+        <div style="color:#facc15; font-weight:900; font-size:18px; margin-bottom:8px;">🏆 Scoring & Marks Mechanics in ExoMapper</div>
         <p style="font-size:13.5px; color:#cbd5e1; margin:0 0 12px 0; line-height:1.5;">
             Our interactive discovery engine uses a rigorous scoring algorithm to reward valid scientific findings and penalize false alarms:
         </p>
@@ -952,12 +949,12 @@ def show_manual_screen():
                 <div style="color:#34d399; font-weight:800; font-size:13.5px;">➕ Positive Discovery (Addition)</div>
                 <div style="font-size:11.5px; color:#94a3b8;"><b>+120 to +150 pts:</b> Awarded for correctly locating unconfirmed Planet X candidates, trans-Neptunian objects, or brown dwarfs using multi-epoch blinking.</div>
             </div>
-            <div style="background:rgba(239,68,68,0.1); border:1px solid #ef4444; border-radius:8px; padding:10px;">
+            <div style="background:rgba(244,63,94,0.1); border:1px solid #f43f5e; border-radius:8px; padding:10px;">
                 <div style="color:#f87171; font-weight:800; font-size:13.5px;">➖ False Alarm (Subtraction)</div>
                 <div style="font-size:11.5px; color:#94a3b8;"><b>-20 pts:</b> Deducted when selecting stationary background stars or sensor noise, encouraging careful astrometric validation.</div>
             </div>
-            <div style="background:rgba(6,182,212,0.1); border:1px solid #06b6d4; border-radius:8px; padding:10px;">
-                <div style="color:#67e8f9; font-weight:800; font-size:13.5px;">⚡ Event Scrubber (Bonus)</div>
+            <div style="background:rgba(56,189,248,0.1); border:1px solid #38bdf8; border-radius:8px; padding:10px;">
+                <div style="color:#38bdf8; font-weight:800; font-size:13.5px;">⚡ Event Scrubber (Bonus)</div>
                 <div style="font-size:11.5px; color:#94a3b8;"><b>+50 pts:</b> Awarded for engaging the bitmask tile filter during simulated solar proton storms.</div>
             </div>
         </div>
@@ -967,8 +964,8 @@ def show_manual_screen():
     c1, c2, c3 = st.columns(3)
     with c1:
         render_html_snippet("""
-        <div class="ui-panel">
-            <div style="color:#fde047; font-weight:800; font-size:15px; margin-bottom:6px;">🪐 About Planet X</div>
+        <div class="space-panel">
+            <div style="color:#facc15; font-weight:800; font-size:15px; margin-bottom:6px;">🪐 About Planet X</div>
             <p style="font-size:13px; line-height:1.5; color:#cbd5e1; margin:0;">
                 Distant trans-Neptunian objects orbit hundreds of astronomical units from the Sun. By comparing sky passes taken months apart, hidden worlds reveal themselves through subtle proper motion.
             </p>
@@ -977,8 +974,8 @@ def show_manual_screen():
         """)
     with c2:
         render_html_snippet("""
-        <div class="ui-panel">
-            <div style="color:#67e8f9; font-weight:800; font-size:15px; margin-bottom:6px;">🛰️ About SPHEREx</div>
+        <div class="space-panel">
+            <div style="color:#38bdf8; font-weight:800; font-size:15px; margin-bottom:6px;">🛰️ About SPHEREx</div>
             <p style="font-size:13px; line-height:1.5; color:#cbd5e1; margin:0;">
                 NASA's SPHEREx mission surveys the entire sky in 102 near-infrared bands. ExoMapper allows you to blink passes and analyze multi-band spectra instantly.
             </p>
@@ -987,7 +984,7 @@ def show_manual_screen():
         """)
     with c3:
         render_html_snippet("""
-        <div class="ui-panel">
+        <div class="space-panel">
             <div style="color:#f87171; font-weight:800; font-size:15px; margin-bottom:6px;">🚀 Open NASA Data</div>
             <p style="font-size:13px; line-height:1.5; color:#cbd5e1; margin:0;">
                 All observations in this workbench utilize open NASA FITS data structures, enabling citizen scientists worldwide to contribute to real astrophysical discoveries.
@@ -997,7 +994,7 @@ def show_manual_screen():
         """)
 
     render_html_snippet("""
-    <div class="ui-panel">
+    <div class="space-panel">
         <div style="color:#34d399; font-weight:800; font-size:16px; margin-bottom:6px;">📂 Direct NASA FITS & Infrared Archive Links (Actual Resources)</div>
         <p style="font-size:13px; color:#cbd5e1; margin:0 0 8px 0;">
             Download calibrated FITS files or query the NASA/IPAC Infrared Science Archive directly for your project submission references:
@@ -1021,19 +1018,19 @@ def show_game_screen():
     h1, h2, h3 = st.columns([3.6, 1.1, 1.0])
     with h1:
         render_html_snippet(f"""
-        <div class="ui-panel" style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 20px;">
+        <div class="space-panel" style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 20px;">
             <div style="display:flex; align-items:center; gap:14px;">
                 <img src="{logo_uri}" alt="NASA Logo" style="width:60px; height:auto;"/>
                 <div>
-                    <span class="ui-tag" style="margin-bottom:2px;">EXOMAPPER WORKBENCH • ACTIVE MISSION</span>
+                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER WORKBENCH • ACTIVE MISSION</span>
                     <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:21px; font-weight:900;">
                         Explorer: {st.session_state.explorerName} 🪐 Planet X Survey
                     </h2>
                 </div>
             </div>
-            <div style="text-align:right; background:#0b1533; border:1.5px solid #06b6d4; border-radius:10px; padding:6px 14px;">
+            <div style="text-align:right; background:#081128; border:1.5px solid #38bdf8; border-radius:10px; padding:6px 14px;">
                 <div style="font-size:11px; color:#93c5fd; font-weight:700;">TOTAL SCORE</div>
-                <div style="font-size:20px; color:#fde047; font-weight:900;">{st.session_state.total_score} pts</div>
+                <div style="font-size:20px; color:#facc15; font-weight:900;">{st.session_state.total_score} pts</div>
             </div>
         </div>
         """)
@@ -1050,8 +1047,8 @@ def show_game_screen():
 
     with st.sidebar:
         render_html_snippet("""
-        <div class="ui-panel" style="padding:12px 14px;">
-            <div style="color:#06b6d4; font-weight:800; font-size:15px;">🔭 Observatory Settings</div>
+        <div class="space-panel" style="padding:12px 14px;">
+            <div style="color:#38bdf8; font-weight:800; font-size:15px;">🔭 Observatory Settings</div>
             <div style="font-size:12px; color:#94a3b8;">Adjust color palettes, brightness, and contrast.</div>
         </div>
         """)
@@ -1061,8 +1058,8 @@ def show_game_screen():
         blink_ms = st.slider("Blink Speed (ms)", 250, 1200, 550, 50)
         clean_flag = st.checkbox("✨ Apply Dark & Bias Clean", value=False)
         render_html_snippet("""
-        <div class="ui-panel" style="padding:12px 14px; margin-top:10px;">
-            <div style="color:#fde047; font-weight:800; font-size:13.5px;">🏆 Global Award Contender</div>
+        <div class="space-panel" style="padding:12px 14px; margin-top:10px;">
+            <div style="color:#facc15; font-weight:800; font-size:13.5px;">🏆 Global Award Contender</div>
             <div style="font-size:11.5px; color:#94a3b8;">Optimized for Science, Data & Technology.</div>
         </div>
         """)
@@ -1166,7 +1163,7 @@ def show_game_screen():
         else '<span class="badge-sim">🧪 SIMULATED SPHEREx SURVEY DATA (6.2"/px)</span>'
     )
     render_html_snippet(f"""
-    <div class="ui-panel" style="padding:10px 16px;">
+    <div class="space-panel" style="padding:10px 16px;">
         <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
             <span style="font-weight:800; font-size:14px; color:#ffffff;">📍 Field Center: RA {center_ra_str} | Dec {center_dec_str} ({sector_info['constellation']})</span>
             {pill_html}
@@ -1215,15 +1212,14 @@ def show_game_screen():
 
     with col_right:
         render_html_snippet("""
-        <div class="ui-panel" style="padding:14px 16px;">
-            <div style="color:#fde047; font-weight:800; font-size:15px; margin-bottom:4px;">🎯 Automatic & Manual Area Selection</div>
+        <div class="space-panel" style="padding:14px 16px;">
+            <div style="color:#facc15; font-weight:800; font-size:15px; margin-bottom:4px;">🎯 Automatic & Manual Area Selection</div>
             <p style="font-size:12.5px; color:#cbd5e1; margin:0;">
-                <b>Manual Selection:</b> Click <b>⏸️ Pause</b> or <b>⚡ Blink Manually</b> below the sky view, drag your mouse on the sky to encircle a moving dot, and check its coordinates below!
+                <b>Auto-Fill Selection:</b> Click and drag your mouse directly on the sky image above to automatically calculate and fill in Pixel X, Pixel Y, and Radius (px) below!
             </p>
         </div>
         """)
 
-        # Automatic AI Auto-Scan feature button
         if st.button("✨ Run Automatic AI Auto-Scan (Detect Sector Anomalies)", use_container_width=True):
             objs = sector_info["objects"]
             if len(objs) > 0:
@@ -1305,18 +1301,37 @@ def show_game_screen():
 
         if st.session_state.last_result is not None:
             res = st.session_state.last_result
-            badge_color = "#34d399" if res["points"] > 0 else "#ef4444"
-            score_tag = f"+{res['points']} pts" if res["points"] > 0 else f"{res['points']} pts"
+            is_success = res["points"] > 0
+            badge_color = "#34d399" if is_success else "#f43f5e"
+            score_tag = f"+{res['points']} pts" if is_success else f"{res['points']} pts"
+            
+            # Floating celebration effect for successful anomaly finds
+            if is_success:
+                render_html_snippet("""
+                <div style="text-align:center; padding: 4px 0;">
+                    <span class="floating-celebration">🪐</span>
+                    <span class="floating-celebration" style="animation-delay: 0.3s;">🚀</span>
+                    <span class="floating-celebration" style="animation-delay: 0.6s;">🌟</span>
+                    <span style="color:#34d399; font-weight:800; font-size:14px; margin-left:8px;">SUCCESS! Anomaly Discovered!</span>
+                </div>
+                """)
+            else:
+                render_html_snippet("""
+                <div style="text-align:center; padding: 4px 0; color:#f43f5e; font-weight:700; font-size:13px;">
+                    💫 Better luck next time! Keep scanning the star fields. (-20 pts)
+                </div>
+                """)
+
             render_html_snippet(f"""
-            <div class="ui-panel" style="border-color:{badge_color}; padding:14px 16px;">
+            <div class="space-panel" style="border-color:{badge_color}; padding:14px 16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
                     <span style="font-weight:900; font-size:15px; color:{badge_color};">{res['title']}</span>
-                    <span class="ui-tag" style="background:{badge_color}; color:#030712; margin-bottom:0;">{score_tag}</span>
+                    <span class="space-tag" style="background:{badge_color}; color:#02040a; margin-bottom:0;">{score_tag}</span>
                 </div>
-                <div style="margin-top:6px; padding:4px 10px; background:rgba(253, 224, 71, 0.12); border-left:3px solid #fde047; font-size:11.5px; color:#fde047; font-weight:700;">
+                <div style="margin-top:6px; padding:4px 10px; background:rgba(250, 204, 21, 0.12); border-left:3px solid #facc15; font-size:11.5px; color:#facc15; font-weight:700;">
                     📋 Status: {res['status']}
                 </div>
-                <p style="font-size:12.5px; color:#e2e8f0; margin:8px 0;">{res['note']}</p>
+                <p style="font-size:12.5px; color:#f8fafc; margin:8px 0;">{res['note']}</p>
                 <div style="font-size:12px; color:#93c5fd; line-height:1.5;">
                     • <b>Sky Coords:</b> RA {res['ra_str']} | Dec {res['dec_str']}<br/>
                     • <b>Epochs:</b> {res['date_a']} -> {res['date_b']}<br/>
@@ -1335,13 +1350,13 @@ def show_game_screen():
 
     st.write("")
     render_html_snippet("""
-    <div class="ui-panel" style="padding:14px 18px;">
-        <div style="color:#fde047; font-weight:900; font-size:17px;">🏆 Live Explorer Scoreboard & Discovery Log</div>
+    <div class="space-panel" style="padding:14px 18px;">
+        <div style="color:#facc15; font-weight:900; font-size:17px;">🏆 Live Explorer Scoreboard & Discovery Log</div>
         <div style="font-size:12.5px; color:#94a3b8;">Tracks your verified discoveries and false alarms in real time.</div>
     </div>
     """)
     if len(st.session_state.score_table) == 0:
-        st.info("🌌 No scans recorded yet! Select a region on the sky view above and click 'Analyze Selected Area' to add your first discovery.")
+        st.info("🌌 No scans recorded yet! Drag on the sky view above or click 'Analyze Selected Area' to add your first discovery.")
     else:
         score_df = pd.DataFrame(st.session_state.score_table)
         st.dataframe(score_df, use_container_width=True, hide_index=True)
