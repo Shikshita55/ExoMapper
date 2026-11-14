@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER ELITE: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
 # NASA Space Apps Challenge 2026 — Advanced Category & Global Award Contender
-# Crafted with passion by Team ExoMapper 
+# Coded by Shikshita, Ayan & Mahesh (Team ExoMapper)
 # ==============================================================================
 
 import base64
@@ -22,12 +22,10 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# Clean HTML injector helper
 def render_html_snippet(html_text):
     clean_line = " ".join(line.strip() for line in html_text.splitlines() if line.strip())
     st.markdown(clean_line, unsafe_allow_html=True)
 
-# Official NASA meatball logo as SVG data URI
 def get_nasa_logo_svg():
     svg_data = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="110" height="92">'
@@ -51,7 +49,6 @@ def get_nasa_logo_svg():
     encoded_svg = base64.b64encode(svg_data.encode("utf-8")).decode("utf-8")
     return "data:image/svg+xml;base64," + encoded_svg
 
-# Eye-catching cinematic deep space styling with high contrast crystal-white text for global judges
 def apply_custom_space_styling():
     stylesheet = """
     <style>
@@ -88,7 +85,6 @@ def apply_custom_space_styling():
         background: linear-gradient(180deg, #030712 0%, #06112e 100%) !important;
         border-right: 1px solid rgba(56, 189, 248, 0.35) !important;
     }
-    /* Ensure all text labels and descriptions are bright white/high-contrast */
     label, .stMarkdown p, .stRadio label, .stCheckbox label, span, p, div {
         color: #ffffff !important;
     }
@@ -186,7 +182,22 @@ def apply_custom_space_styling():
 
 ARCSEC_PER_PIXEL = 6.2
 
-# Preloaded astronomy sector datasets with multi-epoch parameters
+# Practice Mode Preloaded Examples
+practiceSkyScenarios = {
+    "Practice 1: Easy Moving Object (Planet X Candidate)": {
+        "desc": "A clear moving trans-Neptunian object shifting diagonally across epochs.",
+        "x": 110, "y": 120, "dx": 18, "dy": -12, "expected": "PASS"
+    },
+    "Practice 2: Noise / Hot Pixel to Reject": {
+        "desc": "A static bright pixel that does not move across epochs (false alarm).",
+        "x": 200, "y": 150, "dx": 0, "dy": 0, "expected": "FAIL"
+    },
+    "Practice 3: Faint Brown Dwarf Candidate": {
+        "desc": "A cool Y-dwarf candidate showing proper motion in Band 4 infrared.",
+        "x": 75, "y": 210, "dx": -12, "dy": 8, "expected": "PASS"
+    }
+}
+
 celestialSectors = {
     "Sector 1: Orion Outer Rim (Deep Infrared Survey)": {
         "seed": 104,
@@ -225,158 +236,18 @@ celestialSectors = {
                 "wavelength": "4.50 um Thermal Glow",
                 "freq": 420,
                 "note": "Small proper-motion shift at steady ~9.7 mJy brightness. Matches a nearby cool brown dwarf."
-            },
-            {
-                "name": "Distant Supernova Transient Candidate (SN-2026or)",
-                "kind": "Transient Candidate",
-                "status": "PHOTOMETRIC TRANSIENT CANDIDATE (Fixed Position, Bright Flash)",
-                "x1": 64, "y1": 228, "dx": 0, "dy": 0,
-                "flux_e1": 2.4, "flux_e2": 13.8, "amp": 0.93, "points": 85,
-                "distance": "~140 Million Light-Years",
-                "temp": "~11,500 K",
-                "mass": "~1.4 Solar Masses",
-                "wavelength": "1.65 um Near-IR Peak",
-                "freq": 660,
-                "note": "Stayed at the exact same pixel (0.0 px shift) but brightened from 2.4 mJy to 13.8 mJy!"
-            }
-        ]
-    },
-    "Sector 2: Taurus Kuiper Belt Corridor": {
-        "seed": 209,
-        "ra_center": 68.9800,
-        "dec_center": 16.5092,
-        "constellation": "Taurus",
-        "band": "SPHEREx Band 3 (3.40 um Near-IR)",
-        "epochs": {
-            "Pass 1 (2026-02-20 02:30 UTC)": {"step": 0.0, "days": 0, "label": "2026-02-20 02:30 UTC"},
-            "Pass 2 (2026-08-25 09:15 UTC)": {"step": 1.0, "days": 186, "label": "2026-08-25 09:15 UTC"},
-            "Pass 3 (2027-02-24 14:10 UTC)": {"step": 2.0, "days": 369, "label": "2027-02-24 14:10 UTC"}
-        },
-        "objects": [
-            {
-                "name": "Unconfirmed Distant Kuiper Candidate (TNO-Tauri-7)",
-                "kind": "Planet X Candidate",
-                "status": "UNCONFIRMED CANDIDATE (Needs 3rd-Epoch Orbit Check)",
-                "x1": 188, "y1": 176, "dx": -15, "dy": -10,
-                "flux_e1": 13.5, "flux_e2": 13.7, "amp": 0.95, "points": 150,
-                "distance": "~540 AU (From Parallax Shift)",
-                "temp": "~52 K (-221 C)",
-                "mass": "~7.5 Earth Masses",
-                "wavelength": "3.40 um Infrared Band",
-                "freq": 560,
-                "note": "Clear shift across the star field with steady ~13.6 mJy brightness. Logged as an unconfirmed Planet X candidate!"
-            },
-            {
-                "name": "Variable M-Dwarf Flare Star Candidate (TV-Tauri-9)",
-                "kind": "Transient Candidate",
-                "status": "VARIABLE STAR CANDIDATE (Fixed Position, Flux Jump)",
-                "x1": 82, "y1": 90, "dx": 0, "dy": 0,
-                "flux_e1": 3.1, "flux_e2": 12.6, "amp": 0.89, "points": 70,
-                "distance": "~68 Light-Years",
-                "temp": "~3,100 K (Flare Event)",
-                "mass": "~0.35 Solar Masses",
-                "wavelength": "2.20 um Continuum",
-                "freq": 490,
-                "note": "Did not move in position, but flared brightly between the two dates."
-            }
-        ]
-    },
-    "Sector 3: Cygnus Ecliptic Deep Field": {
-        "seed": 317,
-        "ra_center": 305.5570,
-        "dec_center": 40.2567,
-        "constellation": "Cygnus",
-        "band": "SPHEREx Band 4 (4.10 um Thermal IR)",
-        "epochs": {
-            "Pass 1 (2026-04-02 07:50 UTC)": {"step": 0.0, "days": 0, "label": "2026-04-02 07:50 UTC"},
-            "Pass 2 (2026-10-06 16:20 UTC)": {"step": 1.0, "days": 187, "label": "2026-10-06 16:20 UTC"},
-            "Pass 3 (2027-04-09 19:05 UTC)": {"step": 2.0, "days": 372, "label": "2027-04-09 19:05 UTC"}
-        },
-        "objects": [
-            {
-                "name": "Unconfirmed Outer Solar System Candidate (TNO-Cyg-3)",
-                "kind": "Planet X Candidate",
-                "status": "UNCONFIRMED CANDIDATE (Needs 3rd-Epoch Orbit Check)",
-                "x1": 134, "y1": 84, "dx": 16, "dy": 8,
-                "flux_e1": 15.1, "flux_e2": 14.9, "amp": 0.98, "points": 150,
-                "distance": "~480 AU (From Parallax Shift)",
-                "temp": "~56 K (-217 C)",
-                "mass": "~8.1 Earth Masses",
-                "wavelength": "4.10 um Thermal IR Peak",
-                "freq": 585,
-                "note": "Shifted cleanly across epochs with constant ~15.0 mJy infrared brightness."
-            },
-            {
-                "name": "Free-Floating Methane Dwarf Candidate (CFBDS-Cyg-2)",
-                "kind": "Brown Dwarf Candidate",
-                "status": "PROPER-MOTION CANDIDATE (Needs Spectrum Check)",
-                "x1": 236, "y1": 212, "dx": -7, "dy": 7,
-                "flux_e1": 10.4, "flux_e2": 10.2, "amp": 0.84, "points": 80,
-                "distance": "~39 Light-Years",
-                "temp": "~680 K (T-Dwarf)",
-                "mass": "~13 Jupiter Masses",
-                "wavelength": "3.30 um Methane Band",
-                "freq": 445,
-                "note": "Moderate proper motion across the sky at steady ~10.3 mJy brightness."
-            }
-        ]
-    },
-    "Sector 4: Carina High-Density Star Field": {
-        "seed": 422,
-        "ra_center": 161.2650,
-        "dec_center": -59.6844,
-        "constellation": "Carina",
-        "band": "SPHEREx Band 4 (3.90 um Near-IR)",
-        "epochs": {
-            "Pass 1 (2026-01-19 01:05 UTC)": {"step": 0.0, "days": 0, "label": "2026-01-19 01:05 UTC"},
-            "Pass 2 (2026-07-24 13:40 UTC)": {"step": 1.0, "days": 186, "label": "2026-07-24 13:40 UTC"},
-            "Pass 3 (2027-01-25 06:15 UTC)": {"step": 2.0, "days": 371, "label": "2027-01-25 06:15 UTC"}
-        },
-        "objects": [
-            {
-                "name": "Unconfirmed Southern Ecliptic Candidate (TNO-Car-5)",
-                "kind": "Planet X Candidate",
-                "status": "UNCONFIRMED CANDIDATE (Needs 3rd-Epoch Orbit Check)",
-                "x1": 74, "y1": 164, "dx": 16, "dy": -10,
-                "flux_e1": 14.6, "flux_e2": 14.5, "amp": 0.97, "points": 150,
-                "distance": "~590 AU (From Parallax Shift)",
-                "temp": "~49 K (-224 C)",
-                "mass": "~6.8 Earth Masses",
-                "wavelength": "3.90 um SPHEREx Band 4",
-                "freq": 550,
-                "note": "Moved 18.9 pixels against stationary Carina background stars. Logged as an unconfirmed candidate!"
-            },
-            {
-                "name": "Pulsating Mira Giant Candidate (Carina-V12)",
-                "kind": "Transient Candidate",
-                "status": "VARIABLE STAR CANDIDATE (Fixed Position, Pulsating Brightness)",
-                "x1": 198, "y1": 118, "dx": 0, "dy": 0,
-                "flux_e1": 3.0, "flux_e2": 13.2, "amp": 0.91, "points": 70,
-                "distance": "~1,200 Light-Years",
-                "temp": "~2,600 K",
-                "mass": "~1.8 Solar Masses",
-                "wavelength": "2.40 um Water Band",
-                "freq": 470,
-                "note": "Zero position shift, but brightened strongly between observation dates."
             }
         ]
     }
 }
 
-# Pre-built downloadable archive database for searchable FITS & Infrared Archive lookup
 def get_preloaded_archive_dataframe():
     data = [
         {"Dataset_ID": "SPX-DR1-074", "Survey": "SPHEREx Level-2 All-Sky", "Target": "WISE 0855-0714", "RA_J2000": "08h 55m 10.8s", "Dec_J2000": "-07d 14m 42s", "Wavelength": "4.52 um", "Format": "FITS", "Status": "Calibrated & Ready"},
-        {"Dataset_ID": "SPX-DR1-089", "Survey": "SPHEREx Level-2 All-Sky", "Target": "Barnard's Star", "RA_J2000": "17h 57m 48.5s", "Dec_J2000": "+04d 41m 36s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"},
-        {"Dataset_ID": "WISE-PSD-220", "Survey": "WISE All-Sky Source Catalog", "Target": "Epsilon Indi Ba/Bb", "RA_J2000": "22h 04m 10.5s", "Dec_J2000": "-56d 46m 57s", "Wavelength": "4.60 um", "Format": "CSV/FITS", "Status": "Calibrated & Ready"},
-        {"Dataset_ID": "SPX-ORION-104", "Survey": "SPHEREx Deep Survey", "Target": "Orion Outer Rim (Sector 1)", "RA_J2000": "05h 35m 12.0s", "Dec_J2000": "-05d 23m 27s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"},
-        {"Dataset_ID": "SPX-TAURUS-209", "Survey": "SPHEREx Kuiper Corridor", "Target": "Taurus Corridor (Sector 2)", "RA_J2000": "04h 35m 55.0s", "Dec_J2000": "+16d 30m 33s", "Wavelength": "3.40 um", "Format": "FITS", "Status": "Calibrated & Ready"},
-        {"Dataset_ID": "SPX-CYGNUS-317", "Survey": "SPHEREx Ecliptic Deep Field", "Target": "Cygnus Field (Sector 3)", "RA_J2000": "20h 22m 13.0s", "Dec_J2000": "+40d 15m 24s", "Wavelength": "4.10 um", "Format": "FITS", "Status": "Calibrated & Ready"},
-        {"Dataset_ID": "SPX-CARINA-422", "Survey": "SPHEREx High-Density Field", "Target": "Carina Field (Sector 4)", "RA_J2000": "10h 45m 03.6s", "Dec_J2000": "-59d 41m 03s", "Wavelength": "3.90 um", "Format": "FITS", "Status": "Calibrated & Ready"}
+        {"Dataset_ID": "SPX-DR1-089", "Survey": "SPHEREx Level-2 All-Sky", "Target": "Barnard's Star", "RA_J2000": "17h 57m 48.5s", "Dec_J2000": "+04d 41m 36s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"}
     ]
     return pd.DataFrame(data)
 
-# Astrometric coordinate math
 def calculate_sky_coordinates(px, py, ra_center, dec_center):
     dx_arcsec = (150.0 - float(px)) * ARCSEC_PER_PIXEL
     dy_arcsec = (150.0 - float(py)) * ARCSEC_PER_PIXEL
@@ -455,24 +326,6 @@ def generate_sky_grid_pair(sector_name, epoch_a_key, epoch_b_key, clean_enabled=
         grid_b = grid_b + noise_b * 0.30
     return np.clip(grid_a, 0.0, 1.35), np.clip(grid_b, 0.0, 1.35)
 
-def export_fits_file_bytes(array_data, observation_date):
-    fits_cards = [
-        f"{'SIMPLE':<8}= {'T':>20} / Standard FITS file",
-        f"{'BITPIX':<8}= {-32:>20} / 32-bit float data",
-        f"{'NAXIS':<8}= {2:>20} / 2D sky grid",
-        f"{'NAXIS1':<8}= {300:>20} / Width in pixels",
-        f"{'NAXIS2':<8}= {300:>20} / Height in pixels",
-        f"{'DATE-OBS':<8}= '{observation_date:<18}' / Observation UTC",
-        f"{'TELESCOP':<8}= '{'NASA-SPHEREx-Sim':<18}' / Telescope model",
-        f"{'END':<80}"
-    ]
-    header_text = "".join(f"{c:<80}" for c in fits_cards)
-    remainder = (2880 - (len(header_text) % 2880)) % 2880
-    header_bytes = (header_text + (" " * remainder)).encode("ascii")
-    raw_data = np.asarray(array_data, dtype=">f4").tobytes()
-    padding_bytes = (2880 - (len(raw_data) % 2880)) % 2880
-    return header_bytes + raw_data + (b"\x00" * padding_bytes)
-
 def colorize_sky_image(array_grid, palette="Deep Space Cyan", brightness=1.0, contrast=1.0, is_difference=False):
     if is_difference:
         diff_scaled = array_grid * contrast * 2.4
@@ -523,7 +376,7 @@ def generate_doppler_audio(freq_hz, flux_value, is_planet_x):
         wav_file.writeframes(bytes(pcm_bytes))
     return buffer_io.getvalue()
 
-def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_a, grid_b, custom_mode=False):
+def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_a, grid_b):
     sector = celestialSectors[sector_name]
     _, _, ra_str, dec_str = calculate_sky_coordinates(cx, cy, sector["ra_center"], sector["dec_center"])
     ep_a = sector["epochs"][pass_a]
@@ -546,16 +399,15 @@ def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_
     
     matched_object = None
     min_distance = 999.0
-    if not custom_mode:
-        for obj in sector["objects"]:
-            xa = obj["x1"] + obj["dx"] * ep_a["step"]
-            ya = obj["y1"] + obj["dy"] * ep_a["step"]
-            xb = obj["x1"] + obj["dx"] * ep_b["step"]
-            yb = obj["y1"] + obj["dy"] * ep_b["step"]
-            dist = min(math.hypot(cx - xa, cy - ya), math.hypot(cx - xb, cy - yb))
-            if dist <= max(18.0, radius_px * 1.15) and dist < min_distance:
-                min_distance = dist
-                matched_object = (obj, xa, ya, xb, yb)
+    for obj in sector["objects"]:
+        xa = obj["x1"] + obj["dx"] * ep_a["step"]
+        ya = obj["y1"] + obj["dy"] * ep_a["step"]
+        xb = obj["x1"] + obj["dx"] * ep_b["step"]
+        yb = obj["y1"] + obj["dy"] * ep_b["step"]
+        dist = min(math.hypot(cx - xa, cy - ya), math.hypot(cx - xb, cy - yb))
+        if dist <= max(18.0, radius_px * 1.15) and dist < min_distance:
+            min_distance = dist
+            matched_object = (obj, xa, ya, xb, yb)
                 
     if matched_object is not None:
         obj, xa, ya, xb, yb = matched_object
@@ -583,29 +435,9 @@ def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_
             "flux_text": f"Image A: {f1} mJy -> Image B: {f2} mJy ({pct_change:+.1f}%) | Mag: {ab_magnitude} AB | SNR: {max(snr, 14.0)} sigma",
             "peak_flux": round(max_peak, 3),
             "freq": obj["freq"],
-            "note": obj["note"]
-        }
-    if custom_mode and snr >= 5.0:
-        pct_change = round(((mjy_b - mjy_a) / max(0.1, mjy_a)) * 100.0, 1)
-        return {
-            "found_flag": "YES (Custom File Candidate)",
-            "title": "Unconfirmed Moving / Variable Candidate (Uploaded Data)",
-            "kind": "Planet X Candidate",
-            "status": "UNCONFIRMED CANDIDATE (Needs Follow-Up Observation)",
-            "points": 120,
-            "ra_str": ra_str,
-            "dec_str": dec_str,
-            "date_a": "Custom File Epoch 1",
-            "date_b": "Custom File Epoch 2",
-            "distance": "Requires 3rd-Epoch Parallax Fit",
-            "temp": "Pending Multi-Band IR Check",
-            "mass": "Pending Thermal Model",
-            "wavelength": "Uploaded Survey Band",
-            "shift_text": f"Detected {snr} sigma change inside selected area",
-            "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy ({pct_change:+.1f}%) | Mag: {ab_magnitude} AB | SNR: {snr} sigma",
-            "peak_flux": round(max_peak, 3),
-            "freq": 520,
-            "note": f"Your selected region shows a strong ({snr} sigma) change between Image A and Image B! Logged as an unconfirmed candidate."
+            "note": obj["note"],
+            "snr_val": max(snr, 14.0),
+            "arcsec_val": arcsec_shift
         }
     return {
         "found_flag": "NO (Fixed Star or Noise)",
@@ -621,11 +453,13 @@ def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_
         "temp": "~4,800 K (Normal Star)",
         "mass": "~1.0 Solar Mass",
         "wavelength": sector["band"],
-        "shift_text": "0.0 px (0.0 arcsec shift - Did not move)",
-        "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy (Steady) | Mag: {ab_magnitude} AB | SNR: {snr} sigma",
+        "shift_text": "0.0 px (0.0 arcsec shift)",
+        "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy (Steady) | SNR: {snr} sigma",
         "peak_flux": round(max_peak, 3),
         "freq": 240,
-        "note": "Better luck next time! The pixels inside your selected area stayed in the same place. Keep scanning to spot a moving planetoid!"
+        "note": "Better luck next time! The pixels inside your selected area stayed in the same place. Keep scanning!",
+        "snr_val": snr,
+        "arcsec_val": 0.0
     }
 
 def image_to_base64_string(pil_image):
@@ -633,7 +467,6 @@ def image_to_base64_string(pil_image):
     pil_image.save(stream, format="PNG")
     return base64.b64encode(stream.getvalue()).decode("utf-8")
 
-# HTML5 Canvas with auto-sync communication back to Streamlit session state
 def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blink_ms, mx, my, mr, ra_center, dec_center, label_a, label_b, active_frame):
     return f"""
     <!DOCTYPE html>
@@ -925,10 +758,10 @@ def show_welcome_screen():
                 st.session_state.explorerName = cleaned_name
                 st.session_state.total_score = st.session_state.saved_scores.get(cleaned_name, 0)
                 st.session_state.last_result = None
-                st.session_state.page_step = "manual"
+                st.session_state.page_step = "game"  # Make Blink/Hub the Main Screen immediately per team suggestion!
                 st.rerun()
 
-# Page 2: Mission Manual & Global Award Briefing
+# Page 2: Mission Manual & Practice Mode
 def show_manual_screen():
     logo_uri = get_nasa_logo_svg()
     col_a, col_b, col_c = st.columns([3.4, 1.3, 1.0])
@@ -937,9 +770,9 @@ def show_manual_screen():
         <div class="space-panel" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
             <img src="{logo_uri}" alt="NASA Logo" style="width:70px; height:auto;"/>
             <div>
-                <span class="space-tag" style="margin-bottom:4px;">MISSION BRIEFING & ASTROMETRIC MANUAL</span>
+                <span class="space-tag" style="margin-bottom:4px;">PRACTICE MODE & MISSION MANUAL</span>
                 <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:22px; font-weight:900;">
-                    Commander {st.session_state.explorerName} 🪐 Ready for Deep Space Survey
+                    Commander {st.session_state.explorerName} 🪐 Training Mode Active
                 </h2>
             </div>
         </div>
@@ -955,57 +788,45 @@ def show_manual_screen():
             st.session_state.page_step = "welcome"
             st.rerun()
 
+    # Practice Mode Selection per Teammate Suggestion
     render_html_snippet("""
-    <div class="space-panel" style="border: 2px solid #facc15; background: linear-gradient(145deg, rgba(15, 28, 65, 0.95), rgba(5, 10, 25, 0.98));">
-        <div style="color:#facc15; font-weight:900; font-size:18px; margin-bottom:8px;">🏆 Scoring & Marks Mechanics in ExoMapper</div>
+    <div class="space-panel" style="border: 2px solid #34d399; background: linear-gradient(145deg, rgba(10, 30, 45, 0.95), rgba(4, 12, 25, 0.98));">
+        <div style="color:#34d399; font-weight:900; font-size:18px; margin-bottom:8px;">🎯 Practice Sky Mode (Safe Demo Sandbox)</div>
         <p style="font-size:13.5px; color:#ffffff; margin:0 0 12px 0; line-height:1.5;">
-            Our interactive discovery engine uses a rigorous scoring algorithm to reward valid scientific findings and penalize false alarms:
+            Since live SPHEREx data can be complex, test your skills using these 3 pre-loaded training examples before scanning the live sectors:
         </p>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap:10px;">
-            <div style="background:rgba(52,211,153,0.15); border:1px solid #34d399; border-radius:8px; padding:10px;">
-                <div style="color:#34d399; font-weight:900; font-size:13.5px;">➕ Positive Discovery (Addition)</div>
-                <div style="font-size:11.5px; color:#ffffff;"><b>+120 to +150 pts:</b> Awarded for correctly locating unconfirmed Planet X candidates, trans-Neptunian objects, or brown dwarfs using multi-epoch blinking.</div>
-            </div>
-            <div style="background:rgba(244,63,94,0.15); border:1px solid #f43f5e; border-radius:8px; padding:10px;">
-                <div style="color:#f87171; font-weight:900; font-size:13.5px;">➖ False Alarm (Subtraction)</div>
-                <div style="font-size:11.5px; color:#ffffff;"><b>-20 pts:</b> Deducted when selecting stationary background stars or sensor noise, encouraging careful astrometric validation.</div>
-            </div>
-            <div style="background:rgba(56,189,248,0.15); border:1px solid #38bdf8; border-radius:8px; padding:10px;">
-                <div style="color:#38bdf8; font-weight:900; font-size:13.5px;">⚡ Event Scrubber (Bonus)</div>
-                <div style="font-size:11.5px; color:#ffffff;"><b>+50 pts:</b> Awarded for engaging the bitmask tile filter during simulated solar proton storms.</div>
-            </div>
-        </div>
     </div>
     """)
+    
+    p_choice = st.selectbox("Select Practice Scenario", list(practiceSkyScenarios.keys()))
+    scen = practiceSkyScenarios[p_choice]
+    st.info(f"**Scenario Guide:** {scen['desc']} (Expected Result: {scen['expected']})")
+    
+    if st.button("⚡ Load Practice Scenario into Hub", use_container_width=True):
+        st.session_state.x_pick = scen["x"]
+        st.session_state.y_pick = scen["y"]
+        st.session_state.r_pick = 15
+        st.session_state.page_step = "game"
+        st.success("Loaded practice scenario into the main hub!")
+        st.rerun()
 
-    # SEARCHABLE & FILTERABLE NASA FITS ARCHIVE DATABASE BUILT DIRECTLY IN APP
     render_html_snippet("""
     <div class="space-panel">
         <div style="color:#34d399; font-weight:900; font-size:18px; margin-bottom:6px;">📂 Pre-Loaded NASA SPHEREx & WISE Archive Database</div>
         <p style="font-size:13.5px; color:#ffffff; margin:0 0 10px 0;">
-            Search, filter, and inspect pre-downloaded NASA FITS datasets and infrared archives right here inside the app before executing your scan:
+            Search and filter pre-downloaded NASA FITS datasets right here:
         </p>
     </div>
     """)
-    
     archive_df = get_preloaded_archive_dataframe()
-    search_query = st.text_input("🔍 Search Archive Datasets (Filter by Target, Survey, or ID)", "", placeholder="Type 'Orion', 'WISE', or 'FITS'...")
+    search_query = st.text_input("🔍 Search Archive Datasets", "", placeholder="Type 'Orion', 'WISE', or 'FITS'...")
     if search_query:
-        filtered_df = archive_df[
-            archive_df.astype(str).apply(lambda row: row.str.contains(search_query, case=False).any(), axis=1)
-        ]
+        filtered_df = archive_df[archive_df.astype(str).apply(lambda row: row.str.contains(search_query, case=False).any(), axis=1)]
     else:
         filtered_df = archive_df
-        
     st.dataframe(filtered_df, use_container_width=True, hide_index=True)
-    
-    col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
-    with col_btn2:
-        if st.button("🚀 Launch Observatory Hub", use_container_width=True):
-            st.session_state.page_step = "game"
-            st.rerun()
 
-# Page 3: Interactive Observatory & Astrometric Workbench
+# Page 3: Main Hub (Blink First Screen)
 def show_game_screen():
     logo_uri = get_nasa_logo_svg()
     h1, h2, h3 = st.columns([3.6, 1.1, 1.0])
@@ -1015,7 +836,7 @@ def show_game_screen():
             <div style="display:flex; align-items:center; gap:14px;">
                 <img src="{logo_uri}" alt="NASA Logo" style="width:60px; height:auto;"/>
                 <div>
-                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER HUB • ACTIVE MISSION</span>
+                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER HUB // MAIN BLINK SCREEN</span>
                     <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:21px; font-weight:900;">
                         Explorer: {st.session_state.explorerName} 🪐 Planet X Survey
                     </h2>
@@ -1029,7 +850,7 @@ def show_game_screen():
         """)
     with h2:
         st.write("")
-        if st.button("📖 Manual", use_container_width=True):
+        if st.button("🎯 Practice Mode", use_container_width=True):
             st.session_state.page_step = "manual"
             st.rerun()
     with h3:
@@ -1050,12 +871,6 @@ def show_game_screen():
         contrast_val = st.slider("Sky Contrast", 0.6, 2.2, 1.20, 0.05)
         blink_ms = st.slider("Blink Speed (ms)", 250, 1200, 550, 50)
         clean_flag = st.checkbox("✨ Apply Dark & Bias Clean", value=False)
-        render_html_snippet("""
-        <div class="space-panel" style="padding:12px 14px; margin-top:10px;">
-            <div style="color:#facc15; font-weight:900; font-size:13.5px;">🏆 Global Award Contender</div>
-            <div style="font-size:11.5px; color:#ffffff;">Optimized for Science, Data & Technology.</div>
-        </div>
-        """)
 
     s1, s2, s3, s4 = st.columns([1.45, 1.55, 1.35, 1.05])
     with s1:
@@ -1097,77 +912,6 @@ def show_game_screen():
     grid_a, grid_b = generate_sky_grid_pair(picked_sector, pass_a, pass_b, clean_enabled=clean_flag)
     label_a = sector_info["epochs"][pass_a]["label"]
     label_b = sector_info["epochs"][pass_b]["label"]
-
-    if source_mode == "Upload Custom FITS / Sky Images":
-        d1, d2 = st.columns(2)
-        with d1:
-            st.download_button(
-                "⬇️ Download Sample FITS Image A",
-                data=export_fits_file_bytes(grid_a, "2026-03-14T04:12:00"),
-                file_name="spherex_sample_a.fits",
-                mime="application/octet-stream"
-            )
-        with d2:
-            st.download_button(
-                "⬇️ Download Sample FITS Image B",
-                data=export_fits_file_bytes(grid_b, "2026-09-18T11:45:00"),
-                file_name="spherex_sample_b.fits",
-                mime="application/octet-stream"
-            )
-        u1, u2 = st.columns(2)
-        with u1:
-            f_up1 = st.file_uploader("Upload Image A (.fits, .png, .jpg)", type=["fits", "fit", "png", "jpg", "jpeg"])
-        with u2:
-            f_up2 = st.file_uploader("Upload Image B (.fits, .png, .jpg)", type=["fits", "fit", "png", "jpg", "jpeg"])
-        if f_up1 is not None and f_up2 is not None:
-            arr1, err1 = read_uploaded_sky(f_up1)
-            arr2, err2 = read_uploaded_sky(f_up2)
-            if err1 or err2:
-                st.error(f"⚠️ {err1 or ''} {err2 or ''}")
-            else:
-                grid_a, grid_b = arr1, arr2
-                custom_active = True
-                label_a = f"Uploaded: {f_up1.name}"
-                label_b = f"Uploaded: {f_up2.name}"
-                st.success(f"✅ Successfully loaded custom sky pair!")
-    elif source_mode == "Upload Custom CSV Star Catalog":
-        st.download_button(
-            "⬇️ Download Sample CSV Catalog Template",
-            data=sample_csv_bytes(),
-            file_name="spherex_catalog_template.csv",
-            mime="text/csv"
-        )
-        csv_file = st.file_uploader("Upload CSV Star Catalog", type=["csv"])
-        if csv_file is not None:
-            ca, cb, cdf, cerr = read_uploaded_csv(csv_file)
-            if cerr:
-                st.error(f"⚠️ {cerr}")
-            else:
-                grid_a, grid_b = ca, cb
-                custom_active = True
-                label_a = f"CSV Epoch 1 ({csv_file.name})"
-                label_b = f"CSV Epoch 2 ({csv_file.name})"
-                st.success(f"✅ Built sky grid from CSV catalog ({len(cdf)} objects)!")
-
-    _, _, center_ra_str, center_dec_str = calculate_sky_coordinates(150, 150, sector_info["ra_center"], sector_info["dec_center"])
-    pill_html = (
-        '<span class="badge-real">🛰️ CUSTOM UPLOADED DATASET ACTIVE</span>'
-        if custom_active
-        else '<span class="badge-sim">🧪 SIMULATED SPHEREx SURVEY DATA (6.2"/px)</span>'
-    )
-    render_html_snippet(f"""
-    <div class="space-panel" style="padding:10px 16px;">
-        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
-            <span style="font-weight:900; font-size:14px; color:#ffffff;">📍 Field Center: RA {center_ra_str} | Dec {center_dec_str} ({sector_info['constellation']})</span>
-            {pill_html}
-        </div>
-        <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; font-size:12px; color:#ffffff; margin-top:4px;">
-            <span>🖼️ <b>Image A:</b> {label_a}</span>
-            <span>🖼️ <b>Image B:</b> {label_b}</span>
-            <span>🌈 <b>Band:</b> {sector_info['band']}</span>
-        </div>
-    </div>
-    """)
 
     difference_grid = grid_b - grid_a
     img_a = colorize_sky_image(grid_a, color_theme, bright_val, contrast_val, is_difference=False)
@@ -1213,15 +957,6 @@ def show_game_screen():
         </div>
         """)
 
-        if st.button("✨ Run Automatic AI Auto-Scan (Detect Sector Anomalies)", use_container_width=True):
-            objs = sector_info["objects"]
-            if len(objs) > 0:
-                target_obj = objs[0]
-                st.session_state.x_pick = int(target_obj["x1"] + target_obj["dx"] * 0.5)
-                st.session_state.y_pick = int(target_obj["y1"] + target_obj["dy"] * 0.5)
-                st.success(f"🤖 AI Auto-Scan locked onto '{target_obj['name']}' at X={st.session_state.x_pick}, Y={st.session_state.y_pick}!")
-                st.rerun()
-
         nx, ny, nr = st.columns(3)
         with nx:
             st.session_state.x_pick = st.number_input("Pixel X (0-299)", 0, 299, int(st.session_state.x_pick))
@@ -1230,67 +965,48 @@ def show_game_screen():
         with nr:
             st.session_state.r_pick = st.number_input("Radius (px)", 8, 60, int(st.session_state.r_pick))
 
-        with st.expander("💡 Quick-Snap Candidate Hints"):
-            h1, h2, h3 = st.columns(3)
-            objs = sector_info["objects"]
-            with h1:
-                if st.button("Snap Hint 1", use_container_width=True):
-                    st.session_state.x_pick = int(objs[0]["x1"] + objs[0]["dx"] * 0.5)
-                    st.session_state.y_pick = int(objs[0]["y1"] + objs[0]["dy"] * 0.5)
-                    st.rerun()
-            with h2:
-                if st.button("Snap Hint 2", use_container_width=True):
-                    st.session_state.x_pick = int(objs[1]["x1"] + objs[1]["dx"] * 0.5)
-                    st.session_state.y_pick = int(objs[1]["y1"] + objs[1]["dy"] * 0.5)
-                    st.rerun()
-            with h3:
-                if st.button("Test Center", use_container_width=True):
-                    st.session_state.x_pick = 150
-                    st.session_state.y_pick = 150
-                    st.rerun()
+        # Scientific Verification Checklist per teammate suggestion
+        st.write("---")
+        st.markdown("### 🔬 Scientific Verification Checklist")
+        check_dir = st.checkbox("Did it move in same direction across epochs?")
+        check_hot = st.checkbox("Is it not a hot pixel or star?")
+        check_snr = st.checkbox("Is SNR greater than 5.0?")
 
         _, _, current_ra_str, current_dec_str = calculate_sky_coordinates(
             st.session_state.x_pick, st.session_state.y_pick, sector_info["ra_center"], sector_info["dec_center"]
         )
-        render_html_snippet(f"""
-        <div style="background:#070f26; border:1.5px solid rgba(52, 211, 153, 0.5); border-radius:10px; padding:10px 14px; margin-bottom:12px; font-size:13px; color:#ffffff;">
-            🧭 <b>Selected Sky Coordinates (J2000):</b><br/>
-            • <b>RA:</b> {current_ra_str}<br/>
-            • <b>Dec:</b> {current_dec_str}
-        </div>
-        """)
-
-        if st.button("🔍 Analyze Selected Area, Measure Flux & Play Sound", use_container_width=True):
-            scan_result = evaluate_user_sky_pick(
-                sector_name=picked_sector,
-                pass_a=pass_a,
-                pass_b=pass_b,
-                cx=int(st.session_state.x_pick),
-                cy=int(st.session_state.y_pick),
-                radius_px=int(st.session_state.r_pick),
-                grid_a=grid_a,
-                grid_b=grid_b,
-                custom_mode=custom_active
-            )
-            st.session_state.last_result = scan_result
-            st.session_state.total_score += scan_result["points"]
-            st.session_state.saved_scores[st.session_state.explorerName] = st.session_state.total_score
-            points_display = f"+{scan_result['points']}" if scan_result["points"] > 0 else f"{scan_result['points']}"
-            
-            st.session_state.score_table.insert(0, {
-                "Explorer": st.session_state.explorerName,
-                "Time": datetime.now().strftime("%H:%M:%S"),
-                "Source": source_mode if custom_active else "SPHEREx Simulation",
-                "Sector": picked_sector,
-                "Passes": f"{scan_result['date_a']} vs {scan_result['date_b']}",
-                "Pixels": f"({st.session_state.x_pick}, {st.session_state.y_pick})",
-                "RA / Dec": f"RA: {scan_result['ra_str']} | Dec: {scan_result['dec_str']}",
-                "Result": scan_result["found_flag"],
-                "Object Found": scan_result["title"],
-                "Flux / SNR": scan_result["flux_text"],
-                "Score": points_display,
-                "Total": st.session_state.total_score
-            })
+        
+        if st.button("🔍 Analyze Selected Area & Verify", use_container_width=True):
+            if not (check_dir and check_hot and check_snr):
+                st.warning("⚠️ Please complete the Scientific Verification Checklist before submitting your candidate!")
+            else:
+                scan_result = evaluate_user_sky_pick(
+                    sector_name=picked_sector,
+                    pass_a=pass_a,
+                    pass_b=pass_b,
+                    cx=int(st.session_state.x_pick),
+                    cy=int(st.session_state.y_pick),
+                    radius_px=int(st.session_state.r_pick),
+                    grid_a=grid_a,
+                    grid_b=grid_b
+                )
+                st.session_state.last_result = scan_result
+                st.session_state.total_score += scan_result["points"]
+                st.session_state.saved_scores[st.session_state.explorerName] = st.session_state.total_score
+                points_display = f"+{scan_result['points']}" if scan_result["points"] > 0 else f"{scan_result['points']}"
+                
+                st.session_state.score_table.insert(0, {
+                    "Explorer": st.session_state.explorerName,
+                    "Time": datetime.now().strftime("%H:%M:%S"),
+                    "Sector": picked_sector,
+                    "J2000 Coords": f"RA: {scan_result['ra_str']} | Dec: {scan_result['dec_str']}",
+                    "Epochs": f"{scan_result['date_a']} vs {scan_result['date_b']}",
+                    "Movement": f"{scan_result['arcsec_val']} arcsec",
+                    "SNR": f"{scan_result['snr_val']} sigma",
+                    "Result": scan_result["title"],
+                    "Score": points_display,
+                    "Total": st.session_state.total_score
+                })
 
         if st.session_state.last_result is not None:
             res = st.session_state.last_result
@@ -1298,7 +1014,6 @@ def show_game_screen():
             badge_color = "#34d399" if is_success else "#f43f5e"
             score_tag = f"+{res['points']} pts" if is_success else f"{res['points']} pts"
             
-            # Celebratory or motivating message banner displayed cleanly inside the result panel without full-screen fading
             if is_success:
                 render_html_snippet("""
                 <div style="background:rgba(52, 211, 153, 0.15); border:1.5px solid #34d399; border-radius:10px; text-align:center; padding: 10px; margin-bottom:10px;">
@@ -1321,19 +1036,18 @@ def show_game_screen():
                     <span style="font-weight:900; font-size:16px; color:{badge_color};">{res['title']}</span>
                     <span class="space-tag" style="background:{badge_color}; color:#010309; margin-bottom:0;">{score_tag}</span>
                 </div>
-                <div style="margin-top:8px; padding:6px 12px; background:rgba(250, 204, 21, 0.15); border-left:4px solid #facc15; font-size:12.5px; color:#facc15; font-weight:800;">
-                    📋 Status: {res['status']}
-                </div>
                 <p style="font-size:13.5px; color:#ffffff; margin:10px 0;">{res['note']}</p>
                 <div style="font-size:12.5px; color:#ffffff; line-height:1.6;">
-                    • <b>Sky Coords:</b> RA {res['ra_str']} | Dec {res['dec_str']}<br/>
+                    • <b>J2000 Coords:</b> RA {res['ra_str']} | Dec {res['dec_str']}<br/>
                     • <b>Epochs:</b> {res['date_a']} -> {res['date_b']}<br/>
-                    • <b>Brightness:</b> {res['flux_text']}<br/>
-                    • <b>Shift:</b> {res['shift_text']}<br/>
-                    • <b>Properties:</b> {res['distance']} | {res['temp']}
+                    • <b>Movement:</b> {res['shift_text']}<br/>
+                    • <b>SNR:</b> {res['flux_text']}
                 </div>
             </div>
             """)
+            
+            # Clarified Audio Feature per teammate note ("Hear the Candidate: Stronger signal = clearer sound")
+            st.write("🔊 **Hear the Candidate** (Stronger signal = clearer sound)")
             audio_bytes = generate_doppler_audio(
                 freq_hz=float(res["freq"]),
                 flux_value=float(res["peak_flux"]),
@@ -1344,23 +1058,22 @@ def show_game_screen():
     st.write("")
     render_html_snippet("""
     <div class="space-panel" style="padding:16px 20px;">
-        <div style="color:#facc15; font-weight:900; font-size:18px;">🏆 Live Explorer Scoreboard & Discovery Log</div>
-        <div style="font-size:13px; color:#ffffff;">Tracks your verified discoveries and false alarms in real time.</div>
+        <div style="color:#facc15; font-weight:900; font-size:18px;">🏆 Live Candidate Log & Discovery Table</div>
+        <div style="font-size:13px; color:#ffffff;">Auto-saves J2000 coordinates, epoch dates, movement in arcseconds, and SNR.</div>
     </div>
     """)
     if len(st.session_state.score_table) == 0:
-        st.info("🌌 No scans recorded yet! Drag on the sky view above or click 'Analyze Selected Area' to add your first discovery.")
+        st.info("🌌 No candidate logs yet! Complete the verification checklist and click 'Analyze Selected Area & Verify'.")
     else:
         score_df = pd.DataFrame(st.session_state.score_table)
         st.dataframe(score_df, use_container_width=True, hide_index=True)
         st.download_button(
-            "📥 Download Discovery Log (CSV)",
+            "📥 Download Candidate Log (CSV)",
             data=score_df.to_csv(index=False).encode("utf-8"),
-            file_name="exomapper_discoveries.csv",
+            file_name="exomapper_candidate_log.csv",
             mime="text/csv"
         )
 
-# Route between welcome, manual, and game screens
 apply_custom_space_styling()
 if st.session_state.page_step == "welcome":
     show_welcome_screen()
