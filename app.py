@@ -1,7 +1,7 @@
 # ==============================================================================
 # EXOMAPPER: THE HUNT FOR PLANET X & SPHEREx OBSERVATORY
-# NASA Space Apps Challenge 2026 — Advanced Category & Global Award Contender
-# Coded by Shikshita Naryal, Ayaaan Agarwal & Mahesh Nayak (Team ExoMapper)
+# NASA Space Apps Challenge 2026
+# Coded by Shikshita Naryal, Ayaan Agarwal & Mahesh Nayak (Team ExoMapper)
 # ==============================================================================
 
 import base64
@@ -16,7 +16,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 
 st.set_page_config(
-    page_title="ExoMapper Elite | SPHEREx & Planet X Observatory",
+    page_title="ExoMapper | SPHEREx & Planet X Observatory",
     page_icon="🪐",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -210,6 +210,13 @@ celestialSectors = {
         ]
     }
 }
+
+def get_preloaded_archive_dataframe():
+    data = [
+        {"Dataset_ID": "SPX-DR1-074", "Survey": "SPHEREx Level-2 All-Sky", "Target": "WISE 0855-0714", "RA_J2000": "08h 55m 10.8s", "Dec_J2000": "-07d 14m 42s", "Wavelength": "4.52 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-DR1-089", "Survey": "SPHEREx Level-2 All-Sky", "Target": "Barnard's Star", "RA_J2000": "17h 57m 48.5s", "Dec_J2000": "+04d 41m 36s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"}
+    ]
+    return pd.DataFrame(data)
 
 def calculate_sky_coordinates(px, py, ra_center, dec_center):
     dx_arcsec = (150.0 - float(px)) * ARCSEC_PER_PIXEL
@@ -623,11 +630,11 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         document.getElementById('btnPauseResume').addEventListener('click', () => {{
             pausedState = !pausedState;
             redrawCanvas();
-        }});
+        });
         document.getElementById('btnShowSub').addEventListener('click', () => {{
             currentMode = (currentMode === "Subtraction Map (Image B - Image A)") ? "Auto Blink Images" : "Subtraction Map (Image B - Image A)";
             redrawCanvas();
-        }});
+        });
 
         function getClientPos(e) {{
             const rect = canvas.getBoundingClientRect();
