@@ -54,11 +54,7 @@ In line with the NASA Space Apps rules about using Super Intelligence (AI) tools
 **Presentation link:** https://docs.google.com/presentation/d/1jM1-Aq1_A6YT0Y7czLvzJfZvIR34_FWCpkqvzDwmwJo/edit?usp=sharing
 
 
-
-_Made with passion and teamwork by Shikshita, Ayaan, and Mahesh for NASA Space Apps 2026! _
-
-
-
+**Made with passion and teamwork by Shikshita, Ayaan, and Maheshwar for NASA Space Apps 2026!** 
 
 
 
