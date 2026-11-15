@@ -95,10 +95,6 @@ def apply_custom_space_styling():
         border-radius: 10px !important;
         font-weight: 700 !important;
     }
-    .stTextInput input::placeholder {
-        color: #93c5fd !important;
-        opacity: 0.9 !important;
-    }
     .stButton > button, .stDownloadButton > button {
         background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%) !important;
         color: #ffffff !important;
@@ -630,11 +626,11 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         document.getElementById('btnPauseResume').addEventListener('click', () => {{
             pausedState = !pausedState;
             redrawCanvas();
-        }});
+        });
         document.getElementById('btnShowSub').addEventListener('click', () => {{
             currentMode = (currentMode === "Subtraction Map (Image B - Image A)") ? "Auto Blink Images" : "Subtraction Map (Image B - Image A)";
             redrawCanvas();
-        }});
+        });
 
         function getClientPos(e) {{
             const rect = canvas.getBoundingClientRect();
@@ -662,7 +658,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         }});
         window.addEventListener('mouseup', () => {{
             if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
-        }});
+        });
 
         canvas.addEventListener('touchstart', (e) => {{
             const pt = getClientPos(e);
@@ -681,7 +677,7 @@ def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blin
         }}, {{ passive: false }});
         window.addEventListener('touchend', () => {{
             if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
-        }});
+        });
 
         refreshLabels();
         imgA.onload = redrawCanvas;
@@ -718,7 +714,7 @@ if "score_table" not in st.session_state:
 if "saved_scores" not in st.session_state:
     st.session_state.saved_scores = {}
 
-# SCREEN 1: WELCOME PAGE
+# SCREEN 1: WELCOME PAGE (Asks for User Name & Enters Next Page)
 def show_welcome_screen():
     logo_uri = get_nasa_logo_svg()
     st.write("")
@@ -744,55 +740,45 @@ def show_welcome_screen():
             value=st.session_state.explorerName,
             placeholder="Type your name or team callsign..."
         )
-        c_btn1, c_btn2 = st.columns(2)
-        with c_btn1:
-            if st.button("🚀 Enter Observatory", use_container_width=True):
-                cleaned_name = username_input.strip()
-                if not cleaned_name:
-                    st.warning("Please enter your Space Explorer Name first!")
-                else:
-                    st.session_state.explorerName = cleaned_name
-                    st.session_state.total_score = st.session_state.saved_scores.get(cleaned_name, 0)
-                    st.session_state.page_step = "game"
-                    st.rerun()
-        with c_btn2:
-            if st.button("📖 Mission Manual & Links", use_container_width=True):
-                cleaned_name = username_input.strip()
-                st.session_state.explorerName = cleaned_name if cleaned_name else "Explorer"
+        if st.button("🚀 Enter Mission Control & Briefing", use_container_width=True):
+            cleaned_name = username_input.strip()
+            if not cleaned_name:
+                st.warning("Please enter your Space Explorer Name first!")
+            else:
+                st.session_state.explorerName = cleaned_name
+                st.session_state.total_score = st.session_state.saved_scores.get(cleaned_name, 0)
                 st.session_state.page_step = "manual"
                 st.rerun()
 
-# SCREEN 2: ALL LINKS, MANUALS, INTROS & MEMBERS
+# SCREEN 2: USER MANUAL, OFFICIAL LINKS & BRIEFING (Scroll down to enter observatory)
 def show_manual_screen():
     logo_uri = get_nasa_logo_svg()
-    col_a, col_b, col_c = st.columns([2.5, 1.2, 1.0])
+    col_a, col_b = st.columns([3, 1])
     with col_a:
         render_html_snippet(f"""
         <div class="space-panel" style="display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:14px 18px;">
             <img src="{logo_uri}" alt="NASA Logo" style="width:60px; height:auto;"/>
             <div>
-                <span class="space-tag" style="margin-bottom:4px;">CREW MANIFEST &amp; NASA LINKS</span>
+                <span class="space-tag" style="margin-bottom:4px;">MISSION MANUAL &amp; CREW BRIEFING</span>
                 <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:20px; font-weight:900;">
-                    Commander {st.session_state.explorerName} 🪐 Briefing
+                    Commander {st.session_state.explorerName} 🪐 Welcome Briefing
                 </h2>
             </div>
         </div>
         """)
     with col_b:
         st.write("")
-        if st.button("🎮 Launch Blink Hub", use_container_width=True):
-            st.session_state.page_step = "game"
-            st.rerun()
-    with col_c:
-        st.write("")
-        if st.button("⬅️ Welcome", use_container_width=True):
+        if st.button("⬅️ Change Name", use_container_width=True):
             st.session_state.page_step = "welcome"
             st.rerun()
 
     render_html_snippet("""
     <div class="space-panel">
         <div style="color:#facc15; font-weight:900; font-size:17px; margin-bottom:8px;">👥 Team ExoMapper Manifest</div>
-        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px; margin-top:8px;">
+        <p style="font-size:13px; color:#ffffff; margin-bottom:10px;">
+            We built ExoMapper for the NASA Space Apps Challenge 2026. Meet our core team:
+        </p>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
             <div style="background:#050816; border:1px solid #38bdf8; border-radius:10px; padding:12px;">
                 <div style="color:#38bdf8; font-weight:800; font-size:14px;">Shikshita Naryal</div>
                 <div style="font-size:11.5px; color:#facc15;">Team Owner &amp; Lead Architect</div>
@@ -811,6 +797,18 @@ def show_manual_screen():
 
     render_html_snippet("""
     <div class="space-panel">
+        <div style="color:#38bdf8; font-weight:900; font-size:17px; margin-bottom:8px;">📖 User Manual: How to Hunt for Planet X</div>
+        <p style="font-size:13px; color:#ffffff; line-height:1.6; margin:0;">
+            <b>1. Blink Sky Passes:</b> Compare observation Image A and Image B to spot moving trans-Neptunian candidates.<br/>
+            <b>2. Auto-Fill Selection:</b> Click or touch and drag directly on the sky image to calculate Pixel X, Pixel Y, and Radius.<br/>
+            <b>3. Scientific Verification Checklist:</b> Confirm motion direction, non-stellar nature, and $\text{SNR} > 5.0$ sigma before logging your discovery.<br/>
+            <b>4. Hear the Candidate:</b> Sonify infrared brightness into acoustic frequencies (with full Doppler disclaimers).
+        </p>
+    </div>
+    """)
+
+    render_html_snippet("""
+    <div class="space-panel">
         <div style="color:#34d399; font-weight:900; font-size:16px; margin-bottom:6px;">📂 Official NASA FITS &amp; Infrared Archive Links</div>
         <p style="font-size:13px; color:#ffffff; margin:0 0 8px 0;">
             Download calibrated FITS files or query the NASA/IPAC Infrared Science Archive directly for your project references:
@@ -822,13 +820,14 @@ def show_manual_screen():
     </div>
     """)
 
+    st.write("")
     col_btn1, col_btn2, col_btn3 = st.columns([1, 2, 1])
     with col_btn2:
-        if st.button("🚀 Launch Main Blink Hub Now", use_container_width=True):
+        if st.button("🚀 Enter Observatory & Launch Blink Hub", use_container_width=True):
             st.session_state.page_step = "game"
             st.rerun()
 
-# SCREEN 3: MAIN BLINK HUB (BLINK IS HOMEPAGE, PRACTICE MODE SKIPPED)
+# SCREEN 3: MAIN BLINK HUB (OBSERVATORY HOMEPAGE)
 def show_game_screen():
     logo_uri = get_nasa_logo_svg()
     h1, h2, h3 = st.columns([2.8, 1.1, 1.0])
@@ -838,7 +837,7 @@ def show_game_screen():
             <div style="display:flex; align-items:center; gap:12px;">
                 <img src="{logo_uri}" alt="NASA Logo" style="width:50px; height:auto;"/>
                 <div>
-                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER // BLINK HOMEPAGE</span>
+                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER // OBSERVATORY HOMEPAGE</span>
                     <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:18px; font-weight:900;">
                         Explorer: {st.session_state.explorerName} 🪐 Planet X
                     </h2>
