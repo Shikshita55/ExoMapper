@@ -283,7 +283,7 @@ practiceSkyData = {
         },
         "objects": [
             {
-                "name": "Our Practice Target: Trans-Neptunian World (TNO-Orion-Sim1)",
+                "name": "Practice Target: Trans-Neptunian World (TNO-Orion-Sim1)",
                 "kind": "Planet X Candidate",
                 "status": "PRACTICE HIT - Unconfirmed Candidate (Needs 3rd-Epoch Orbit Check)",
                 "x1": 96, "y1": 112, "dx": 14, "dy": -8,
@@ -295,10 +295,10 @@ practiceSkyData = {
                 "shift_type": "Redshift (Receding Outer Orbit, z = +0.00012)",
                 "rv_kms": +36.0,
                 "freq": 540,
-                "note": "Wonderful! We spotted our simulated outer solar system target moving slowly across pixels at steady ~14.3 mJy brightness."
+                "note": "Wonderful! spotted our simulated outer solar system target moving slowly across pixels at steady ~14.3 mJy brightness."
             },
             {
-                "name": "Our Practice Target: Cool Y-Class Brown Dwarf (BD-Orion-Sim4)",
+                "name": "Practice Target: Cool Y-Class Brown Dwarf (BD-Orion-Sim4)",
                 "kind": "Brown Dwarf Candidate",
                 "status": "PRACTICE HIT - Proper-Motion Candidate (Needs Spectrum Check)",
                 "x1": 218, "y1": 74, "dx": 7, "dy": 6,
@@ -310,10 +310,10 @@ practiceSkyData = {
                 "shift_type": "Blueshift (Approaching Solar Neighborhood, z = -0.00008)",
                 "rv_kms": -24.0,
                 "freq": 420,
-                "note": "We caught a small proper-motion shift at steady ~9.7 mJy brightness. Matches a nearby cool brown dwarf."
+                "note": "Caught a small proper-motion shift at steady ~9.7 mJy brightness. Matches a nearby cool brown dwarf."
             },
             {
-                "name": "Our Practice Target: Distant Supernova Flash (SN-2026or-Sim)",
+                "name": "Practice Target: Distant Supernova Flash (SN-2026or-Sim)",
                 "kind": "Transient Candidate",
                 "status": "PRACTICE HIT - Photometric Transient (Fixed Position, Bright Flash)",
                 "x1": 64, "y1": 228, "dx": 0, "dy": 0,
@@ -325,7 +325,7 @@ practiceSkyData = {
                 "shift_type": "Redshift (Cosmological Host Galaxy, z = +0.011)",
                 "rv_kms": +115.0,
                 "freq": 660,
-                "note": "It stayed at the exact same pixel (0.0 px shift) but our analysis shows it brightened from 2.4 mJy to 13.8 mJy!"
+                "note": "It stayed at the exact same pixel (0.0 px shift) but the analysis shows it brightened from 2.4 mJy to 13.8 mJy!"
             }
         ]
     },
@@ -345,7 +345,7 @@ practiceSkyData = {
         },
         "objects": [
             {
-                "name": "Our Practice Target: Kuiper Belt Outlier (TNO-Tauri-Sim7)",
+                "name": "Practice Target: Kuiper Belt Outlier (TNO-Tauri-Sim7)",
                 "kind": "Planet X Candidate",
                 "status": "PRACTICE HIT - Unconfirmed Candidate (Needs 3rd-Epoch Orbit Check)",
                 "x1": 188, "y1": 176, "dx": -15, "dy": -10,
@@ -357,10 +357,10 @@ practiceSkyData = {
                 "shift_type": "Redshift (Receding Aphelion Arc, z = +0.00010)",
                 "rv_kms": +31.0,
                 "freq": 560,
-                "note": "We tracked a clear shift across the star field with steady ~13.6 mJy brightness. Logged as our unconfirmed Planet X candidate!"
+                "note": "Tracked a clear shift across the star field with steady ~13.6 mJy brightness. Logged as unconfirmed Planet X candidate!"
             },
             {
-                "name": "Our Practice Target: M-Dwarf Flare Star (TV-Tauri-Sim9)",
+                "name": "Practice Target: M-Dwarf Flare Star (TV-Tauri-Sim9)",
                 "kind": "Transient Candidate",
                 "status": "PRACTICE HIT - Variable Star (Fixed Position, Flux Jump)",
                 "x1": 82, "y1": 90, "dx": 0, "dy": 0,
@@ -372,7 +372,7 @@ practiceSkyData = {
                 "shift_type": "Blueshift (Approaching Stellar Stream, z = -0.00005)",
                 "rv_kms": -18.0,
                 "freq": 490,
-                "note": "It did not move in position, but our multi-epoch comparison caught it flaring brightly between our dates."
+                "note": "It did not move in position, but multi-epoch comparison caught it flaring brightly between our dates."
             }
         ]
     }
@@ -417,7 +417,7 @@ realIrsaSkyData = {
                 "shift_type": "Blueshift (Fast Transverse & Approach Motion, z = -0.00011)",
                 "rv_kms": -33.0,
                 "freq": 430,
-                "note": "Amazing real IRSA archival discovery! WISE 0855-0714 shows huge proper motion (~8.1 arcsec/yr) in our AllWISE & NEOWISE infrared frames."
+                "note": "Amazing real IRSA archival discovery! WISE 0855-0714 shows huge proper motion (~8.1 arcsec/yr) in  AllWISE & NEOWISE infrared frames."
             },
             {
                 "name": "AllWISE J0855+0712 Ecliptic Background Asteroid (MP-Hydra-02)",
@@ -432,7 +432,7 @@ realIrsaSkyData = {
                 "shift_type": "Redshift (Receding Orbital Leg, z = +0.00006)",
                 "rv_kms": +19.5,
                 "freq": 530,
-                "note": "We detected this minor body in the AllWISE Multiepoch Photometry Database moving across Hydra background stars."
+                "note": " Detected this minor body in the AllWISE Multiepoch Photometry Database moving across Hydra background stars."
             }
         ]
     },
@@ -471,7 +471,7 @@ realIrsaSkyData = {
                 "shift_type": "Redshift (Outbound Orbital Arc, z = +0.00014)",
                 "rv_kms": +42.0,
                 "freq": 565,
-                "note": "We tracked this across NEOWISE Years 1 to 11 single-exposure frames! Extreme detached orbit used to model Planet X gravity."
+                "note": "Tracked this across NEOWISE Years 1 to 11 single-exposure frames! Extreme detached orbit used to model Planet X gravity."
             },
             {
                 "name": "Mira Ceti Long-Period Asymptotic Giant Variable (NEOWISE-Var-07)",
@@ -486,7 +486,7 @@ realIrsaSkyData = {
                 "shift_type": "Redshift (Receding Radial Velocity +63 km/s)",
                 "rv_kms": +63.0,
                 "freq": 610,
-                "note": "Zero positional shift across epochs, but our analysis caught a huge 332-day pulsation jump in NEOWISE photometry!"
+                "note": "Zero positional shift across epochs, but the analysis caught a huge 332-day pulsation jump in NEOWISE photometry!"
             }
         ]
     },
@@ -525,7 +525,7 @@ realIrsaSkyData = {
                 "shift_type": "Blueshift (Approaching Galactic Halo Orbit, z = -0.00019)",
                 "rv_kms": -57.0,
                 "freq": 405,
-                "note": "We discovered this by cross-matching unWISE Time-Domain Parquet tiles with ZTF DR24 non-detections (pure infrared mover!)."
+                "note": "Discovered this by cross-matching unWISE Time-Domain Parquet tiles with ZTF DR24 non-detections (pure infrared mover!)."
             },
             {
                 "name": "ZTF24aabqcy / Cygnus Classical Nova Outburst (ZTF-DR24-Nova1)",
@@ -579,7 +579,7 @@ realIrsaSkyData = {
                 "shift_type": "Redshift (Distant Inclined Aphelion Arc, z = +0.00015)",
                 "rv_kms": +45.0,
                 "freq": 590,
-                "note": "Pro-Max Discovery! We detected sub-arcsecond daily motion across SPHEREx 2025W18_1B and 2026-196 Level-2 FITS frames!"
+                "note": "Pro-Max Discovery! Detected sub-arcsecond daily motion across SPHEREx 2025W18_1B and 2026-196 Level-2 FITS frames!"
             },
             {
                 "name": "Euclid-SPHEREx High-z Quasar Outburst (ESQ-J0058+3630)",
@@ -1559,13 +1559,13 @@ def show_welcome_screen():
         user_in = st.text_input(
             "Enter Your Space Explorer Name",
             value=st.session_state.explorerName,
-            placeholder="Type our explorer name (e.g., Nova, Sky, Riley, or Alex)...",
-            help="Enter our explorer username. If we log in again after playing, our score and scans are saved together!"
+            placeholder="Type explorer name (e.g., Nova, Sky, Riley, or Alex)...",
+            help="Enter explorer username. If we log in again after playing, our score and scans are saved together!"
         )
         if st.button("🚀 Enter Mission Control", use_container_width=True, help="Open our ExoMapper User Manual & Science Briefing!"):
             clean_u = user_in.strip()
             if not clean_u:
-                st.warning("Please enter our Space Explorer Name first so we can begin our journey together!")
+                st.warning("Please enter Space Explorer Name first so we can begin our journey together!")
             else:
                 st.session_state.explorerName = clean_u
                 st.session_state.total_score = st.session_state.saved_scores.get(clean_u, 0)
@@ -1610,7 +1610,7 @@ def show_manual_screen():
             <span class="exo-sim-pill">🎯 LEVEL 1: PRACTICE TRAINING MODE (SIMULATED SURVEY)</span>
             <h3 style="margin:8px 0 6px 0; color:#ffd166; font-size:18px;">Let's Practice Together Before the Real Mission</h3>
             <p style="font-size:13.5px; line-height:1.55; color:#d8e6ff; margin:0;">
-                Let's start here to train our eyes! Level 1 gives us clean simulated multi-epoch sky cubes with known training targets so we can practice <b>Manual Blinking</b>, <b>Dark Frame Subtraction</b>, <b>4x Loupe Zooming</b>, and <b>Drawing Selection Shapes</b> safely before entering the real NASA archive.
+                Let's start here to train eyes! Level 1 gives clean simulated multi-epoch sky cubes with known training targets to practice <b>Manual Blinking</b>, <b>Dark Frame Subtraction</b>, <b>4x Loupe Zooming</b>, and <b>Drawing Selection Shapes</b> safely before entering the real NASA archive.
             </p>
         </div>
         """)
@@ -1666,7 +1666,7 @@ def show_manual_screen():
             🛠️ Our Complete Guide to Every Observatory Tool
         </div>
         <p style="font-size:13.5px; color:#d8e6ff; margin:0 0 10px 0;">
-            Every tool in our workspace is modeled after professional astronomical FITS image workbenches so we can inspect faint targets together:
+            Every tool in the workspace is modeled after professional astronomical FITS image workbenches so to inspect faint targets together:
         </p>
     </div>
     """)
