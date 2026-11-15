@@ -111,10 +111,49 @@ def apply_space_theme():
         background-color: #0c1938 !important;
         color: #ffffff !important;
     }
-    div[data-testid="stExpander"] {
+    div[data-testid="stExpander"], details {
         background-color: #081126 !important;
-        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        border: 1.5px solid rgba(0, 212, 255, 0.42) !important;
         border-radius: 12px !important;
+        overflow: hidden !important;
+    }
+    div[data-testid="stExpander"] details summary,
+    div[data-testid="stExpander"] details[open] summary,
+    div[data-testid="stExpander"] details summary:hover,
+    div[data-testid="stExpander"] details summary:focus,
+    div[data-testid="stExpander"] details summary:active,
+    details > summary,
+    details[open] > summary {
+        background: linear-gradient(90deg, #0b1d42 0%, #102a5e 100%) !important;
+        color: #ffd166 !important;
+        padding: 10px 14px !important;
+        font-weight: 800 !important;
+    }
+    div[data-testid="stExpander"] details summary p,
+    div[data-testid="stExpander"] details summary span,
+    div[data-testid="stExpander"] details summary div,
+    div[data-testid="stExpander"] details summary svg,
+    div[data-testid="stExpander"] details[open] summary p,
+    div[data-testid="stExpander"] details[open] summary span,
+    div[data-testid="stExpander"] details[open] summary div,
+    div[data-testid="stExpander"] details[open] summary svg {
+        color: #ffd166 !important;
+        fill: #ffd166 !important;
+        opacity: 1 !important;
+        font-weight: 800 !important;
+    }
+    li[role="option"]:hover, li[role="option"][aria-selected="true"] {
+        background-color: #1458c8 !important;
+        color: #ffd166 !important;
+    }
+    .exo-tool-box {
+        background: linear-gradient(145deg, rgba(12, 26, 58, 0.95), rgba(6, 14, 32, 0.98));
+        border: 1.5px solid #00d4ff;
+        border-left: 5px solid #ffd166;
+        border-radius: 12px;
+        padding: 14px 16px;
+        margin-bottom: 12px;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
     }
     label, .stMarkdown p, .stRadio label, .stCheckbox label {
         color: #e8f1ff !important;
@@ -1656,7 +1695,7 @@ def show_manual_screen():
     put_html("""
     <div class="exo-card">
         <div style="color:#00ff9d; font-weight:900; font-size:18px; margin-bottom:6px;">
-            🛠️ Complete Guide to Every Observatory Tool (What • Why • When • Where • Effect)
+            🛠️ Complete Guide to Every Observatory Tool
         </div>
         <p style="font-size:13.5px; color:#d8e6ff; margin:0 0 10px 0;">
             Every tool in ExoMapper is modeled after professional astronomical FITS image workbenches so you can inspect faint targets with ease:
@@ -1721,10 +1760,43 @@ def show_manual_screen():
             "Effect You See": "Redshift (+rv) plays a faster pulsing alert rhythm; Blueshift (-rv) plays a slower, smooth harmonic sweep."
         }
     ]
-    st.dataframe(pd.DataFrame(tool_guide_rows), use_container_width=True, hide_index=True)
+    for idx_t in range(0, len(tool_guide_rows), 2):
+        t_cols = st.columns(2)
+        for j_t in range(2):
+            if idx_t + j_t < len(tool_guide_rows):
+                item_t = tool_guide_rows[idx_t + j_t]
+                with t_cols[j_t]:
+                    put_html(f'''
+                    <div class="exo-tool-box">
+                        <div style="color:#ffd166; font-weight:900; font-size:15.5px; margin-bottom:6px;">
+                            🛠️ {item_t["Tool / Element"]}
+                        </div>
+                        <div style="font-size:13px; color:#eaf2ff; line-height:1.55;">
+                            • <b style="color:#00d4ff;">What It Is:</b> {item_t["What It Is"]}<br/>
+                            • <b style="color:#ffd166;">Why We Use It:</b> {item_t["Why We Use It"]}<br/>
+                            • <b style="color:#00ff9d;">When To Use It:</b> {item_t["When To Use It"]}<br/>
+                            • <b style="color:#ff8a75;">Where In Game:</b> {item_t["Where In Game"]}<br/>
+                            • <b style="color:#ffffff;">Effect You See:</b> {item_t["Effect You See"]}
+                        </div>
+                    </div>
+                    ''')
 
     # Official IRSA Data Access & Released Catalogs Hub
-    with st.expander("🌐 View All Official NASA/IPAC IRSA Data Access Tools & Released Catalogs (TAP, Parquet & ASCII)", expanded=True):
+    with st.expander("🌐 View & Directly Launch Official NASA/IPAC IRSA Catalogs In-Game (No Download Needed!)", expanded=True):
+        put_html('''
+        <div style="font-size:13px; color:#d8f8e8; margin-bottom:8px;">
+            ✅ <b>Direct In-App Integration:</b> All official IRSA catalogs below are built directly into Level 2 and connected via live IRSA TAP queries — you do <b>not</b> need to download them externally! Click any button below to load that dataset directly into the Sky Workbench:
+        </div>
+        ''')
+        launch_cols = st.columns(4)
+        real_keys = list(realIrsaSkyData.keys())
+        for c_i, cat_row in enumerate(IRSA_CATALOG_DIRECTORY):
+            with launch_cols[c_i % 4]:
+                if st.button(f"🚀 Play: {cat_row['Catalog / Mission'][:20]}...", key=f"direct_irsa_{c_i}", use_container_width=True):
+                    st.session_state.mission_level = "Level 2: Real NASA / IRSA Archive Mission (SPHEREx, AllWISE, NEOWISE, ZTF & Euclid)"
+                    st.session_state.picked_real_tier = real_keys[c_i % len(real_keys)]
+                    st.session_state.page_step = "game"
+                    st.rerun()
         st.dataframe(pd.DataFrame(IRSA_CATALOG_DIRECTORY), use_container_width=True, hide_index=True)
         put_html("""
         <div style="margin-top:8px;">
@@ -1816,15 +1888,15 @@ def show_game_screen():
             <div style="font-size:11.5px; color:#b8d4ff;">Public IRSA TAP queries need no key, or paste an optional IRSA/Fornax token below:</div>
         </div>
         """)
-        irsa_api_key = st.text_input("Optional IRSA / Fornax API Token", value="", type="password", placeholder="Public TAP active by default...")
+        irsa_api_key = st.text_input("NASA / IRSA API Key (Pre-filled DEMO_KEY works in-app!)", value="DEMO_KEY")
 
         put_html("""
         <div class="exo-card" style="padding:12px 14px; margin-top:10px;">
             <div style="color:#ffd166; font-weight:800; font-size:14.5px;">👩‍🚀 Team ExoMapper Crew</div>
             <div style="font-size:12px; color:#d8e6ff; line-height:1.55; margin-top:4px;">
-                • <b>Shikshita Naryal</b> (Lead Developer & Astrophysics)<br/>
-                • <b>Ayan Agarwal</b> (Systems & UI Architecture)<br/>
-                • <b>Maheswar Nayak</b> (Scientific Review & Testing)
+                • <b>Shikshita Naryal</b> (Team Owner, Lead Developer & Astrophysics)<br/>
+                • <b>Ayaan Agarwal</b> (Class 11 Student • Writing, Testing & Review)<br/>
+                • <b>Maheswar Nayak</b> (M.Sc. Physics • UI Architecture, Coding & Suggestions)
             </div>
         </div>
         """)
@@ -1862,9 +1934,12 @@ def show_game_screen():
     active_bank = practiceSkyData if is_practice else realIrsaSkyData
     s1, s2, s3 = st.columns([1.85, 1.35, 1.1])
     with s1:
+        bank_keys = list(active_bank.keys())
+        def_idx = bank_keys.index(st.session_state.get("picked_real_tier")) if (not is_practice and st.session_state.get("picked_real_tier") in bank_keys) else 0
         picked_sector = st.selectbox(
             "🌌 Select Sky Sector & Difficulty Tier (J2000 Region)",
-            list(active_bank.keys())
+            bank_keys,
+            index=def_idx
         )
     with s2:
         view_mode = st.selectbox(
