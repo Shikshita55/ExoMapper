@@ -1,16 +1,19 @@
-# ExoMapper: The Hunt for Planet X
-# NASA Space Apps Challenge 2026 - Team ExoMapper
-# Written in Python using Streamlit, NumPy, Pandas, and PIL
+# ExoMapper: The Hunt for Planet X & SPHEREx Observatory
+# NASA Space Apps Challenge 2026 | Team ExoMapper
+# Coded by Shikshita Naryal, Ayan Agarwal & Mahesh Nayak
+
 import base64
 import io
 import math
 import wave
 from datetime import datetime
+
 import numpy as np
 import pandas as pd
 from PIL import Image
 import streamlit as st
 import streamlit.components.v1 as components
+
 st.set_page_config(
     page_title="ExoMapper | The Hunt for Planet X",
     page_icon="🪐",
@@ -18,51 +21,55 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# puts multiline html on one single line so streamlit never shows raw </div> tags
-def put_html(raw_code):
-    flat_line = " ".join(line.strip() for line in raw_code.splitlines() if line.strip())
-    st.markdown(flat_line, unsafe_allow_html=True)
+# puts multiline html on one single line so streamlit never renders raw </div> tags
+def render_html_snippet(html_text):
+    clean_line = " ".join(line.strip() for line in html_text.splitlines() if line.strip())
+    st.markdown(clean_line, unsafe_allow_html=True)
 
-# official NASA meatball logo encoded as base64 svg
-def nasa_logo_data():
-    svg_text = (
+# official NASA meatball logo as base64 svg
+def get_nasa_logo_svg():
+    svg_data = (
         '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 200" width="110" height="92">'
         '<defs><radialGradient id="nb" cx="38%" cy="32%" r="68%">'
         '<stop offset="0%" stop-color="#1b56b3"/><stop offset="55%" stop-color="#0b3d91"/>'
         '<stop offset="100%" stop-color="#061f4a"/></radialGradient></defs>'
-        '<circle cx="118" cy="100" r="82" fill="url(#nb)" stroke="#8cb8ff" stroke-width="1.5" stroke-opacity="0.45"/>'
-        '<g fill="#ffffff"><circle cx="72" cy="48" r="1.7"/><circle cx="88" cy="36" r="1.2"/>'
-        '<circle cx="105" cy="46" r="1.5"/><circle cx="145" cy="42" r="1.8"/><circle cx="164" cy="56" r="1.3"/>'
-        '<circle cx="155" cy="72" r="1.4"/><circle cx="62" cy="132" r="1.6"/><circle cx="78" cy="148" r="1.2"/>'
-        '<circle cx="96" cy="162" r="1.7"/><circle cx="148" cy="154" r="1.5"/><circle cx="168" cy="136" r="1.3"/>'
-        '<circle cx="132" cy="166" r="1.2"/></g>'
-        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.6" '
+        '<circle cx="118" cy="100" r="82" fill="url(#nb)" stroke="#60a5fa" stroke-width="2" stroke-opacity="0.6"/>'
+        '<g fill="#ffffff"><circle cx="72" cy="48" r="1.8"/><circle cx="88" cy="36" r="1.4"/>'
+        '<circle cx="105" cy="46" r="1.6"/><circle cx="145" cy="42" r="1.9"/><circle cx="164" cy="56" r="1.4"/>'
+        '<circle cx="155" cy="72" r="1.5"/><circle cx="62" cy="132" r="1.7"/><circle cx="78" cy="148" r="1.3"/>'
+        '<circle cx="96" cy="162" r="1.8"/><circle cx="148" cy="154" r="1.6"/><circle cx="168" cy="136" r="1.4"/>'
+        '<circle cx="132" cy="166" r="1.3"/></g>'
+        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.8" '
         'stroke-dasharray="180 65" transform="rotate(-24 118 102)"/>'
         '<path d="M 30 136 Q 112 96 172 34 L 142 104 Q 176 74 214 60 Q 162 84 126 128 L 154 58 Q 104 106 30 136 Z" fill="#fc3d21"/>'
         '<text x="118" y="113" text-anchor="middle" fill="#ffffff" font-family="Georgia, serif" font-weight="900" font-size="44" letter-spacing="3">NASA</text>'
-        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.6" '
+        '<ellipse cx="118" cy="102" rx="74" ry="26" fill="none" stroke="#ffffff" stroke-width="2.8" '
         'stroke-dasharray="55 200" stroke-dashoffset="-195" transform="rotate(-24 118 102)"/>'
-        '<circle cx="184" cy="73" r="3.6" fill="#ffffff"/></svg>'
+        '<circle cx="184" cy="73" r="3.8" fill="#ffffff"/></svg>'
     )
-    b64_str = base64.b64encode(svg_text.encode("utf-8")).decode("utf-8")
-    return "data:image/svg+xml;base64," + b64_str
+    encoded_svg = base64.b64encode(svg_data.encode("utf-8")).decode("utf-8")
+    return "data:image/svg+xml;base64," + encoded_svg
 
-# dark space theme with moving stars across the whole screen
-def apply_space_theme():
-    css_block = """
+def apply_custom_space_styling():
+    stylesheet = """
     <style>
-    @keyframes moveStars {
+    @keyframes starfieldDrift {
         from { background-position: 0px 0px, 0px 0px, 0px 0px; }
-        to { background-position: 1000px 600px, -800px 900px, 500px -700px; }
+        to { background-position: 1200px 700px, -900px 1000px, 600px -800px; }
     }
-    @keyframes glowPulse {
-        0%, 100% { box-shadow: 0 0 18px rgba(0, 212, 255, 0.22); }
-        50% { box-shadow: 0 0 30px rgba(252, 61, 33, 0.36); }
+    @keyframes floatAnimation {
+        0% { transform: translateY(0px) rotate(0deg); }
+        50% { transform: translateY(-8px) rotate(3deg); }
+        100% { transform: translateY(0px) rotate(0deg); }
+    }
+    @keyframes borderGlow {
+        0%, 100% { box-shadow: 0 0 20px rgba(0, 212, 255, 0.25); border-color: rgba(0, 212, 255, 0.45); }
+        50% { box-shadow: 0 0 34px rgba(252, 61, 33, 0.42); border-color: rgba(252, 61, 33, 0.72); }
     }
     html, body, .stApp, [data-testid="stAppViewContainer"], [data-testid="stHeader"] {
-        background-color: #040711 !important;
+        background-color: #030611 !important;
         color: #f2f6ff !important;
-        font-family: 'Segoe UI', Arial, sans-serif;
+        font-family: 'Segoe UI', Tahoma, Arial, sans-serif;
     }
     .stApp {
         background-image:
@@ -72,15 +79,15 @@ def apply_space_theme():
             radial-gradient(1.5px 1.5px at 520px 90px, #ffffff, rgba(0,0,0,0)),
             radial-gradient(2px 2px at 680px 320px, #b8d8ff, rgba(0,0,0,0)),
             radial-gradient(circle at 18% 22%, rgba(11, 61, 145, 0.30) 0%, transparent 48%),
-            radial-gradient(circle at 82% 76%, rgba(252, 61, 33, 0.16) 0%, transparent 45%);
+            radial-gradient(circle at 82% 76%, rgba(252, 61, 33, 0.18) 0%, transparent 45%);
         background-size: 550px 420px, 470px 490px, 620px 510px, 710px 640px, 530px 580px, 100% 100%, 100% 100%;
-        animation: moveStars 95s linear infinite;
+        animation: starfieldDrift 90s linear infinite;
         background-attachment: fixed;
     }
     [data-testid="stSidebar"], [data-testid="stSidebarContent"] {
-        background: linear-gradient(180deg, #060b19 0%, #0a142d 100%) !important;
-        border-right: 1px solid rgba(0, 212, 255, 0.25) !important;
-        color: #f2f6ff !important;
+        background: linear-gradient(180deg, #050a18 0%, #0a142d 100%) !important;
+        border-right: 1px solid rgba(56, 189, 248, 0.35) !important;
+        color: #ffffff !important;
     }
     div[data-baseweb="input"],
     div[data-baseweb="base-input"],
@@ -88,50 +95,55 @@ def apply_space_theme():
     .stTextInput input,
     .stNumberInput input,
     .stSelectbox div[role="button"] {
-        background-color: #0c1938 !important;
+        background-color: #0b1632 !important;
         color: #ffffff !important;
-        border: 1.5px solid #1e4b8f !important;
+        border: 1.5px solid #38bdf8 !important;
         border-radius: 10px !important;
-        font-weight: 600 !important;
+        font-weight: 700 !important;
     }
     .stTextInput input::placeholder {
         color: #8ab4f8 !important;
         opacity: 0.85 !important;
     }
     div[data-baseweb="popover"], ul[role="listbox"], li[role="option"] {
-        background-color: #0c1938 !important;
+        background-color: #0b1632 !important;
         color: #ffffff !important;
     }
     div[data-testid="stExpander"] {
         background-color: #081126 !important;
-        border: 1px solid rgba(0, 212, 255, 0.3) !important;
+        border: 1px solid rgba(56, 189, 248, 0.35) !important;
         border-radius: 12px !important;
     }
     label, .stMarkdown p, .stRadio label, .stCheckbox label {
-        color: #e8f1ff !important;
+        color: #eef5ff !important;
     }
     .stButton > button, .stDownloadButton > button {
-        background: linear-gradient(135deg, #0b3d91 0%, #1458c8 100%) !important;
+        background: linear-gradient(135deg, #0b3d91 0%, #1d4ed8 100%) !important;
         color: #ffffff !important;
-        border: 1.5px solid #00d4ff !important;
+        border: 1.5px solid #38bdf8 !important;
         border-radius: 10px !important;
-        font-weight: 700 !important;
-        padding: 0.55rem 1.1rem !important;
-        box-shadow: 0 4px 14px rgba(0, 212, 255, 0.22) !important;
+        font-weight: 800 !important;
+        padding: 0.58rem 1.15rem !important;
+        box-shadow: 0 4px 16px rgba(56, 189, 248, 0.28) !important;
+        transition: all 0.2s ease-in-out !important;
     }
     .stButton > button:hover, .stDownloadButton > button:hover {
-        background: linear-gradient(135deg, #fc3d21 0%, #c8230c 100%) !important;
-        border-color: #ffd166 !important;
+        background: linear-gradient(135deg, #fc3d21 0%, #e11d48 100%) !important;
+        border-color: #facc15 !important;
+        transform: translateY(-1px) !important;
     }
-    .exo-card {
-        background: linear-gradient(145deg, rgba(10, 21, 48, 0.92), rgba(7, 13, 30, 0.95));
-        border: 1.5px solid rgba(0, 212, 255, 0.32);
-        border-radius: 14px;
-        padding: 18px 20px;
+    .space-panel, .exo-card {
+        background: linear-gradient(145deg, rgba(10, 21, 48, 0.94), rgba(6, 12, 28, 0.97));
+        border: 1.5px solid rgba(56, 189, 248, 0.38);
+        border-radius: 15px;
+        padding: 16px 18px;
         margin-bottom: 14px;
-        box-shadow: 0 8px 26px rgba(0, 0, 0, 0.55);
+        box-shadow: 0 10px 28px rgba(0, 0, 0, 0.65);
     }
-    .exo-badge {
+    .space-panel:hover, .exo-card:hover {
+        border-color: #38bdf8;
+    }
+    .space-tag, .exo-badge {
         display: inline-block;
         background: #fc3d21;
         color: #ffffff;
@@ -140,13 +152,13 @@ def apply_space_theme():
         padding: 4px 14px;
         border-radius: 99px;
         letter-spacing: 1px;
-        margin-bottom: 10px;
+        margin-bottom: 8px;
     }
     .exo-sim-pill {
         display: inline-block;
-        background: rgba(255, 209, 102, 0.16);
-        border: 1px solid #ffd166;
-        color: #ffd166;
+        background: rgba(250, 204, 21, 0.16);
+        border: 1px solid #facc15;
+        color: #facc15;
         font-weight: 800;
         font-size: 11.5px;
         padding: 4px 12px;
@@ -154,41 +166,50 @@ def apply_space_theme():
     }
     .exo-real-pill {
         display: inline-block;
-        background: rgba(0, 255, 157, 0.16);
-        border: 1px solid #00ff9d;
-        color: #00ff9d;
+        background: rgba(52, 211, 153, 0.16);
+        border: 1px solid #34d399;
+        color: #34d399;
         font-weight: 800;
         font-size: 11.5px;
         padding: 4px 12px;
         border-radius: 99px;
     }
-    .exo-link-btn {
+    .floating-celebration {
+        animation: floatAnimation 3s ease-in-out infinite;
+        display: inline-block;
+        font-size: 26px;
+    }
+    .resource-link, .exo-link-btn {
         display: inline-block;
         margin-top: 6px;
         margin-right: 6px;
         padding: 6px 12px;
         background: rgba(11, 61, 145, 0.78);
-        border: 1px solid #00d4ff;
+        border: 1.5px solid #38bdf8;
         border-radius: 8px;
         color: #7ce8ff !important;
         text-decoration: none !important;
         font-size: 12.5px;
         font-weight: 700;
     }
-    .exo-link-btn:hover {
+    .resource-link:hover, .exo-link-btn:hover {
         background: #fc3d21;
         color: #ffffff !important;
-        border-color: #ffffff;
+        border-color: #facc15;
+    }
+    @media (max-width: 768px) {
+        .space-panel, .exo-card { padding: 12px; }
+        h1 { font-size: 23px !important; }
+        h2 { font-size: 17px !important; }
     }
     </style>
     """
-    put_html(css_block)
+    render_html_snippet(stylesheet)
 
-# SPHEREx detector resolution is 6.2 arcseconds per pixel
-ARCSEC_PER_PX = 6.2
+ARCSEC_PER_PIXEL = 6.2
 
-# sky sectors with 3 observation passes each
-skyData = {
+# All 4 sky sectors with 3 observation passes each
+celestialSectors = {
     "Sector 1: Orion Outer Rim (Deep Infrared Survey)": {
         "seed": 104,
         "ra_center": 83.8221,
@@ -364,79 +385,90 @@ skyData = {
     }
 }
 
-# converts pixel (x, y) to J2000 Right Ascension and Declination
-def calc_sky_coords(px, py, ra0, dec0):
-    dx_arc = (150.0 - float(px)) * ARCSEC_PER_PX
-    dy_arc = (150.0 - float(py)) * ARCSEC_PER_PX
-    cos_dec = max(0.1, abs(math.cos(math.radians(dec0))))
-    ra_val = (ra0 + (dx_arc / 3600.0) / cos_dec) % 360.0
-    dec_val = max(-89.99, min(89.99, dec0 + (dy_arc / 3600.0)))
-    hrs = ra_val / 15.0
-    rh = int(hrs)
-    rm = int((hrs - rh) * 60.0)
-    rs = ((hrs - rh) * 60.0 - rm) * 60.0
-    ra_txt = f"{rh:02d}h {rm:02d}m {rs:04.1f}s ({ra_val:.4f} deg)"
-    sign = "+" if dec_val >= 0 else "-"
-    ad = abs(dec_val)
-    dd = int(ad)
-    dm = int((ad - dd) * 60.0)
-    ds = ((ad - dd) * 60.0 - dm) * 60.0
-    dec_txt = f"{sign}{dd:02d}d {dm:02d}m {ds:04.1f}s ({dec_val:+.4f} deg)"
-    return ra_val, dec_val, ra_txt, dec_txt
+def get_preloaded_archive_dataframe():
+    data = [
+        {"Dataset_ID": "SPX-DR1-074", "Survey": "SPHEREx Level-2 All-Sky", "Target": "WISE 0855-0714", "RA_J2000": "08h 55m 10.8s", "Dec_J2000": "-07d 14m 42s", "Wavelength": "4.52 um", "Format": "FITS", "Status": "Calibrated & Ready"},
+        {"Dataset_ID": "SPX-DR1-089", "Survey": "SPHEREx Level-2 All-Sky", "Target": "Barnard's Star", "RA_J2000": "17h 57m 48.5s", "Dec_J2000": "+04d 41m 36s", "Wavelength": "3.82 um", "Format": "FITS", "Status": "Calibrated & Ready"}
+    ]
+    return pd.DataFrame(data)
 
-# adds a glowing star spot onto a 2D numpy grid
-def put_star(grid, cx, cy, bright, spread=2.1):
+def calculate_sky_coordinates(px, py, ra_center, dec_center):
+    dx_arcsec = (150.0 - float(px)) * ARCSEC_PER_PIXEL
+    dy_arcsec = (150.0 - float(py)) * ARCSEC_PER_PIXEL
+    cos_declination = max(0.1, abs(math.cos(math.radians(dec_center))))
+    ra_val = (ra_center + (dx_arcsec / 3600.0) / cos_declination) % 360.0
+    dec_val = max(-89.99, min(89.99, dec_center + (dy_arcsec / 3600.0)))
+
+    hours = ra_val / 15.0
+    rh = int(hours)
+    rm = int((hours - rh) * 60.0)
+    rs = ((hours - rh) * 60.0 - rm) * 60.0
+    ra_str = f"{rh:02d}h {rm:02d}m {rs:04.1f}s ({ra_val:.4f} deg)"
+
+    sign = "+" if dec_val >= 0 else "-"
+    abs_dec = abs(dec_val)
+    dd = int(abs_dec)
+    dm = int((abs_dec - dd) * 60.0)
+    ds = ((abs_dec - dd) * 60.0 - dm) * 60.0
+    dec_str = f"{sign}{dd:02d}d {dm:02d}m {ds:04.1f}s ({dec_val:+.4f} deg)"
+    return ra_val, dec_val, ra_str, dec_str
+
+def draw_star_gaussian(grid, cx, cy, intensity, spread=2.1):
     h, w = grid.shape
-    rad = int(max(6, spread * 4))
-    x0, x1 = max(0, int(cx) - rad), min(w, int(cx) + rad + 1)
-    y0, y1 = max(0, int(cy) - rad), min(h, int(cy) + rad + 1)
-    if x0 >= x1 or y0 >= y1:
+    radius = int(max(6, spread * 4))
+    x_min, x_max = max(0, int(cx) - radius), min(w, int(cx) + radius + 1)
+    y_min, y_max = max(0, int(cy) - radius), min(h, int(cy) + radius + 1)
+    if x_min >= x_max or y_min >= y_max:
         return
-    yy, xx = np.ogrid[y0:y1, x0:x1]
-    d2 = (xx - cx) ** 2 + (yy - cy) ** 2
-    grid[y0:y1, x0:x1] += bright * np.exp(-d2 / (2.0 * spread ** 2))
+    yy, xx = np.ogrid[y_min:y_max, x_min:x_max]
+    dist_sq = (xx - cx) ** 2 + (yy - cy) ** 2
+    grid[y_min:y_max, x_min:x_max] += intensity * np.exp(-dist_sq / (2.0 * spread ** 2))
 
 @st.cache_data(show_spinner=False)
-def build_sector_pair(sector_name, pass_a, pass_b, clean_flag=False):
-    sec = skyData[sector_name]
-    rng = np.random.default_rng(sec["seed"])
-    n_side = 300
-    step_a = sec["epochs"][pass_a]["step"]
-    step_b = sec["epochs"][pass_b]["step"]
-    yy, xx = np.mgrid[0:n_side, 0:n_side]
-    sensor_glow = 0.04 * np.sin(xx / 38.0) * np.cos(yy / 44.0) + 0.05
-    pic_a = np.zeros((n_side, n_side), dtype=np.float32)
-    pic_b = np.zeros((n_side, n_side), dtype=np.float32)
-    # 170 fixed background stars
-    sx_list = rng.uniform(8, n_side - 8, 170)
-    sy_list = rng.uniform(8, n_side - 8, 170)
-    sf_list = rng.uniform(0.18, 0.85, 170)
-    ss_list = rng.uniform(1.3, 2.2, 170)
-    for sx, sy, sf, ss in zip(sx_list, sy_list, sf_list, ss_list):
-        put_star(pic_a, sx, sy, sf, ss)
-        put_star(pic_b, sx, sy, sf, ss)
-    for obj in sec["objects"]:
+def generate_sky_grid_pair(sector_name, epoch_a_key, epoch_b_key, clean_enabled=False):
+    sector = celestialSectors[sector_name]
+    rng_generator = np.random.default_rng(sector["seed"])
+    grid_size = 300
+    step_a = sector["epochs"][epoch_a_key]["step"]
+    step_b = sector["epochs"][epoch_b_key]["step"]
+
+    yy, xx = np.mgrid[0:grid_size, 0:grid_size]
+    ambient_glow = 0.04 * np.sin(xx / 38.0) * np.cos(yy / 44.0) + 0.05
+
+    grid_a = np.zeros((grid_size, grid_size), dtype=np.float32)
+    grid_b = np.zeros((grid_size, grid_size), dtype=np.float32)
+
+    star_x = rng_generator.uniform(8, grid_size - 8, 170)
+    star_y = rng_generator.uniform(8, grid_size - 8, 170)
+    star_flux = rng_generator.uniform(0.18, 0.85, 170)
+    star_spread = rng_generator.uniform(1.3, 2.2, 170)
+    for sx, sy, sf, ss in zip(star_x, star_y, star_flux, star_spread):
+        draw_star_gaussian(grid_a, sx, sy, sf, ss)
+        draw_star_gaussian(grid_b, sx, sy, sf, ss)
+
+    for obj in sector["objects"]:
         xa = obj["x1"] + obj["dx"] * step_a
         ya = obj["y1"] + obj["dy"] * step_a
         xb = obj["x1"] + obj["dx"] * step_b
         yb = obj["y1"] + obj["dy"] * step_b
         if "Planet X" in obj["kind"] or "Brown Dwarf" in obj["kind"]:
-            put_star(pic_a, xa, ya, obj["amp"], 2.5)
-            put_star(pic_b, xb, yb, obj["amp"], 2.5)
+            draw_star_gaussian(grid_a, xa, ya, obj["amp"], 2.5)
+            draw_star_gaussian(grid_b, xb, yb, obj["amp"], 2.5)
         else:
             amp_a = obj["amp"] * (0.22 if step_a == 0 else 0.65)
             amp_b = obj["amp"] * (1.0 if step_b >= 1.0 else 0.25)
-            put_star(pic_a, xa, ya, amp_a, 2.0)
-            put_star(pic_b, xb, yb, amp_b, 2.7)
-    noise_a = rng.normal(0.0, 0.028, (n_side, n_side)).astype(np.float32)
-    noise_b = rng.normal(0.0, 0.028, (n_side, n_side)).astype(np.float32)
-    if not clean_flag:
-        pic_a = pic_a + sensor_glow + noise_a
-        pic_b = pic_b + sensor_glow + noise_b
+            draw_star_gaussian(grid_a, xa, ya, amp_a, 2.0)
+            draw_star_gaussian(grid_b, xb, yb, amp_b, 2.7)
+
+    noise_a = rng_generator.normal(0.0, 0.028, (grid_size, grid_size)).astype(np.float32)
+    noise_b = rng_generator.normal(0.0, 0.028, (grid_size, grid_size)).astype(np.float32)
+    if not clean_enabled:
+        grid_a = grid_a + ambient_glow + noise_a
+        grid_b = grid_b + ambient_glow + noise_b
     else:
-        pic_a = pic_a + noise_a * 0.30
-        pic_b = pic_b + noise_b * 0.30
-    return np.clip(pic_a, 0.0, 1.35), np.clip(pic_b, 0.0, 1.35)
+        grid_a = grid_a + noise_a * 0.30
+        grid_b = grid_b + noise_b * 0.30
+    return np.clip(grid_a, 0.0, 1.35), np.clip(grid_b, 0.0, 1.35)
 
 # exports a 300x300 numpy sky image into standard FITS file bytes
 def make_fits_bytes(arr, obs_date):
@@ -453,17 +485,18 @@ def make_fits_bytes(arr, obs_date):
     hdr_txt = "".join(f"{c:<80}" for c in cards)
     rem = (2880 - (len(hdr_txt) % 2880)) % 2880
     hdr_bytes = (hdr_txt + (" " * rem)).encode("ascii")
+
     raw_data = np.asarray(arr, dtype=">f4").tobytes()
     pad_data = (2880 - (len(raw_data) % 2880)) % 2880
-    return hdr_bytes + raw_data + (b"\x00" * pad_data)
+    return hdr_bytes + raw_data + bytes(pad_data)
 
-# loads an uploaded .fits or .png/.jpg file safely
 def read_uploaded_sky(up_file):
     try:
         raw = up_file.read()
         if not raw:
             return None, f"File '{up_file.name}' is empty."
         fname = up_file.name.lower()
+
         if fname.endswith(".fits") or fname.endswith(".fit"):
             end_pos = raw.find(b"END     ")
             if end_pos != -1:
@@ -478,12 +511,12 @@ def read_uploaded_sky(up_file):
                     im = Image.fromarray((scaled * 255).astype(np.uint8)).resize((300, 300))
                     return np.asarray(im, dtype=np.float32) / 255.0, None
             return None, f"Could not read 2D FITS array from '{up_file.name}'."
+
         im = Image.open(io.BytesIO(raw)).convert("L").resize((300, 300))
         return np.asarray(im, dtype=np.float32) / 255.0, None
     except Exception as err:
         return None, f"Could not load '{up_file.name}': {err}"
 
-# builds two sky images from an uploaded CSV star catalog
 def read_uploaded_csv(csv_file):
     try:
         df = pd.read_csv(csv_file)
@@ -492,8 +525,10 @@ def read_uploaded_csv(csv_file):
         col_map = {c.lower().strip(): c for c in df.columns}
         if "x1" not in col_map and "x" not in col_map:
             return None, None, None, "CSV needs 'x' and 'y' (or 'x1', 'y1', 'x2', 'y2') columns."
+
         pic_a = np.zeros((300, 300), dtype=np.float32) + 0.04
         pic_b = np.zeros((300, 300), dtype=np.float32) + 0.04
+
         for _, row in df.iterrows():
             x1 = float(row[col_map.get("x1", col_map.get("x"))])
             y1 = float(row[col_map.get("y1", col_map.get("y"))])
@@ -501,10 +536,12 @@ def read_uploaded_csv(csv_file):
             y2 = float(row[col_map.get("y2", col_map.get("y1", col_map.get("y")))])
             f1 = float(row[col_map["flux_e1"]]) if "flux_e1" in col_map else 0.75
             f2 = float(row[col_map["flux_e2"]]) if "flux_e2" in col_map else f1
+
             a1 = min(1.1, f1 / 15.0) if f1 > 1.5 else f1
             a2 = min(1.1, f2 / 15.0) if f2 > 1.5 else f2
-            put_star(pic_a, x1, y1, a1, 2.3)
-            put_star(pic_b, x2, y2, a2, 2.3)
+            draw_star_gaussian(pic_a, x1, y1, a1, 2.3)
+            draw_star_gaussian(pic_b, x2, y2, a2, 2.3)
+
         rng = np.random.default_rng(77)
         pic_a += rng.normal(0.0, 0.015, (300, 300)).astype(np.float32)
         pic_b += rng.normal(0.0, 0.015, (300, 300)).astype(np.float32)
@@ -524,271 +561,265 @@ def sample_csv_bytes():
     ]
     return "\n".join(lines).encode("utf-8")
 
-# turns a 2D float grid into a colored PIL picture
-def paint_sky(arr, theme_name="Deep Space Cyan", bright=1.0, contrast=1.0, is_diff=False):
-    if is_diff:
-        d = arr * contrast * 2.4
-        pos = np.clip(d, 0.0, 1.0)
-        neg = np.clip(-d, 0.0, 1.0)
-        r = np.clip(6 + pos * 249, 0, 255).astype(np.uint8)
-        g = np.clip(10 + pos * 165 + neg * 210, 0, 255).astype(np.uint8)
-        b = np.clip(22 + pos * 30 + neg * 255, 0, 255).astype(np.uint8)
+def colorize_sky_image(array_grid, palette="Deep Space Cyan", brightness=1.0, contrast=1.0, is_difference=False):
+    if is_difference:
+        diff_scaled = array_grid * contrast * 2.4
+        pos_channel = np.clip(diff_scaled, 0.0, 1.0)
+        neg_channel = np.clip(-diff_scaled, 0.0, 1.0)
+        r = np.clip(6 + pos_channel * 249, 0, 255).astype(np.uint8)
+        g = np.clip(10 + pos_channel * 165 + neg_channel * 210, 0, 255).astype(np.uint8)
+        b = np.clip(22 + pos_channel * 30 + neg_channel * 255, 0, 255).astype(np.uint8)
         return Image.fromarray(np.stack([r, g, b], axis=-1), mode="RGB")
-    adj = np.clip((arr - 0.15) * contrast + 0.15, 0.0, 1.2) * bright
-    v = np.clip(adj, 0.0, 1.0)
-    if theme_name == "Infrared Heat (SPHEREx)":
-        r = np.clip(8 + (v ** 0.75) * 247, 0, 255).astype(np.uint8)
-        g = np.clip(10 + (v ** 1.35) * 195, 0, 255).astype(np.uint8)
-        b = np.clip(26 + (v ** 2.2) * 140, 0, 255).astype(np.uint8)
-    elif theme_name == "Emerald Nebula":
-        r = np.clip(6 + (v ** 1.7) * 150, 0, 255).astype(np.uint8)
-        g = np.clip(14 + (v ** 0.8) * 240, 0, 255).astype(np.uint8)
-        b = np.clip(24 + (v ** 1.2) * 195, 0, 255).astype(np.uint8)
+    adjusted = np.clip((array_grid - 0.15) * contrast + 0.15, 0.0, 1.2) * brightness
+    val = np.clip(adjusted, 0.0, 1.0)
+    if palette == "Infrared Heat (SPHEREx)":
+        r = np.clip(8 + (val ** 0.75) * 247, 0, 255).astype(np.uint8)
+        g = np.clip(10 + (val ** 1.35) * 195, 0, 255).astype(np.uint8)
+        b = np.clip(26 + (val ** 2.2) * 140, 0, 255).astype(np.uint8)
+    elif palette == "Emerald Nebula":
+        r = np.clip(6 + (val ** 1.7) * 150, 0, 255).astype(np.uint8)
+        g = np.clip(14 + (val ** 0.8) * 240, 0, 255).astype(np.uint8)
+        b = np.clip(24 + (val ** 1.2) * 195, 0, 255).astype(np.uint8)
     else:
-        r = np.clip(6 + (v ** 1.5) * 225, 0, 255).astype(np.uint8)
-        g = np.clip(12 + (v ** 0.95) * 238, 0, 255).astype(np.uint8)
-        b = np.clip(28 + (v ** 0.70) * 255, 0, 255).astype(np.uint8)
+        r = np.clip(6 + (val ** 1.5) * 225, 0, 255).astype(np.uint8)
+        g = np.clip(12 + (val ** 0.95) * 238, 0, 255).astype(np.uint8)
+        b = np.clip(28 + (val ** 0.70) * 255, 0, 255).astype(np.uint8)
     return Image.fromarray(np.stack([r, g, b], axis=-1), mode="RGB")
 
-# creates a 2-second WAV sound clip for the selected sky object
-def create_doppler_wav(freq_hz, flux_val, is_planet_x):
-    rate = 22050
-    secs = 2.0
-    n_tot = int(rate * secs)
-    mem = io.BytesIO()
-    with wave.open(mem, "wb") as wav_out:
-        wav_out.setnchannels(1)
-        wav_out.setsampwidth(2)
-        wav_out.setframerate(rate)
-        raw_pcm = bytearray()
-        for i in range(n_tot):
-            t = i / rate
-            env = math.sin(math.pi * t / secs) ** 0.45
+def generate_doppler_audio(freq_hz, flux_value, is_planet_x=False):
+    sample_rate = 22050
+    duration_secs = 2.0
+    total_samples = int(sample_rate * duration_secs)
+    buffer_io = io.BytesIO()
+    with wave.open(buffer_io, "wb") as wav_file:
+        wav_file.setnchannels(1)
+        wav_file.setsampwidth(2)
+        wav_file.setframerate(sample_rate)
+        pcm_bytes = bytearray()
+        for i in range(total_samples):
+            t = i / sample_rate
+            envelope = math.sin(math.pi * t / duration_secs) ** 0.45
             if is_planet_x:
                 f = freq_hz + 140.0 * math.sin(2.0 * math.pi * 1.5 * t) + 85.0 * t
                 tone2 = 0.35 * math.sin(2.0 * math.pi * (f * 1.5) * t)
             else:
                 f = freq_hz + 35.0 * math.cos(2.0 * math.pi * 3.0 * t)
                 tone2 = 0.20 * math.sin(2.0 * math.pi * (f * 2.0) * t)
-            sig = env * min(1.0, max(0.35, flux_val)) * (0.65 * math.sin(2.0 * math.pi * f * t) + tone2)
-            val = int(max(-32767, min(32767, sig * 26000)))
-            raw_pcm += val.to_bytes(2, byteorder="little", signed=True)
-        wav_out.writeframes(bytes(raw_pcm))
-    return mem.getvalue()
+            signal = envelope * min(1.0, max(0.35, flux_value)) * (0.65 * math.sin(2.0 * math.pi * f * t) + tone2)
+            sample_val = int(max(-32767, min(32767, signal * 26000)))
+            pcm_bytes += sample_val.to_bytes(2, byteorder="little", signed=True)
+        wav_file.writeframes(bytes(pcm_bytes))
+    return buffer_io.getvalue()
 
-# checks the pixels inside the user's manually selected sky area
-def analyze_sky_pick(sector_name, pass_a, pass_b, cx, cy, rad_px, shape_used, pic_a, pic_b, custom_mode=False):
-    sec = skyData[sector_name]
-    _, _, ra_txt, dec_txt = calc_sky_coords(cx, cy, sec["ra_center"], sec["dec_center"])
-    ep_a = sec["epochs"][pass_a]
-    ep_b = sec["epochs"][pass_b]
-    day_gap = max(1, abs(ep_b["days"] - ep_a["days"]))
-    r = max(5, int(rad_px))
+def evaluate_user_sky_pick(sector_name, pass_a, pass_b, cx, cy, radius_px, grid_a, grid_b, custom_mode=False):
+    sector = celestialSectors[sector_name]
+    _, _, ra_str, dec_str = calculate_sky_coordinates(cx, cy, sector["ra_center"], sector["dec_center"])
+    ep_a = sector["epochs"][pass_a]
+    ep_b = sector["epochs"][pass_b]
+    time_gap_days = max(1, abs(ep_b["days"] - ep_a["days"]))
+    r = max(5, int(radius_px))
     x0, x1 = max(0, cx - r), min(299, cx + r)
     y0, y1 = max(0, cy - r), min(299, cy + r)
-    sub_a = pic_a[y0:y1 + 1, x0:x1 + 1]
-    sub_b = pic_b[y0:y1 + 1, x0:x1 + 1]
-    pk_a = float(np.max(sub_a))
-    pk_b = float(np.max(sub_b))
-    top_pk = max(pk_a, pk_b)
-    bg_noise = float(max(0.015, np.std(pic_a)))
-    snr_val = round(float(np.max(np.abs(sub_b - sub_a))) / bg_noise, 1)
-    mjy_a = round(pk_a * 15.0, 2)
-    mjy_b = round(pk_b * 15.0, 2)
+    sub_a = grid_a[y0:y1 + 1, x0:x1 + 1]
+    sub_b = grid_b[y0:y1 + 1, x0:x1 + 1]
+    peak_a = float(np.max(sub_a))
+    peak_b = float(np.max(sub_b))
+    max_peak = max(peak_a, peak_b)
+    noise_level = float(max(0.015, np.std(grid_a)))
+    snr = round(float(np.max(np.abs(sub_b - sub_a))) / noise_level, 1)
+    mjy_a = round(peak_a * 15.0, 2)
+    mjy_b = round(peak_b * 15.0, 2)
     best_mjy = max(0.05, mjy_a, mjy_b)
-    ab_mag = round(-2.5 * math.log10(best_mjy / 3631000.0), 2)
-    hit = None
-    best_dist = 999.0
+    ab_magnitude = round(-2.5 * math.log10(best_mjy / 3631000.0), 2)
+
+    matched_object = None
+    min_distance = 999.0
     if not custom_mode:
-        for obj in sec["objects"]:
+        for obj in sector["objects"]:
             xa = obj["x1"] + obj["dx"] * ep_a["step"]
             ya = obj["y1"] + obj["dy"] * ep_a["step"]
             xb = obj["x1"] + obj["dx"] * ep_b["step"]
             yb = obj["y1"] + obj["dy"] * ep_b["step"]
-            d_min = min(math.hypot(cx - xa, cy - ya), math.hypot(cx - xb, cy - yb))
-            if d_min <= max(18.0, rad_px * 1.15) and d_min < best_dist:
-                best_dist = d_min
-                hit = (obj, xa, ya, xb, yb)
-    if hit is not None:
-        obj, xa, ya, xb, yb = hit
-        px_move = round(math.hypot(xb - xa, yb - ya), 1)
-        arc_move = round(px_move * ARCSEC_PER_PX, 1)
-        daily_rate = round(arc_move / day_gap, 3)
+            dist = min(math.hypot(cx - xa, cy - ya), math.hypot(cx - xb, cy - yb))
+            if dist <= max(18.0, radius_px * 1.15) and dist < min_distance:
+                min_distance = dist
+                matched_object = (obj, xa, ya, xb, yb)
+
+    if matched_object is not None:
+        obj, xa, ya, xb, yb = matched_object
+        pixel_shift = round(math.hypot(xb - xa, yb - ya), 1)
+        arcsec_shift = round(pixel_shift * ARCSEC_PER_PIXEL, 1)
+        daily_motion = round(arcsec_shift / time_gap_days, 3)
         f1 = obj["flux_e1"]
         f2 = obj["flux_e2"] if ep_b["step"] != ep_a["step"] else obj["flux_e1"]
-        pct = round(((f2 - f1) / max(0.1, f1)) * 100.0, 1)
-        mag_cat = round(-2.5 * math.log10(max(f1, f2) / 3631000.0), 2)
+        pct_change = round(((f2 - f1) / max(0.1, f1)) * 100.0, 1)
         return {
             "found_flag": "YES (Candidate Anomaly Logged)",
             "title": obj["name"],
             "kind": obj["kind"],
             "status": obj["status"],
             "points": obj["points"],
-            "ra_str": ra_txt,
-            "dec_str": dec_txt,
+            "ra_str": ra_str,
+            "dec_str": dec_str,
             "date_a": ep_a["label"],
             "date_b": ep_b["label"],
             "distance": obj["distance"],
             "temp": obj["temp"],
             "mass": obj["mass"],
             "wavelength": obj["wavelength"],
-            "shift_text": f"{px_move} px ({arc_move} arcsec | {daily_rate} arcsec/day over {day_gap}d)",
-            "flux_text": f"Image A: {f1} mJy -> Image B: {f2} mJy ({pct:+.1f}%) | Mag: {mag_cat} AB | SNR: {max(snr_val, 14.0)} sigma",
-            "peak_flux": round(top_pk, 3),
+            "shift_text": f"{pixel_shift} px ({arcsec_shift} arcsec | {daily_motion} arcsec/day over {time_gap_days}d)",
+            "flux_text": f"Image A: {f1} mJy -> Image B: {f2} mJy ({pct_change:+.1f}%) | Mag: {ab_magnitude} AB | SNR: {max(snr, 14.0)} sigma",
+            "peak_flux": round(max_peak, 3),
             "freq": obj["freq"],
-            "note": obj["note"]
+            "note": obj["note"],
+            "snr_val": max(snr, 14.0),
+            "arcsec_val": arcsec_shift
         }
-    if custom_mode and snr_val >= 5.0:
-        pct = round(((mjy_b - mjy_a) / max(0.1, mjy_a)) * 100.0, 1)
+
+    if custom_mode and snr >= 5.0:
+        pct_change = round(((mjy_b - mjy_a) / max(0.1, mjy_a)) * 100.0, 1)
         return {
             "found_flag": "YES (Custom File Candidate)",
             "title": "Unconfirmed Moving / Variable Candidate (Uploaded Data)",
             "kind": "Planet X Candidate",
             "status": "UNCONFIRMED CANDIDATE (Needs Follow-Up Observation)",
             "points": 120,
-            "ra_str": ra_txt,
-            "dec_str": dec_txt,
+            "ra_str": ra_str,
+            "dec_str": dec_str,
             "date_a": "Custom File Epoch 1",
             "date_b": "Custom File Epoch 2",
             "distance": "Requires 3rd-Epoch Parallax Fit",
             "temp": "Pending Multi-Band IR Check",
             "mass": "Pending Thermal Model",
             "wavelength": "Uploaded Survey Band",
-            "shift_text": f"Detected {snr_val} sigma change inside selected area",
-            "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy ({pct:+.1f}%) | Mag: {ab_mag} AB | SNR: {snr_val} sigma",
-            "peak_flux": round(top_pk, 3),
+            "shift_text": f"Detected {snr} sigma change inside selected area",
+            "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy ({pct_change:+.1f}%) | Mag: {ab_magnitude} AB | SNR: {snr} sigma",
+            "peak_flux": round(max_peak, 3),
             "freq": 520,
-            "note": f"Your selected region shows a strong ({snr_val} sigma) change between Image A and Image B! Logged as an unconfirmed candidate."
+            "note": f"Your selected region shows a strong ({snr} sigma) change between Image A and Image B! Logged as an unconfirmed candidate.",
+            "snr_val": snr,
+            "arcsec_val": round(r * 0.8 * ARCSEC_PER_PIXEL, 1)
         }
+
     return {
         "found_flag": "NO (Fixed Star or Noise)",
         "title": "False Alarm (Stationary Star or Background Noise)",
         "kind": "False Alarm",
         "status": "REJECTED (Fixed Background Star / Sensor Noise)",
         "points": -20,
-        "ra_str": ra_txt,
-        "dec_str": dec_txt,
+        "ra_str": ra_str,
+        "dec_str": dec_str,
         "date_a": ep_a["label"],
         "date_b": ep_b["label"],
         "distance": ">1,000 Light-Years (Background Star)",
         "temp": "~4,800 K (Normal Star)",
         "mass": "~1.0 Solar Mass",
-        "wavelength": sec["band"],
-        "shift_text": "0.0 px (0.0 arcsec shift - Did not move)",
-        "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy (Steady) | Mag: {ab_mag} AB | SNR: {snr_val} sigma",
-        "peak_flux": round(top_pk, 3),
+        "wavelength": sector["band"],
+        "shift_text": "0.0 px (0.0 arcsec shift)",
+        "flux_text": f"Image A: {mjy_a} mJy -> Image B: {mjy_b} mJy (Steady) | Mag: {ab_magnitude} AB | SNR: {snr} sigma",
+        "peak_flux": round(max_peak, 3),
         "freq": 240,
-        "note": "The pixels inside your selected area stayed in the same place and brightness. Blink the images manually or pause to spot a moving dot!"
+        "note": "Better luck next time! The pixels inside your selected area stayed in the same place. Keep scanning!",
+        "snr_val": snr,
+        "arcsec_val": 0.0
     }
 
-def to_b64_png(pil_img):
-    buf = io.BytesIO()
-    pil_img.save(buf, format="PNG")
-    return base64.b64encode(buf.getvalue()).decode("utf-8")
+def image_to_base64_string(pil_image):
+    stream = io.BytesIO()
+    pil_image.save(stream, format="PNG")
+    return base64.b64encode(stream.getvalue()).decode("utf-8")
 
-# interactive HTML5 sky canvas with manual blink button, pause button, and mouse drag area selector
-def make_canvas_widget(b64_a, b64_b, b64_sub, mode_name, shape_name, blink_ms, mx, my, mr, ra0, dec0, label_a, label_b, start_frame):
+def render_interactive_canvas(b64_a, b64_b, b64_sub, mode_name, shape_name, blink_ms, mx, my, mr, ra_center, dec_center, label_a, label_b, active_frame):
     return f"""
     <!DOCTYPE html>
     <html>
     <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
         body {{
             margin: 0;
-            padding: 6px;
-            background: #060c1d;
-            color: #eaf2ff;
+            padding: 4px;
+            background: #030611;
+            color: #ffffff;
             font-family: 'Segoe UI', Arial, sans-serif;
             text-align: center;
         }}
-        .sky-box {{
+        .observatory-box {{
             display: inline-block;
-            background: #040814;
-            border: 2px solid #00d4ff;
+            width: 100%;
+            max-width: 480px;
+            background: #040816;
+            border: 2px solid #38bdf8;
             border-radius: 14px;
-            padding: 10px;
-            box-shadow: 0 0 24px rgba(0, 212, 255, 0.25);
+            padding: 8px;
+            box-sizing: border-box;
+            box-shadow: 0 0 25px rgba(56, 189, 248, 0.3);
         }}
         canvas {{
+            width: 100% !important;
+            height: auto !important;
+            max-width: 460px;
+            max-height: 460px;
             border-radius: 8px;
             cursor: crosshair;
             display: block;
             margin: 0 auto;
-            background: #040814;
+            background: #040816;
+            touch-action: none;
         }}
-        .ctrl-row {{
+        .toolbar-row {{
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
-            gap: 8px;
+            gap: 6px;
             margin-top: 8px;
         }}
-        .canvas-btn {{
-            background: linear-gradient(135deg, #0b3d91, #1458c8);
+        .tool-btn {{
+            background: linear-gradient(135deg, #0b3d91, #1d4ed8);
             color: #ffffff;
-            border: 1px solid #00d4ff;
-            border-radius: 8px;
-            padding: 5px 12px;
-            font-size: 12px;
+            border: 1px solid #38bdf8;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 11.5px;
             font-weight: 700;
             cursor: pointer;
         }}
-        .canvas-btn:hover {{
+        .tool-btn:hover {{
             background: #fc3d21;
-            border-color: #ffd166;
+            border-color: #facc15;
         }}
-        .hud-row {{
+        .status-row {{
             display: flex;
             flex-wrap: wrap;
             justify-content: space-between;
             align-items: center;
-            gap: 6px;
-            margin-top: 7px;
-            padding: 6px 10px;
-            background: #0b1736;
-            border: 1px solid rgba(0, 212, 255, 0.35);
-            border-radius: 8px;
-            font-size: 12px;
+            gap: 4px;
+            margin-top: 6px;
+            padding: 5px 8px;
+            background: #0b132b;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 6px;
+            font-size: 11.5px;
             font-weight: 700;
-        }}
-        .pill-gold {{
-            color: #ffd166;
-            background: rgba(252, 61, 33, 0.22);
-            border: 1px solid #fc3d21;
-            padding: 3px 9px;
-            border-radius: 99px;
-        }}
-        .pill-green {{
-            color: #00ff9d;
-            background: rgba(0, 255, 157, 0.14);
-            border: 1px solid #00ff9d;
-            padding: 3px 9px;
-            border-radius: 99px;
-        }}
-        .pill-blue {{
-            color: #7ce8ff;
-            background: rgba(11, 61, 145, 0.55);
-            border: 1px solid #00d4ff;
-            padding: 3px 9px;
-            border-radius: 99px;
+            color: #ffffff;
         }}
     </style>
     </head>
     <body>
-        <div class="sky-box" title="Click and drag on the sky image to manually select any area!">
+        <div class="observatory-box" title="Click or touch and drag on the sky image to manually select any area!">
             <canvas id="skyCanvas" width="460" height="460"></canvas>
-            <div class="ctrl-row">
-                <button class="canvas-btn" id="btnManualFlip" title="Flip between Image A and Image B manually">⚡ Blink Manually (Flip A ↔ B)</button>
-                <button class="canvas-btn" id="btnPauseResume" title="Pause or resume blinking so you can select an area carefully">⏸️ Pause / ▶️ Resume Blink</button>
-                <button class="canvas-btn" id="btnShowSub" title="Show or hide the Dark Subtraction Map">🌗 Toggle Subtraction View</button>
+            <div class="toolbar-row">
+                <button class="tool-btn" id="btnManualFlip">⚡ Blink Manually (Flip A ↔ B)</button>
+                <button class="tool-btn" id="btnPauseResume">⏸️ Pause / ▶️ Resume Blink</button>
+                <button class="tool-btn" id="btnShowSub">🌗 Toggle Subtraction View</button>
             </div>
-            <div class="hud-row">
-                <span id="frameInfo" class="pill-blue">Loading Sky Image...</span>
-                <span id="pixelInfo" class="pill-gold">Selected Area: X={mx}, Y={my} (Size={mr}px)</span>
+            <div class="status-row">
+                <span id="frameInfo" style="color: #38bdf8;">Loading Sky...</span>
+                <span id="pixelInfo" style="color: #facc15;">Area: X={mx}, Y={my} (Size={mr}px)</span>
             </div>
-            <div class="hud-row" style="margin-top:5px;">
-                <span id="radecInfo" class="pill-green">J2000 Sky Coords: RA / Dec</span>
-                <span style="color:#9ec5ff; font-size:11.5px;">Drag mouse on image to move & resize selection</span>
+            <div class="status-row" style="margin-top:4px;">
+                <span id="radecInfo" style="color: #34d399;">J2000 RA / Dec</span>
+                <span style="color:#b8d8ff; font-size:10.5px;">Touch or drag on image to select area</span>
             </div>
         </div>
         <script>
@@ -803,73 +834,86 @@ def make_canvas_widget(b64_a, b64_b, b64_sub, mode_name, shape_name, blink_ms, m
         imgA.src = "data:image/png;base64,{b64_a}";
         imgB.src = "data:image/png;base64,{b64_b}";
         imgSub.src = "data:image/png;base64,{b64_sub}";
-        let curFrame = {start_frame};
-        let activeMode = "{mode_name}";
-        const shapeMode = "{shape_name}";
-        const blinkMs = {blink_ms};
-        const ra0 = {ra0};
-        const dec0 = {dec0};
+        let currentFrame = {active_frame};
+        let currentMode = "{mode_name}";
+        const currentShape = "{shape_name}";
+        const blinkInterval = {blink_ms};
+        const raCenter = {ra_center};
+        const decCenter = {dec_center};
         const labelA = "{label_a}";
         const labelB = "{label_b}";
-        let isPaused = (activeMode !== "Auto Blink Images");
-        const scale = 460 / 300;
-        let selX = {mx};
-        let selY = {my};
-        let selR = {mr};
-        let dragging = false;
-        function calcRaDec(px, py) {{
+        let pausedState = (currentMode !== "Auto Blink Images");
+        let canvasScale = 460 / 300;
+        let selectedX = {mx};
+        let selectedY = {my};
+        let selectedRadius = {mr};
+        let isDragging = false;
+
+        function computeRaDec(px, py) {{
             const dxArc = (150.0 - px) * 6.2;
             const dyArc = (150.0 - py) * 6.2;
-            const cosD = Math.max(0.1, Math.abs(Math.cos(dec0 * Math.PI / 180.0)));
-            const ra = ((ra0 + (dxArc / 3600.0) / cosD) % 360.0 + 360.0) % 360.0;
-            const dec = Math.max(-89.99, Math.min(89.99, dec0 + (dyArc / 3600.0)));
-            return `RA: ${{ra.toFixed(4)}} deg | Dec: ${{dec >= 0 ? '+' : ''}}${{dec.toFixed(4)}} deg (J2000)`;
+            const cosD = Math.max(0.1, Math.abs(Math.cos(decCenter * Math.PI / 180.0)));
+            const ra = ((raCenter + (dxArc / 3600.0) / cosD) % 360.0 + 360.0) % 360.0;
+            const dec = Math.max(-89.99, Math.min(89.99, decCenter + (dyArc / 3600.0)));
+            return "RA: " + ra.toFixed(4) + " deg | Dec: " + (dec >= 0 ? "+" : "") + dec.toFixed(4) + " deg";
         }}
-        function updateText() {{
-            pixelInfo.textContent = `Selected Area: X=${{selX}}, Y=${{selY}} | Size=${{selR}}px (Type X, Y on right to scan)`;
-            radecInfo.textContent = calcRaDec(selX, selY);
+        function updateParentInputs(x, y, r) {{
+            try {{
+                const doc = window.parent.document;
+                const inputs = doc.querySelectorAll('input[type="number"]');
+                if (inputs.length >= 3) {{
+                    inputs[0].value = x; inputs[0].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    inputs[1].value = y; inputs[1].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                    inputs[2].value = r; inputs[2].dispatchEvent(new Event('input', {{ bubbles: true }}));
+                }}
+            }} catch(err) {{}}
         }}
-        function renderCanvas() {{
+        function refreshLabels() {{
+            pixelInfo.textContent = "Area: X=" + selectedX + ", Y=" + selectedY + " | Size=" + selectedRadius + "px";
+            radecInfo.textContent = computeRaDec(selectedX, selectedY);
+        }}
+        function redrawCanvas() {{
             ctx.clearRect(0, 0, 460, 460);
-            if (activeMode === "Subtraction Map (Image B - Image A)") {{
+            if (currentMode === "Subtraction Map (Image B - Image A)") {{
                 ctx.drawImage(imgSub, 0, 0, 460, 460);
-                frameInfo.textContent = "Subtraction Map: Cyan = Image A | Gold = Image B";
-            }} else if (activeMode === "Pause on Image A") {{
+                frameInfo.textContent = "Subtraction Map (Cyan=A, Gold=B)";
+            }} else if (currentMode === "Pause on Image A") {{
                 ctx.drawImage(imgA, 0, 0, 460, 460);
-                frameInfo.textContent = "Paused Image A: " + labelA;
-            }} else if (activeMode === "Pause on Image B") {{
+                frameInfo.textContent = "Paused A: " + labelA;
+            }} else if (currentMode === "Pause on Image B") {{
                 ctx.drawImage(imgB, 0, 0, 460, 460);
-                frameInfo.textContent = "Paused Image B: " + labelB;
+                frameInfo.textContent = "Paused B: " + labelB;
             }} else {{
-                if (curFrame === 1) {{
+                if (currentFrame === 1) {{
                     ctx.drawImage(imgA, 0, 0, 460, 460);
-                    frameInfo.textContent = (isPaused ? "Manual/Paused A: " : "Blinking A: ") + labelA;
+                    frameInfo.textContent = (pausedState ? "Paused A: " : "Blinking A: ") + labelA;
                 }} else {{
                     ctx.drawImage(imgB, 0, 0, 460, 460);
-                    frameInfo.textContent = (isPaused ? "Manual/Paused B: " : "Blinking B: ") + labelB;
+                    frameInfo.textContent = (pausedState ? "Paused B: " : "Blinking B: ") + labelB;
                 }}
             }}
-            ctx.strokeStyle = "rgba(0, 212, 255, 0.14)";
+            ctx.strokeStyle = "rgba(56, 189, 248, 0.15)";
             ctx.lineWidth = 1;
             for (let g = 57; g < 460; g += 57) {{
                 ctx.beginPath(); ctx.moveTo(g, 0); ctx.lineTo(g, 460); ctx.stroke();
                 ctx.beginPath(); ctx.moveTo(0, g); ctx.lineTo(460, g); ctx.stroke();
             }}
-            const cx = selX * scale;
-            const cy = selY * scale;
-            const cr = selR * scale;
-            ctx.strokeStyle = "#ffd166";
+            const s = 460 / 300;
+            const cx = selectedX * s;
+            const cy = selectedY * s;
+            const cr = selectedRadius * s;
+            ctx.strokeStyle = "#facc15";
             ctx.lineWidth = 2.5;
             ctx.beginPath();
-            if (shapeMode === "Draw Circle") {{
+            if (currentShape === "Draw Circle") {{
                 ctx.arc(cx, cy, cr, 0, Math.PI * 2);
-            }} else if (shapeMode === "Draw Square") {{
+            }} else if (currentShape === "Draw Square") {{
                 ctx.rect(cx - cr, cy - cr, cr * 2, cr * 2);
             }} else {{
                 ctx.rect(cx - cr * 1.35, cy - cr * 0.85, cr * 2.7, cr * 1.7);
             }}
             ctx.stroke();
-            ctx.strokeStyle = "#fc3d21";
+            ctx.strokeStyle = "#f43f5e";
             ctx.lineWidth = 1.5;
             ctx.beginPath();
             ctx.moveTo(cx - 8, cy); ctx.lineTo(cx + 8, cy);
@@ -877,69 +921,95 @@ def make_canvas_widget(b64_a, b64_b, b64_sub, mode_name, shape_name, blink_ms, m
             ctx.stroke();
         }}
         document.getElementById('btnManualFlip').addEventListener('click', () => {{
-            isPaused = true;
-            if (activeMode === "Subtraction Map (Image B - Image A)" || activeMode === "Pause on Image A" || activeMode === "Pause on Image B") {{
-                activeMode = "Manual Blink (Step-by-Step)";
+            pausedState = true;
+            if (currentMode === "Subtraction Map (Image B - Image A)" || currentMode === "Pause on Image A" || currentMode === "Pause on Image B") {{
+                currentMode = "Manual Blink (Step-by-Step)";
             }}
-            curFrame = (curFrame === 1) ? 2 : 1;
-            renderCanvas();
+            currentFrame = (currentFrame === 1) ? 2 : 1;
+            redrawCanvas();
         }});
         document.getElementById('btnPauseResume').addEventListener('click', () => {{
-            if (activeMode === "Subtraction Map (Image B - Image A)") {{
-                activeMode = "Auto Blink Images";
-                isPaused = false;
+            if (currentMode === "Subtraction Map (Image B - Image A)") {{
+                currentMode = "Auto Blink Images";
+                pausedState = false;
             }} else {{
-                isPaused = !isPaused;
-                if (!isPaused) activeMode = "Auto Blink Images";
+                pausedState = !pausedState;
+                if (!pausedState) currentMode = "Auto Blink Images";
             }}
-            renderCanvas();
+            redrawCanvas();
         }});
         document.getElementById('btnShowSub').addEventListener('click', () => {{
-            if (activeMode === "Subtraction Map (Image B - Image A)") {{
-                activeMode = "Manual Blink (Step-by-Step)";
-                isPaused = true;
+            if (currentMode === "Subtraction Map (Image B - Image A)") {{
+                currentMode = "Manual Blink (Step-by-Step)";
+                pausedState = true;
             }} else {{
-                activeMode = "Subtraction Map (Image B - Image A)";
-                isPaused = true;
+                currentMode = "Subtraction Map (Image B - Image A)";
+                pausedState = true;
             }}
-            renderCanvas();
+            redrawCanvas();
         }});
-        canvas.addEventListener('mousedown', (e) => {{
+
+        function getClientPos(e) {{
             const rect = canvas.getBoundingClientRect();
-            selX = Math.max(0, Math.min(299, Math.round((e.clientX - rect.left) / scale)));
-            selY = Math.max(0, Math.min(299, Math.round((e.clientY - rect.top) / scale)));
-            dragging = true;
-            updateText();
-            renderCanvas();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            return {{
+                x: Math.max(0, Math.min(299, Math.round((clientX - rect.left) * (300 / rect.width)))),
+                y: Math.max(0, Math.min(299, Math.round((clientY - rect.top) * (300 / rect.height))))
+            }};
+        }}
+
+        canvas.addEventListener('mousedown', (e) => {{
+            const pt = getClientPos(e);
+            selectedX = pt.x; selectedY = pt.y;
+            isDragging = true;
+            refreshLabels(); redrawCanvas();
         }});
         canvas.addEventListener('mousemove', (e) => {{
-            if (!dragging) return;
-            const rect = canvas.getBoundingClientRect();
-            const curX = Math.round((e.clientX - rect.left) / scale);
-            const curY = Math.round((e.clientY - rect.top) / scale);
-            const dist = Math.round(Math.hypot(curX - selX, curY - selY));
-            selR = Math.max(8, Math.min(60, dist));
-            updateText();
-            renderCanvas();
+            if (!isDragging) return;
+            const pt = getClientPos(e);
+            const dist = Math.round(Math.hypot(pt.x - selectedX, pt.y - selectedY));
+            selectedRadius = Math.max(8, Math.min(60, dist));
+            refreshLabels(); redrawCanvas();
         }});
         window.addEventListener('mouseup', () => {{
-            dragging = false;
+            if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
         }});
-        updateText();
-        imgA.onload = renderCanvas;
-        imgB.onload = renderCanvas;
+
+        canvas.addEventListener('touchstart', (e) => {{
+            const pt = getClientPos(e);
+            selectedX = pt.x; selectedY = pt.y;
+            isDragging = true;
+            refreshLabels(); redrawCanvas();
+            e.preventDefault();
+        }}, {{ passive: false }});
+        canvas.addEventListener('touchmove', (e) => {{
+            if (!isDragging) return;
+            const pt = getClientPos(e);
+            const dist = Math.round(Math.hypot(pt.x - selectedX, pt.y - selectedY));
+            selectedRadius = Math.max(8, Math.min(60, dist));
+            refreshLabels(); redrawCanvas();
+            e.preventDefault();
+        }}, {{ passive: false }});
+        window.addEventListener('touchend', () => {{
+            if (isDragging) {{ isDragging = false; updateParentInputs(selectedX, selectedY, selectedRadius); }}
+        }});
+
+        refreshLabels();
+        imgA.onload = redrawCanvas;
+        imgB.onload = redrawCanvas;
         setInterval(() => {{
-            if (!isPaused && activeMode === "Auto Blink Images") {{
-                curFrame = (curFrame === 1) ? 2 : 1;
-                renderCanvas();
+            if (!pausedState && currentMode === "Auto Blink Images") {{
+                currentFrame = (currentFrame === 1) ? 2 : 1;
+                redrawCanvas();
             }}
-        }}, blinkMs);
+        }}, blinkInterval);
         </script>
     </body>
     </html>
     """
 
-# session variables (scoreboard starts empty and only fills as players scan!)
+# Session state setup (Scoreboard starts empty and only fills when playing!)
 if "page_step" not in st.session_state:
     st.session_state.page_step = "welcome"
 if "explorerName" not in st.session_state:
@@ -961,122 +1031,126 @@ if "score_table" not in st.session_state:
 if "saved_scores" not in st.session_state:
     st.session_state.saved_scores = {}
 
-# Page 1: Welcome & Login Page
+# SCREEN 1: WELCOME PAGE
 def show_welcome_screen():
-    logo_b64 = nasa_logo_data()
+    logo_uri = get_nasa_logo_svg()
     st.write("")
     st.write("")
-    c1, c2, c3 = st.columns([1.1, 2.2, 1.1])
-    with c2:
-        put_html(f"""
-        <div class="exo-card" style="text-align:center; padding:32px 26px; animation: glowPulse 4s infinite;" title="Welcome to ExoMapper! Enter your Space Explorer Name below.">
-            <img src="{logo_b64}" alt="Official NASA Logo" style="width:112px; height:auto; margin-bottom:10px; filter: drop-shadow(0 4px 12px rgba(0, 212, 255, 0.45));"/>
+    col1, col2, col3 = st.columns([1.0, 2.3, 1.0])
+    with col2:
+        render_html_snippet(f"""
+        <div class="space-panel" style="text-align:center; padding:32px 24px;" title="Welcome to ExoMapper! Enter your Space Explorer Name below.">
+            <img src="{logo_uri}" alt="Official NASA Logo" style="width:110px; height:auto; margin-bottom:10px; filter: drop-shadow(0 4px 14px rgba(56,189,248,0.5));"/>
             <div>
-                <span class="exo-badge">NASA SPACE APPS CHALLENGE 2026 • TEAM EXOMAPPER</span>
+                <span class="space-tag">NASA SPACE APPS CHALLENGE 2026 • TEAM EXOMAPPER</span>
             </div>
-            <h1 style="margin:8px 0 4px 0; font-size:32px; font-weight:900; color:#ffffff; letter-spacing:0.4px;">
+            <h1 style="margin:8px 0 4px 0; font-size:31px; font-weight:900; color:#ffffff;">
                 Welcome to ExoMapper: The Hunt for Planet X
             </h1>
         </div>
         """)
-        user_in = st.text_input(
+        username_input = st.text_input(
             "Enter Your Space Explorer Name",
             value=st.session_state.explorerName,
             placeholder="Type a cute explorer name (e.g., Nova, Sky, Riley, or Alex)...",
             help="Enter your explorer username. If you log in again after playing, your score and scans are remembered!"
         )
         if st.button("🚀 Enter", use_container_width=True, help="Open the ExoMapper User Manual & Science Briefing!"):
-            clean_u = user_in.strip()
-            if not clean_u:
-                st.warning("Please enter a Space Explorer Name first!")
+            cleaned_name = username_input.strip()
+            if not cleaned_name:
+                st.warning("Please enter your Space Explorer Name first!")
             else:
-                st.session_state.explorerName = clean_u
-                st.session_state.total_score = st.session_state.saved_scores.get(clean_u, 0)
+                st.session_state.explorerName = cleaned_name
+                st.session_state.total_score = st.session_state.saved_scores.get(cleaned_name, 0)
                 st.session_state.last_result = None
                 st.session_state.page_step = "manual"
                 st.rerun()
 
-# Page 2: User Manual & Briefing Page
+# SCREEN 2: USER MANUAL, TEAM MANIFEST & OFFICIAL LINKS
 def show_manual_screen():
-    logo_b64 = nasa_logo_data()
-    t1, t2, t3 = st.columns([3.4, 1.3, 1.0])
-    with t1:
-        put_html(f"""
-        <div class="exo-card" style="display:flex; align-items:center; gap:16px; padding:16px 20px;">
-            <img src="{logo_b64}" alt="NASA Logo" style="width:70px; height:auto;"/>
+    logo_uri = get_nasa_logo_svg()
+    top_a, top_b, top_c = st.columns([3.3, 1.3, 1.0])
+    with top_a:
+        render_html_snippet(f"""
+        <div class="space-panel" style="display:flex; flex-wrap:wrap; align-items:center; gap:14px; padding:14px 18px;">
+            <img src="{logo_uri}" alt="NASA Logo" style="width:64px; height:auto;"/>
             <div>
-                <span class="exo-badge" style="margin-bottom:4px;">STEP 1 OF 2 • EXOMAPPER USER MANUAL & BRIEFING</span>
-                <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:24px; font-weight:900;">
-                    Welcome, {st.session_state.explorerName}! 📖 Read the Guide & Begin Your Hunt
+                <span class="space-tag" style="margin-bottom:4px;">STEP 1 OF 2 • EXOMAPPER USER MANUAL &amp; BRIEFING</span>
+                <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:22px; font-weight:900;">
+                    Welcome, {st.session_state.explorerName}! 📖 Read the Guide &amp; Begin Your Hunt
                 </h2>
             </div>
         </div>
         """)
-    with t2:
+    with top_b:
         st.write("")
         if st.button("🎮 Begin the Game ➔", use_container_width=True):
             st.session_state.page_step = "game"
             st.rerun()
-    with t3:
+    with top_c:
         st.write("")
         if st.button("🔄 Switch User", use_container_width=True):
             st.session_state.page_step = "welcome"
             st.rerun()
-    b1, b2, b3 = st.columns(3)
-    with b1:
-        put_html("""
-        <div class="exo-card" title="Planet X is a hypothetical world beyond Neptune. Moving dots in sky surveys are logged as unconfirmed candidates.">
-            <div style="color:#ffd166; font-weight:800; font-size:16px; margin-bottom:6px;">🪐 About Planet X</div>
-            <p style="font-size:13.5px; line-height:1.5; color:#d8e6ff; margin:0;">
+
+    # 3 Official NASA Info Cards
+    c1, c2, c3 = st.columns(3)
+    with c1:
+        render_html_snippet("""
+        <div class="space-panel" title="Planet X is a hypothetical giant world beyond Neptune. Moving dots in sky surveys are logged as unconfirmed candidates.">
+            <div style="color:#facc15; font-weight:800; font-size:16px; margin-bottom:6px;">🪐 About Planet X</div>
+            <p style="font-size:13px; line-height:1.5; color:#d8e6ff; margin:0;">
                 Beyond Pluto, icy Kuiper Belt objects follow clustered paths that suggest a hidden giant world (<b>Planet X</b>) may be pulling on them. Because it orbits hundreds of AU away, it glows faintly in infrared light and shifts slowly across pixels over months!
             </p>
-            <a class="exo-link-btn" href="https://science.nasa.gov/solar-system/planet-x/" target="_blank">🔗 Official NASA Planet X Page</a>
+            <a class="resource-link" href="https://science.nasa.gov/solar-system/planet-x/" target="_blank">🔗 Official NASA Planet X Page</a>
         </div>
         """)
-    with b2:
-        put_html("""
-        <div class="exo-card" title="SPHEREx maps the whole sky in 102 infrared bands every 6 months.">
-            <div style="color:#7ce8ff; font-weight:800; font-size:16px; margin-bottom:6px;">🛰️ About SPHEREx</div>
-            <p style="font-size:13.5px; line-height:1.5; color:#d8e6ff; margin:0;">
+    with c2:
+        render_html_snippet("""
+        <div class="space-panel" title="SPHEREx maps the entire sky in 102 infrared bands every 6 months.">
+            <div style="color:#38bdf8; font-weight:800; font-size:16px; margin-bottom:6px;">🛰️ About SPHEREx</div>
+            <p style="font-size:13px; line-height:1.5; color:#d8e6ff; margin:0;">
                 <b>SPHEREx</b> is NASA's all-sky infrared space telescope. By comparing two pictures of the exact same sky coordinates (<b>RA and Dec</b>) taken 6 months apart, we can spot objects that moved or changed brightness!
             </p>
-            <a class="exo-link-btn" href="https://science.nasa.gov/mission/spherex/" target="_blank">🔗 Official NASA SPHEREx Mission</a>
+            <a class="resource-link" href="https://science.nasa.gov/mission/spherex/" target="_blank">🔗 Official NASA SPHEREx Mission</a>
         </div>
         """)
-    with b3:
-        put_html("""
-        <div class="exo-card" title="NASA shares public FITS files and catalogs so students can help discover new worlds.">
-            <div style="color:#ff8a75; font-weight:800; font-size:16px; margin-bottom:6px;">🚀 About NASA Open Data</div>
-            <p style="font-size:13.5px; line-height:1.5; color:#d8e6ff; margin:0;">
+    with c3:
+        render_html_snippet("""
+        <div class="space-panel" title="NASA shares public FITS files and catalogs so students can help discover new worlds.">
+            <div style="color:#f43f5e; font-weight:800; font-size:16px; margin-bottom:6px;">🚀 About NASA Open Data</div>
+            <p style="font-size:13px; line-height:1.5; color:#d8e6ff; margin:0;">
                 <b>NASA</b> shares space telescope observations openly with students and citizen scientists. Every moving dot you find in two images is logged as an <b>Unconfirmed Candidate</b> awaiting a 3rd observation to confirm its orbit.
             </p>
-            <a class="exo-link-btn" href="https://www.nasa.gov/" target="_blank">🔗 Visit Official NASA Portal</a>
+            <a class="resource-link" href="https://www.nasa.gov/" target="_blank">🔗 Visit Official NASA Portal</a>
         </div>
         """)
+
+    # 3 Game Guide Cards
     g1, g2, g3 = st.columns(3)
     with g1:
-        put_html("""
-        <div class="exo-card">
-            <div style="color:#00d4ff; font-weight:800; font-size:15.5px; margin-bottom:6px;">1. Pick Images, FITS or CSV Files</div>
-            <p style="font-size:13.5px; line-height:1.5; color:#d8e6ff; margin:0;">
-                On the next page, choose any <b>Sky Sector</b> and pick which two observation dates (Pass 1, Pass 2, or Pass 3) to compare, or upload your own <b>.FITS files</b>, <b>.CSV star catalogs</b>, or sky pictures!
+        render_html_snippet("""
+        <div class="space-panel">
+            <div style="color:#38bdf8; font-weight:800; font-size:15px; margin-bottom:6px;">1. Pick Images, FITS or CSV Files</div>
+            <p style="font-size:13px; line-height:1.5; color:#d8e6ff; margin:0;">
+                On the next page, choose any of the <b>4 Sky Sectors</b> and pick which two observation dates (Pass 1, Pass 2, or Pass 3) to compare, or upload your own <b>.FITS files</b>, <b>.CSV star catalogs</b>, or sky pictures!
             </p>
         </div>
         """)
     with g2:
-        put_html("""
-        <div class="exo-card">
-            <div style="color:#ffd166; font-weight:800; font-size:15.5px; margin-bottom:6px;">2. Manual Blink, Pause & Select Area</div>
-            <p style="font-size:13.5px; line-height:1.5; color:#d8e6ff; margin:0;">
-                Click <b>⚡ Blink Manually (Flip A ↔ B)</b> to flip pictures at your own speed, or click <b>⏸️ Pause</b> anytime. Then drag your mouse directly on the sky to encircle the moving dot with a Circle, Square, or Rectangle!
+        render_html_snippet("""
+        <div class="space-panel">
+            <div style="color:#facc15; font-weight:800; font-size:15px; margin-bottom:6px;">2. Manual Blink, Pause &amp; Select Area</div>
+            <p style="font-size:13px; line-height:1.5; color:#d8e6ff; margin:0;">
+                Click <b>⚡ Blink Manually (Flip A ↔ B)</b> to flip pictures at your own speed, or click <b>⏸️ Pause</b> anytime. Then drag your mouse/finger directly on the sky to encircle the moving dot!
             </p>
         </div>
         """)
     with g3:
-        put_html("""
-        <div class="exo-card">
-            <div style="color:#7ce8ff; font-weight:800; font-size:15.5px; margin-bottom:6px;">3. Points, Flux & Scoreboard Rules</div>
-            <p style="font-size:13.5px; line-height:1.5; color:#d8e6ff; margin:0;">
+        render_html_snippet("""
+        <div class="space-panel">
+            <div style="color:#34d399; font-weight:800; font-size:15px; margin-bottom:6px;">3. Points, Checklist &amp; Scoreboard</div>
+            <p style="font-size:13px; line-height:1.5; color:#d8e6ff; margin:0;">
                 • <b>Unconfirmed Planet X Candidate:</b> +150 pts<br/>
                 • <b>Brown Dwarf / Supernova / Flare Star:</b> +70 to +85 pts<br/>
                 • <b>False Alarm (Fixed Star / Noise):</b> -20 pts<br/>
@@ -1084,51 +1158,70 @@ def show_manual_screen():
             </p>
         </div>
         """)
-    put_html("""
-    <div class="exo-card">
-        <div style="color:#00ff9d; font-weight:800; font-size:16px; margin-bottom:6px;">📂 Direct Links to Official NASA SPHEREx & Planet X Survey FITS Files (With Observation Times)</div>
-        <p style="font-size:13.5px; color:#d8e6ff; margin:0 0 8px 0;">
-            Click any link below to download real calibrated FITS files or open the NASA/IPAC Infrared Science Archive:
-        </p>
-        <a class="exo-link-btn" href="https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W18_1B/l2b-v27-2026-196/1/level2_2025W18_1B_0074_2D1_spx_l2b-v27-2026-196.fits" target="_blank">
-            ⬇️ Direct SPHEREx DR1 Level-2 FITS (Obs Week: 2025W18_1B | Day: 2026-196 UTC)
-        </a>
-        <a class="exo-link-btn" href="https://irsa.ipac.caltech.edu/ibe/cutouts.html" target="_blank">
-            🛰️ NASA/IPAC IRSA FITS Cutouts Server (SPHEREx & WISE Multi-Epoch Sky Cutouts)
-        </a>
-        <a class="exo-link-btn" href="https://skyview.gsfc.nasa.gov/cgi-bin/images?Survey=digitized+sky+survey&position=14.5,36.5&Return=FITS" target="_blank">
-            ⬇️ Direct NASA SkyView 300x300 FITS Cutout (RA=14.5 deg, Dec=+36.5 deg J2000)
-        </a>
-        <a class="exo-link-btn" href="https://irsa.ipac.caltech.edu/" target="_blank">
-            🌌 NASA/IPAC Infrared Science Archive Portal
-        </a>
+
+    # Team Manifest Card
+    render_html_snippet("""
+    <div class="space-panel">
+        <div style="color:#facc15; font-weight:900; font-size:16px; margin-bottom:8px;">👥 Team ExoMapper Crew Manifest</div>
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap:10px;">
+            <div style="background:#050816; border:1px solid #38bdf8; border-radius:10px; padding:10px 12px;">
+                <div style="color:#38bdf8; font-weight:800; font-size:14px;">Shikshita Naryal</div>
+                <div style="font-size:11.5px; color:#facc15;">Team Owner &amp; Lead Architect</div>
+            </div>
+            <div style="background:#050816; border:1px solid #34d399; border-radius:10px; padding:10px 12px;">
+                <div style="color:#34d399; font-weight:800; font-size:14px;">Ayan Agarwal</div>
+                <div style="font-size:11.5px; color:#facc15;">11th Grade // Docs &amp; UI</div>
+            </div>
+            <div style="background:#050816; border:1px solid #f43f5e; border-radius:10px; padding:10px 12px;">
+                <div style="color:#f43f5e; font-weight:800; font-size:14px;">Mahesh Nayak</div>
+                <div style="font-size:11.5px; color:#facc15;">M.Sc. Physics // Science Validation</div>
+            </div>
+        </div>
     </div>
     """)
-    bc1, bc2, bc3 = st.columns([1.2, 2.0, 1.2])
-    with bc2:
+
+    # Direct Official FITS & Archive Links
+    render_html_snippet("""
+    <div class="space-panel">
+        <div style="color:#34d399; font-weight:900; font-size:16px; margin-bottom:6px;">📂 Direct Links to Official NASA SPHEREx &amp; Planet X Survey FITS Files (With Observation Times)</div>
+        <p style="font-size:13px; color:#ffffff; margin:0 0 8px 0;">
+            Click any link below to download calibrated FITS observations or open the NASA/IPAC Infrared Science Archive:
+        </p>
+        <a class="resource-link" href="https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W18_1B/l2b-v27-2026-196/1/level2_2025W18_1B_0074_2D1_spx_l2b-v27-2026-196.fits" target="_blank">⬇️ Direct SPHEREx DR1 Level-2 FITS (Obs Week: 2025W18_1B | Day: 2026-196 UTC)</a>
+        <a class="resource-link" href="https://irsa.ipac.caltech.edu/ibe/cutouts.html" target="_blank">🛰️ NASA/IPAC IRSA FITS Cutouts Server</a>
+        <a class="resource-link" href="https://skyview.gsfc.nasa.gov/cgi-bin/images?Survey=digitized+sky+survey&position=14.5,36.5&Return=FITS" target="_blank">⬇️ Direct NASA SkyView 300x300 FITS Cutout (RA=14.5 deg, Dec=+36.5 deg)</a>
+        <a class="resource-link" href="https://irsa.ipac.caltech.edu/" target="_blank">🌌 NASA/IPAC Infrared Science Archive Portal</a>
+    </div>
+    """)
+
+    with st.expander("📋 View Reference SPHEREx Level-2 Calibration Targets"):
+        st.dataframe(get_preloaded_archive_dataframe(), use_container_width=True, hide_index=True)
+
+    col_btn1, col_btn2, col_btn3 = st.columns([1.1, 2.0, 1.1])
+    with col_btn2:
         if st.button("🚀 Begin the Game Now (Launch Interactive Sky Workbench)", use_container_width=True):
             st.session_state.page_step = "game"
             st.rerun()
 
-# Page 3: Main Game & Astrometric Workbench
+# SCREEN 3: MAIN GAME & ASTROMETRIC WORKBENCH
 def show_game_screen():
-    logo_b64 = nasa_logo_data()
-    h1, h2, h3 = st.columns([3.6, 1.1, 1.0])
+    logo_uri = get_nasa_logo_svg()
+    h1, h2, h3 = st.columns([3.5, 1.1, 1.0])
     with h1:
-        put_html(f"""
-        <div class="exo-card" style="display:flex; align-items:center; justify-content:space-between; gap:14px; padding:14px 20px;">
-            <div style="display:flex; align-items:center; gap:14px;">
-                <img src="{logo_b64}" alt="NASA Logo" style="width:66px; height:auto;"/>
+        render_html_snippet(f"""
+        <div class="space-panel" style="display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; padding:12px 18px;">
+            <div style="display:flex; align-items:center; gap:12px;">
+                <img src="{logo_uri}" alt="NASA Logo" style="width:58px; height:auto;"/>
                 <div>
-                    <span class="exo-badge" style="margin-bottom:4px;">EXOMAPPER SKY WORKBENCH • ACTIVE MISSION</span>
-                    <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:23px; font-weight:900;">
-                        Explorer: {st.session_state.explorerName} 🪐 Select Sky Area & Hunt for Planet X
+                    <span class="space-tag" style="margin-bottom:2px;">EXOMAPPER SKY WORKBENCH • ACTIVE MISSION</span>
+                    <h2 style="margin:2px 0 0 0; color:#ffffff; font-size:21px; font-weight:900;">
+                        Explorer: {st.session_state.explorerName} 🪐 Select Sky Area &amp; Hunt for Planet X
                     </h2>
                 </div>
             </div>
-            <div style="text-align:right; background:#0b1c40; border:1.5px solid #00d4ff; border-radius:12px; padding:6px 14px;">
-                <div style="font-size:11px; color:#8ab4f8; font-weight:700;">CURRENT SCORE</div>
-                <div style="font-size:22px; color:#ffd166; font-weight:900;">{st.session_state.total_score} pts</div>
+            <div style="text-align:right; background:#081128; border:1.5px solid #38bdf8; border-radius:10px; padding:6px 14px;">
+                <div style="font-size:10.5px; color:#93c5fd; font-weight:800;">CURRENT SCORE</div>
+                <div style="font-size:20px; color:#facc15; font-weight:900;">{st.session_state.total_score} PTS</div>
             </div>
         </div>
         """)
@@ -1142,11 +1235,12 @@ def show_game_screen():
         if st.button("🔄 Switch User", use_container_width=True):
             st.session_state.page_step = "welcome"
             st.rerun()
+
     with st.sidebar:
-        put_html("""
-        <div class="exo-card" style="padding:12px 14px;">
-            <div style="color:#00d4ff; font-weight:800; font-size:16px;">🔭 Image & Blink Settings</div>
-            <div style="font-size:12.5px; color:#b8d4ff;">Tune color theme, brightness, contrast, and noise cleaning.</div>
+        render_html_snippet("""
+        <div class="space-panel" style="padding:12px 14px;">
+            <div style="color:#38bdf8; font-weight:900; font-size:15px;">🔭 Image &amp; Blink Settings</div>
+            <div style="font-size:12px; color:#ffffff;">Adjust color palettes, brightness, contrast, and noise cleaning.</div>
         </div>
         """)
         color_theme = st.selectbox("Sky Color Theme", ["Deep Space Cyan", "Infrared Heat (SPHEREx)", "Emerald Nebula"])
@@ -1154,14 +1248,16 @@ def show_game_screen():
         contrast_val = st.slider("Sky Contrast", 0.6, 2.2, 1.20, 0.05)
         blink_ms = st.slider("Auto-Blink Speed (ms)", 250, 1200, 550, 50)
         clean_flag = st.checkbox("✨ Apply Dark & Bias Clean", value=False)
-        put_html("""
-        <div class="exo-card" style="padding:12px 14px; margin-top:10px;">
-            <div style="color:#ffd166; font-weight:800; font-size:14.5px;">🔗 Direct FITS Links (With Time)</div>
-            <a class="exo-link-btn" style="display:block; text-align:center;" href="https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W18_1B/l2b-v27-2026-196/1/level2_2025W18_1B_0074_2D1_spx_l2b-v27-2026-196.fits" target="_blank">⬇️ SPHEREx FITS (2025W18_1B)</a>
-            <a class="exo-link-btn" style="display:block; text-align:center;" href="https://irsa.ipac.caltech.edu/ibe/cutouts.html" target="_blank">🛰️ IRSA Multi-Epoch Cutouts</a>
-            <a class="exo-link-btn" style="display:block; text-align:center;" href="https://skyview.gsfc.nasa.gov/cgi-bin/images?Survey=digitized+sky+survey&position=14.5,36.5&Return=FITS" target="_blank">⬇️ SkyView 300x300 FITS</a>
+
+        render_html_snippet("""
+        <div class="space-panel" style="padding:12px 14px; margin-top:10px;">
+            <div style="color:#facc15; font-weight:800; font-size:14px;">🔗 Direct FITS Links (With Time)</div>
+            <a class="resource-link" style="display:block; text-align:center;" href="https://irsa.ipac.caltech.edu/ibe/data/spherex/dr1/level2/2025W18_1B/l2b-v27-2026-196/1/level2_2025W18_1B_0074_2D1_spx_l2b-v27-2026-196.fits" target="_blank">⬇️ SPHEREx FITS (2025W18_1B)</a>
+            <a class="resource-link" style="display:block; text-align:center;" href="https://irsa.ipac.caltech.edu/ibe/cutouts.html" target="_blank">🛰️ IRSA Multi-Epoch Cutouts</a>
+            <a class="resource-link" style="display:block; text-align:center;" href="https://skyview.gsfc.nasa.gov/cgi-bin/images?Survey=digitized+sky+survey&position=14.5,36.5&Return=FITS" target="_blank">⬇️ SkyView 300x300 FITS</a>
         </div>
         """)
+
     s1, s2, s3, s4 = st.columns([1.45, 1.55, 1.35, 1.05])
     with s1:
         source_mode = st.selectbox(
@@ -1169,7 +1265,7 @@ def show_game_screen():
             ["Simulated SPHEREx Survey Sectors", "Upload Custom FITS / Sky Images", "Upload Custom CSV Star Catalog"]
         )
     with s2:
-        picked_sector = st.selectbox("🌌 Sky Sector (J2000 Region)", list(skyData.keys()))
+        picked_sector = st.selectbox("🌌 Sky Sector (J2000 Region)", list(celestialSectors.keys()))
     with s3:
         view_mode = st.selectbox(
             "👁️ Blink / Pause / View Mode",
@@ -1184,55 +1280,62 @@ def show_game_screen():
         )
     with s4:
         shape_mode = st.selectbox("✏️ Selection Shape", ["Draw Circle", "Draw Square", "Draw Rectangle"])
-    sec_info = skyData[picked_sector]
-    pass_list = list(sec_info["epochs"].keys())
+
+    sector_info = celestialSectors[picked_sector]
+    epoch_list = list(sector_info["epochs"].keys())
+
     e1, e2, e3 = st.columns([1.6, 1.6, 1.2])
     with e1:
-        pass_a = st.selectbox("🗓️ Select First Observation Image (Image A)", pass_list, index=0)
+        pass_a = st.selectbox("🗓️ Select First Observation Image (Image A)", epoch_list, index=0)
     with e2:
-        pass_b = st.selectbox("🗓️ Select Second Observation Image (Image B)", pass_list, index=1)
+        pass_b = st.selectbox("🗓️ Select Second Observation Image (Image B)", epoch_list, index=1)
     with e3:
         st.write("")
         if st.button("⚡ Flip Image A ↔ B Manually", use_container_width=True):
             st.session_state.manual_frame = 2 if st.session_state.manual_frame == 1 else 1
+
     custom_active = False
-    pic_a, pic_b = build_sector_pair(picked_sector, pass_a, pass_b, clean_flag=clean_flag)
-    label_a = sec_info["epochs"][pass_a]["label"]
-    label_b = sec_info["epochs"][pass_b]["label"]
+    grid_a, grid_b = generate_sky_grid_pair(picked_sector, pass_a, pass_b, clean_enabled=clean_flag)
+    label_a = sector_info["epochs"][pass_a]["label"]
+    label_b = sector_info["epochs"][pass_b]["label"]
+
     if source_mode == "Upload Custom FITS / Sky Images":
         d1, d2 = st.columns(2)
         with d1:
             st.download_button(
                 "⬇️ Download Sample FITS Image A (2026-03-14 UTC)",
-                data=make_fits_bytes(pic_a, "2026-03-14T04:12:00"),
+                data=make_fits_bytes(grid_a, "2026-03-14T04:12:00"),
                 file_name="spherex_sample_pass1_20260314.fits",
                 mime="application/octet-stream"
             )
         with d2:
             st.download_button(
                 "⬇️ Download Sample FITS Image B (2026-09-18 UTC)",
-                data=make_fits_bytes(pic_b, "2026-09-18T11:45:00"),
+                data=make_fits_bytes(grid_b, "2026-09-18T11:45:00"),
                 file_name="spherex_sample_pass2_20260918.fits",
                 mime="application/octet-stream"
             )
+
         u1, u2 = st.columns(2)
         with u1:
             f_up1 = st.file_uploader("Upload First FITS / Sky Image (Image A)", type=["fits", "fit", "png", "jpg", "jpeg"])
         with u2:
             f_up2 = st.file_uploader("Upload Second FITS / Sky Image (Image B)", type=["fits", "fit", "png", "jpg", "jpeg"])
+
         if f_up1 is not None and f_up2 is not None:
             arr1, err1 = read_uploaded_sky(f_up1)
             arr2, err2 = read_uploaded_sky(f_up2)
             if err1 or err2:
                 st.error(f"⚠️ {err1 or ''} {err2 or ''}")
             else:
-                pic_a, pic_b = arr1, arr2
+                grid_a, grid_b = arr1, arr2
                 custom_active = True
                 label_a = f"Uploaded: {f_up1.name}"
                 label_b = f"Uploaded: {f_up2.name}"
                 st.success(f"✅ Loaded custom FITS/Image pair: '{f_up1.name}' & '{f_up2.name}'")
         else:
             st.info("ℹ️ Upload two .fits, .png, or .jpg files above (or download the sample FITS files to test!).")
+
     elif source_mode == "Upload Custom CSV Star Catalog":
         st.download_button(
             "⬇️ Download Sample Planet X & SPHEREx CSV Catalog Template",
@@ -1246,7 +1349,7 @@ def show_game_screen():
             if cerr:
                 st.error(f"⚠️ {cerr}")
             else:
-                pic_a, pic_b = ca, cb
+                grid_a, grid_b = ca, cb
                 custom_active = True
                 label_a = f"CSV Epoch 1 ({csv_up.name})"
                 label_b = f"CSV Epoch 2 ({csv_up.name})"
@@ -1255,31 +1358,34 @@ def show_game_screen():
                     st.dataframe(cdf, use_container_width=True, hide_index=True)
         else:
             st.info("ℹ️ Upload a .csv catalog file above (or download the sample CSV template to test!).")
-    _, _, c_ra, c_dec = calc_sky_coords(150, 150, sec_info["ra_center"], sec_info["dec_center"])
+
+    _, _, c_ra, c_dec = calculate_sky_coordinates(150, 150, sector_info["ra_center"], sector_info["dec_center"])
     mode_pill = (
         '<span class="exo-real-pill">🛰️ CUSTOM UPLOADED FITS / CSV DATA ACTIVE</span>'
         if custom_active
         else '<span class="exo-sim-pill">🧪 SIMULATED SPHEREx DEMO DATA (6.2"/px)</span>'
     )
-    put_html(f"""
-    <div class="exo-card" style="padding:10px 16px;">
+    render_html_snippet(f"""
+    <div class="space-panel" style="padding:10px 16px;">
         <div style="display:flex; flex-wrap:wrap; justify-content:space-between; align-items:center; gap:8px;">
-            <span style="font-weight:800; font-size:14.5px; color:#ffffff;">📍 Field Center (J2000): RA {c_ra} | Dec {c_dec} ({sec_info['constellation']})</span>
+            <span style="font-weight:800; font-size:14.5px; color:#ffffff;">📍 Field Center (J2000): RA {c_ra} | Dec {c_dec} ({sector_info['constellation']})</span>
             {mode_pill}
         </div>
         <div style="display:flex; flex-wrap:wrap; justify-content:space-between; gap:10px; font-size:12.5px; color:#b8d8ff; margin-top:4px;">
             <span>🖼️ <b>Image A:</b> {label_a}</span>
             <span>🖼️ <b>Image B:</b> {label_b}</span>
-            <span>🌈 <b>Band:</b> {sec_info['band']}</span>
+            <span>🌈 <b>Band:</b> {sector_info['band']}</span>
         </div>
     </div>
     """)
-    diff_arr = pic_b - pic_a
-    img_a = paint_sky(pic_a, color_theme, bright_val, contrast_val, is_diff=False)
-    img_b = paint_sky(pic_b, color_theme, bright_val, contrast_val, is_diff=False)
-    img_sub = paint_sky(diff_arr, color_theme, bright_val, contrast_val, is_diff=True)
-    left_col, right_col = st.columns([1.42, 1.18])
-    with left_col:
+
+    difference_grid = grid_b - grid_a
+    img_a = colorize_sky_image(grid_a, color_theme, bright_val, contrast_val, is_difference=False)
+    img_b = colorize_sky_image(grid_b, color_theme, bright_val, contrast_val, is_difference=False)
+    img_sub = colorize_sky_image(difference_grid, color_theme, bright_val, contrast_val, is_difference=True)
+
+    col_left, col_right = st.columns([1.35, 1.15])
+    with col_left:
         if view_mode == "Side-by-Side 3-Panel View":
             p1, p2, p3 = st.columns(3)
             with p1:
@@ -1289,42 +1395,45 @@ def show_game_screen():
             with p3:
                 st.image(img_sub, caption="Subtraction (Cyan=A, Gold=B)", use_container_width=True)
         else:
-            canvas_code = make_canvas_widget(
-                b64_a=to_b64_png(img_a),
-                b64_b=to_b64_png(img_b),
-                b64_sub=to_b64_png(img_sub),
+            canvas_html = render_interactive_canvas(
+                b64_a=image_to_base64_string(img_a),
+                b64_b=image_to_base64_string(img_b),
+                b64_sub=image_to_base64_string(img_sub),
                 mode_name=view_mode,
                 shape_name=shape_mode,
                 blink_ms=blink_ms,
                 mx=st.session_state.x_pick,
                 my=st.session_state.y_pick,
                 mr=st.session_state.r_pick,
-                ra0=sec_info["ra_center"],
-                dec0=sec_info["dec_center"],
+                ra_center=sector_info["ra_center"],
+                dec_center=sector_info["dec_center"],
                 label_a=label_a,
                 label_b=label_b,
-                start_frame=st.session_state.manual_frame
+                active_frame=st.session_state.manual_frame
             )
-            components.html(canvas_code, height=585, scrolling=False)
-    with right_col:
-        put_html("""
-        <div class="exo-card" style="padding:14px 16px;">
-            <div style="color:#ffd166; font-weight:800; font-size:16px; margin-bottom:4px;">🎯 Manual Area Selection & Candidate Scanner</div>
-            <p style="font-size:13px; color:#d8e6ff; margin:0;">
-                <b>How to select manually:</b> Click <b>⏸️ Pause</b> or <b>⚡ Blink Manually</b> under the sky picture, drag your mouse on the sky to draw your shape around a moving dot, and enter its <b>X, Y</b> numbers below to check what you found!
+            components.html(canvas_html, height=585, scrolling=False)
+
+    with col_right:
+        render_html_snippet("""
+        <div class="space-panel" style="padding:14px 16px;">
+            <div style="color:#facc15; font-weight:900; font-size:15px; margin-bottom:4px;">🎯 Automatic &amp; Manual Area Selection</div>
+            <p style="font-size:12.5px; color:#ffffff; margin:0;">
+                <b>How to select:</b> Click <b>⏸️ Pause</b> or <b>⚡ Blink Manually</b> under the sky picture, drag your mouse/finger on the sky to encircle a moving dot, or adjust <b>Pixel X, Pixel Y, and Radius</b> below!
             </p>
         </div>
         """)
+
         nx, ny, nr = st.columns(3)
         with nx:
-            st.session_state.x_pick = st.number_input("Manual Pixel X (0-299)", 0, 299, int(st.session_state.x_pick))
+            st.session_state.x_pick = st.number_input("Pixel X (0-299)", 0, 299, int(st.session_state.x_pick))
         with ny:
-            st.session_state.y_pick = st.number_input("Manual Pixel Y (0-299)", 0, 299, int(st.session_state.y_pick))
+            st.session_state.y_pick = st.number_input("Pixel Y (0-299)", 0, 299, int(st.session_state.y_pick))
         with nr:
-            st.session_state.r_pick = st.number_input("Selection Size (px)", 8, 60, int(st.session_state.r_pick))
+            st.session_state.r_pick = st.number_input("Radius (px)", 8, 60, int(st.session_state.r_pick))
+
         with st.expander("💡 Need a Hint? Optional Quick-Snap Helpers"):
             hc1, hc2, hc3 = st.columns(3)
-            objs = sec_info["objects"]
+            objs = sector_info["objects"]
             with hc1:
                 if st.button("Snap to Hint A", use_container_width=True):
                     st.session_state.x_pick = int(objs[0]["x1"] + objs[0]["dx"] * 0.5)
@@ -1340,98 +1449,133 @@ def show_game_screen():
                     st.session_state.x_pick = 150
                     st.session_state.y_pick = 150
                     st.rerun()
-        _, _, live_ra, live_dec = calc_sky_coords(
-            st.session_state.x_pick, st.session_state.y_pick, sec_info["ra_center"], sec_info["dec_center"]
+
+        _, _, live_ra, live_dec = calculate_sky_coordinates(
+            st.session_state.x_pick, st.session_state.y_pick, sector_info["ra_center"], sector_info["dec_center"]
         )
-        put_html(f"""
-        <div style="background:#091530; border:1px solid rgba(0, 255, 157, 0.4); border-radius:10px; padding:8px 12px; margin-bottom:10px; font-size:12.5px; color:#d8f8e8;">
+        render_html_snippet(f"""
+        <div style="background:#091530; border:1px solid rgba(52, 211, 153, 0.45); border-radius:10px; padding:8px 12px; margin-bottom:10px; font-size:12px; color:#d8f8e8;">
             🧭 <b>Selected Area Sky Coordinates (J2000):</b><br/>
             • <b>Right Ascension (RA):</b> {live_ra}<br/>
             • <b>Declination (Dec):</b> {live_dec}
         </div>
         """)
-        if st.button("🔍 Check Selected Area, Measure Flux & Play Sound", use_container_width=True):
-            res = analyze_sky_pick(
-                sector_name=picked_sector,
-                pass_a=pass_a,
-                pass_b=pass_b,
-                cx=int(st.session_state.x_pick),
-                cy=int(st.session_state.y_pick),
-                rad_px=int(st.session_state.r_pick),
-                shape_used=shape_mode,
-                pic_a=pic_a,
-                pic_b=pic_b,
-                custom_mode=custom_active
-            )
-            st.session_state.last_result = res
-            st.session_state.total_score += res["points"]
-            st.session_state.saved_scores[st.session_state.explorerName] = st.session_state.total_score
-            pts_txt = f"+{res['points']}" if res["points"] > 0 else f"{res['points']}"
-            st.session_state.score_table.insert(0, {
-                "Username": st.session_state.explorerName,
-                "Time": datetime.now().strftime("%H:%M:%S"),
-                "Data Source": source_mode if custom_active else "Simulated SPHEREx Demo",
-                "Set Used": picked_sector,
-                "Observation Dates": f"{res['date_a']} vs {res['date_b']}",
-                "Pixels (X, Y)": f"({st.session_state.x_pick}, {st.session_state.y_pick}) | {shape_mode} r={st.session_state.r_pick}px",
-                "Celestial Coords (RA, Dec J2000)": f"RA: {res['ra_str']} | Dec: {res['dec_str']}",
-                "Found Anomaly or Not": res["found_flag"],
-                "Candidate Status": res["status"],
-                "Found What": res["title"],
-                "Brightness & Flux": res["flux_text"],
-                "Points": pts_txt,
-                "Total Score": st.session_state.total_score,
-                "Physical Properties": f"{res['distance']} | {res['temp']} | {res['shift_text']}",
-                "Sonification": f"{res['freq']} Hz Doppler Sound (Flux {res['peak_flux']})"
-            })
+
+        with st.expander("🔬 Scientific Verification Checklist (Optional Filter)", expanded=True):
+            check_dir = st.checkbox("Did it move or change brightness across epochs?", value=True)
+            check_hot = st.checkbox("Confirmed not a camera artifact?", value=True)
+            check_snr = st.checkbox("Ready to check SNR & flux photometry?", value=True)
+
+        if st.button("🔍 Analyze Selected Area, Measure Flux & Play Sound", use_container_width=True):
+            if not (check_dir and check_hot and check_snr):
+                st.warning("⚠️ Please tick the Scientific Verification Checklist boxes above before analyzing your candidate!")
+            else:
+                scan_result = evaluate_user_sky_pick(
+                    sector_name=picked_sector,
+                    pass_a=pass_a,
+                    pass_b=pass_b,
+                    cx=int(st.session_state.x_pick),
+                    cy=int(st.session_state.y_pick),
+                    radius_px=int(st.session_state.r_pick),
+                    grid_a=grid_a,
+                    grid_b=grid_b,
+                    custom_mode=custom_active
+                )
+                st.session_state.last_result = scan_result
+                st.session_state.total_score += scan_result["points"]
+                st.session_state.saved_scores[st.session_state.explorerName] = st.session_state.total_score
+                points_display = f"+{scan_result['points']}" if scan_result["points"] > 0 else f"{scan_result['points']}"
+
+                st.session_state.score_table.insert(0, {
+                    "Username": st.session_state.explorerName,
+                    "Time": datetime.now().strftime("%H:%M:%S"),
+                    "Data Source": source_mode if custom_active else "Simulated SPHEREx Demo",
+                    "Set Used": picked_sector,
+                    "Observation Dates": f"{scan_result['date_a']} vs {scan_result['date_b']}",
+                    "Pixels (X, Y)": f"({st.session_state.x_pick}, {st.session_state.y_pick}) | {shape_mode} r={st.session_state.r_pick}px",
+                    "Celestial Coords (RA, Dec J2000)": f"RA: {scan_result['ra_str']} | Dec: {scan_result['dec_str']}",
+                    "Found Anomaly or Not": scan_result["found_flag"],
+                    "Candidate Status": scan_result["status"],
+                    "Found What": scan_result["title"],
+                    "Brightness & Flux": scan_result["flux_text"],
+                    "Points": points_display,
+                    "Total Score": st.session_state.total_score,
+                    "Physical Properties": f"{scan_result['distance']} | {scan_result['temp']} | {scan_result['shift_text']}",
+                    "Sonification": f"{scan_result['freq']} Hz Doppler Sound (Flux {scan_result['peak_flux']})"
+                })
+
         if st.session_state.last_result is not None:
-            r = st.session_state.last_result
-            b_col = "#00ff9d" if r["points"] > 0 else "#fc3d21"
-            p_tag = f"+{r['points']} Points!" if r["points"] > 0 else f"{r['points']} Points"
-            put_html(f"""
-            <div class="exo-card" style="border-color:{b_col}; padding:14px 16px;">
+            res = st.session_state.last_result
+            is_success = res["points"] > 0
+            badge_color = "#34d399" if is_success else "#f43f5e"
+            score_tag = f"+{res['points']} pts" if is_success else f"{res['points']} pts"
+
+            if is_success:
+                render_html_snippet("""
+                <div style="background:rgba(52, 211, 153, 0.18); border:1.5px solid #34d399; border-radius:10px; text-align:center; padding: 10px; margin-bottom:10px;">
+                    <span class="floating-celebration">🪐</span>
+                    <span class="floating-celebration" style="animation-delay: 0.3s;">🚀</span>
+                    <span class="floating-celebration" style="animation-delay: 0.6s;">🌟</span>
+                    <span style="color:#34d399; font-weight:900; font-size:15px; margin-left:8px;">SUCCESS! Candidate Anomaly Logged!</span>
+                </div>
+                """)
+            else:
+                render_html_snippet("""
+                <div style="background:rgba(244, 63, 94, 0.18); border:1.5px solid #f43f5e; border-radius:10px; text-align:center; padding: 10px; margin-bottom:10px; color:#f87171; font-weight:800; font-size:14px;">
+                    💫 Better luck next time! Keep scanning the star fields. (-20 pts)
+                </div>
+                """)
+
+            render_html_snippet(f"""
+            <div class="space-panel" style="border-color:{badge_color}; padding:14px 16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
-                    <span style="font-weight:900; font-size:15.5px; color:{b_col};">{r['title']}</span>
-                    <span class="exo-badge" style="background:{b_col}; color:#040814; margin-bottom:0;">{p_tag}</span>
+                    <span style="font-weight:900; font-size:15.5px; color:{badge_color};">{res['title']}</span>
+                    <span style="background:{badge_color}; color:#010309; font-weight:900; font-size:11px; padding:3px 12px; border-radius:99px;">{score_tag}</span>
                 </div>
-                <div style="margin-top:6px; padding:4px 10px; background:rgba(255, 209, 102, 0.14); border-left:3px solid #ffd166; font-size:12px; color:#ffd166; font-weight:700;">
-                    📋 Status: {r['status']}
+                <div style="margin-top:6px; padding:4px 10px; background:rgba(250, 204, 21, 0.14); border-left:3px solid #facc15; font-size:12px; color:#facc15; font-weight:700;">
+                    📋 Status: {res['status']}
                 </div>
-                <p style="font-size:13px; color:#e2eeff; margin:8px 0;">{r['note']}</p>
+                <p style="font-size:13px; color:#ffffff; margin:8px 0;">{res['note']}</p>
                 <div style="font-size:12.5px; color:#b8d8ff; line-height:1.6;">
-                    • <b>J2000 Sky Coords:</b> RA {r['ra_str']} | Dec {r['dec_str']}<br/>
-                    • <b>Observation Times:</b> {r['date_a']} -> {r['date_b']}<br/>
-                    • <b>Brightness / Flux:</b> {r['flux_text']}<br/>
-                    • <b>Measured Shift:</b> {r['shift_text']}<br/>
-                    • <b>Physical Properties:</b> {r['distance']} | {r['temp']} | {r['mass']}
+                    • <b>J2000 Sky Coords:</b> RA {res['ra_str']} | Dec {res['dec_str']}<br/>
+                    • <b>Observation Times:</b> {res['date_a']} -> {res['date_b']}<br/>
+                    • <b>Brightness / Flux:</b> {res['flux_text']}<br/>
+                    • <b>Measured Shift:</b> {res['shift_text']}<br/>
+                    • <b>Physical Properties:</b> {res['distance']} | {res['temp']} | {res['mass']}
                 </div>
             </div>
             """)
-            wav_clip = create_doppler_wav(
-                freq_hz=float(r["freq"]),
-                flux_val=float(r["peak_flux"]),
-                is_planet_x=("Planet X" in r["kind"])
+
+            st.write("🔊 **Hear the Candidate** (Stronger signal = clearer sound)")
+            st.caption("⚠️ **Disclaimer:** Space is a vacuum and has no sound. This audio feature uses scientific sonification to translate infrared flux intensity and motion shifts into acoustic frequencies for data accessibility.")
+
+            audio_bytes = generate_doppler_audio(
+                freq_hz=float(res["freq"]),
+                flux_value=float(res["peak_flux"]),
+                is_planet_x=("Planet X" in res["kind"])
             )
-            st.audio(wav_clip, format="audio/wav")
+            st.audio(audio_bytes, format="audio/wav")
+
     st.write("")
-    put_html("""
-    <div class="exo-card" style="padding:14px 18px;">
-        <div style="color:#ffd166; font-weight:900; font-size:18px;">🏆 Live Explorer Scoreboard & Discovery Log</div>
+    render_html_snippet("""
+    <div class="space-panel" style="padding:14px 18px;">
+        <div style="color:#facc15; font-weight:900; font-size:18px;">🏆 Live Candidate Log &amp; Discovery Scoreboard</div>
         <div style="font-size:13px; color:#c8dcff;">Records your scans once you start playing! If you switch users and log back in, your previous discoveries stay saved here.</div>
     </div>
     """)
     if len(st.session_state.score_table) == 0:
-        st.info("🌌 No scans recorded yet in this session! Select an area on the sky image above and click 'Check Selected Area, Measure Flux & Play Sound' to add your first entry to the scoreboard.")
+        st.info("🌌 No candidate logs yet! Select an area on the sky image above and click 'Analyze Selected Area, Measure Flux & Play Sound'.")
     else:
-        df_out = pd.DataFrame(st.session_state.score_table)
-        st.dataframe(df_out, use_container_width=True, hide_index=True)
+        score_df = pd.DataFrame(st.session_state.score_table)
+        st.dataframe(score_df, use_container_width=True, hide_index=True)
         st.download_button(
-            "📥 Download Scoreboard Log (CSV)",
-            data=df_out.to_csv(index=False).encode("utf-8"),
-            file_name="exomapper_scoreboard.csv",
+            "📥 Download Candidate Log (CSV)",
+            data=score_df.to_csv(index=False).encode("utf-8"),
+            file_name="exomapper_candidate_log.csv",
             mime="text/csv"
         )
-apply_space_theme()
+
+apply_custom_space_styling()
 if st.session_state.page_step == "welcome":
     show_welcome_screen()
 elif st.session_state.page_step == "manual":
